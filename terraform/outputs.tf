@@ -1,0 +1,75 @@
+output "vpc_id" {
+  description = "VPC Network ID"
+  value       = google_compute_network.vpc.id
+}
+
+output "subnet_id" {
+  description = "Subnet ID"
+  value       = google_compute_subnetwork.subnet.id
+}
+
+output "database_instance_name" {
+  description = "Cloud SQL instance name"
+  value       = google_sql_database_instance.postgres.name
+}
+
+output "database_connection_name" {
+  description = "Cloud SQL connection name"
+  value       = google_sql_database_instance.postgres.connection_name
+}
+
+output "database_private_ip" {
+  description = "Cloud SQL private IP address"
+  value       = google_sql_database_instance.postgres.private_ip_address
+  sensitive   = true
+}
+
+output "generated_content_bucket" {
+  description = "Generated content storage bucket name"
+  value       = google_storage_bucket.generated_content.name
+}
+
+output "oer_content_bucket" {
+  description = "OER content storage bucket name"
+  value       = google_storage_bucket.oer_content.name
+}
+
+output "temp_files_bucket" {
+  description = "Temporary files storage bucket name"
+  value       = google_storage_bucket.temp_files.name
+}
+
+output "content_requests_topic" {
+  description = "Pub/Sub topic for content requests"
+  value       = google_pubsub_topic.content_requests.id
+}
+
+output "artifact_registry_url" {
+  description = "Artifact Registry repository URL"
+  value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.vividly.repository_id}"
+}
+
+output "api_gateway_service_account" {
+  description = "API Gateway service account email"
+  value       = google_service_account.api_gateway.email
+}
+
+output "admin_service_account" {
+  description = "Admin service account email"
+  value       = google_service_account.admin_service.email
+}
+
+output "content_worker_service_account" {
+  description = "Content Worker service account email"
+  value       = google_service_account.content_worker.email
+}
+
+output "cicd_service_account" {
+  description = "CI/CD service account email"
+  value       = google_service_account.cicd.email
+}
+
+output "database_url_secret_name" {
+  description = "Secret Manager secret name for database URL"
+  value       = google_secret_manager_secret.database_url.secret_id
+}

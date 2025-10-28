@@ -1,0 +1,269 @@
+# Vividly .gitignore
+
+# ========================================
+# Python
+# ========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Pytest
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.cover
+.hypothesis/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ========================================
+# Node.js / Frontend
+# ========================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+dist-ssr/
+*.local
+
+# Testing
+coverage/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ========================================
+# Terraform
+# ========================================
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars.backup
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# ========================================
+# Google Cloud
+# ========================================
+# Service account keys - NEVER commit these!
+*-service-account.json
+*-credentials.json
+service-account-*.json
+gcp-key-*.json
+
+# GCP SDK
+.gcloud/
+.config/gcloud/
+
+# ========================================
+# Secrets and Credentials
+# ========================================
+# CRITICAL: Never commit secrets!
+.env.production
+secrets/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+.secrets
+secret.yaml
+secrets.yaml
+
+# Database connection strings
+database.url
+db-config.json
+
+# API keys
+api-keys.txt
+*.apikey
+
+# JWT secrets
+jwt-secret.txt
+
+# ========================================
+# macOS
+# ========================================
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# ========================================
+# Linux
+# ========================================
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ========================================
+# Windows
+# ========================================
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# ========================================
+# Docker
+# ========================================
+.dockerignore
+
+# ========================================
+# Logs
+# ========================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+
+# ========================================
+# Database
+# ========================================
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# PostgreSQL local data
+postgres-data/
+pgdata/
+
+# ========================================
+# Temporary Files
+# ========================================
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+*.swo
+*~.nib
+
+# ========================================
+# Generated Content (local development)
+# ========================================
+# In production, these are in GCS, but locally they may be generated
+generated-videos/
+generated-scripts/
+temp-audio/
+temp-storyboards/
+
+# ========================================
+# Test Data
+# ========================================
+test-data/
+test-videos/
+test-outputs/
+
+# ========================================
+# Jupyter Notebooks
+# ========================================
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# ========================================
+# Editor Directories
+# ========================================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ========================================
+# CI/CD
+# ========================================
+# GitHub Actions secrets (if accidentally downloaded)
+github-secrets.json
+
+# ========================================
+# Custom
+# ========================================
+# Add any project-specific files to ignore here
+
+# Local development overrides
+docker-compose.override.yml
+local.env
+
+# Performance profiling
+*.prof
+*.pyprof

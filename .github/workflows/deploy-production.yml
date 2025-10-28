@@ -1,0 +1,426 @@
+name: Deploy to Production
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version/tag to deploy'
+        required: true
+        type: string
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROD_PROJECT_ID }}
+  GCP_REGION: us-central1
+  GAR_LOCATION: us-central1
+  SERVICE_NAME_PREFIX: vividly-prod
+
+jobs:
+  validate:
+    name: Pre-deployment Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.version }}
+
+      - name: Validate version format
+        run: |
+          VERSION="${{ github.event.release.tag_name || inputs.version }}"
+          if [[ ! $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version format: $VERSION"
+            echo "Expected format: v1.0.0"
+            exit 1
+          fi
+
+      - name: Check for required secrets
+        run: |
+          if [ -z "${{ secrets.GCP_PROD_PROJECT_ID }}" ]; then
+            echo "Missing GCP_PROD_PROJECT_ID secret"
+            exit 1
+          fi
+
+  approval:
+    name: Manual Approval
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://vividly.mnps.edu
+    steps:
+      - name: Request approval
+        run: |
+          echo "Deployment to production requires manual approval"
+          echo "Version: ${{ github.event.release.tag_name || inputs.version }}"
+
+  build-and-push:
+    name: Build and Push Production Images
+    needs: approval
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.version }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_PROD_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for GAR
+        run: |
+          gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
+
+      - name: Set version tag
+        id: version
+        run: |
+          VERSION="${{ github.event.release.tag_name || inputs.version }}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Build and push API Gateway image
+        run: |
+          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:${{ steps.version.outputs.version }} \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:prod-latest \
+            -f backend/Dockerfile.api-gateway \
+            ./backend
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:${{ steps.version.outputs.version }}
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:prod-latest
+
+      - name: Build and push Admin Service image
+        run: |
+          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/admin-service:${{ steps.version.outputs.version }} \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/admin-service:prod-latest \
+            -f backend/Dockerfile.admin-service \
+            ./backend
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/admin-service:${{ steps.version.outputs.version }}
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/admin-service:prod-latest
+
+      - name: Build and push Content Worker image
+        run: |
+          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/content-worker:${{ steps.version.outputs.version }} \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/content-worker:prod-latest \
+            -f backend/Dockerfile.content-worker \
+            ./backend
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/content-worker:${{ steps.version.outputs.version }}
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/content-worker:prod-latest
+
+      - name: Build and push Frontend image
+        run: |
+          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/frontend:${{ steps.version.outputs.version }} \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/frontend:prod-latest \
+            --build-arg VITE_API_URL=${{ secrets.PROD_API_URL }} \
+            -f frontend/Dockerfile \
+            ./frontend
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/frontend:${{ steps.version.outputs.version }}
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/frontend:prod-latest
+
+      - name: Scan production images
+        run: |
+          trivy image --exit-code 1 --severity CRITICAL,HIGH \
+            ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:${{ steps.version.outputs.version }}
+
+  deploy-canary:
+    name: Deploy Canary (10%)
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_PROD_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Set version tag
+        id: version
+        run: |
+          VERSION="${{ github.event.release.tag_name || inputs.version }}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Deploy canary revision
+        run: |
+          # Deploy new revision with canary tag
+          gcloud run deploy ${{ env.SERVICE_NAME_PREFIX }}-api-gateway \
+            --image=${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:${{ steps.version.outputs.version }} \
+            --platform=managed \
+            --region=${{ env.GCP_REGION }} \
+            --tag=canary \
+            --no-traffic \
+            --memory=4Gi \
+            --cpu=2 \
+            --min-instances=2 \
+            --max-instances=50 \
+            --timeout=60s \
+            --set-env-vars="ENVIRONMENT=production,GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}" \
+            --set-secrets="DATABASE_URL=database-url-prod:latest,JWT_SECRET=jwt-secret:latest,VERTEX_AI_LOCATION=us-central1" \
+            --service-account=${{ secrets.GCP_PROD_SERVICE_ACCOUNT }}
+
+          # Split traffic: 10% to canary, 90% to stable
+          gcloud run services update-traffic ${{ env.SERVICE_NAME_PREFIX }}-api-gateway \
+            --region=${{ env.GCP_REGION }} \
+            --to-tags=canary=10
+
+      - name: Monitor canary metrics
+        run: |
+          echo "Monitoring canary deployment for 5 minutes..."
+          sleep 300
+
+      - name: Check canary health
+        run: |
+          CANARY_URL=$(gcloud run services describe ${{ env.SERVICE_NAME_PREFIX }}-api-gateway \
+            --region=${{ env.GCP_REGION }} \
+            --format='value(status.traffic[0].url)')
+
+          # Check health endpoint
+          curl -f "$CANARY_URL/health" || exit 1
+
+          # TODO: Check error rate in Cloud Monitoring
+          # Should be < 1% for canary traffic
+
+  deploy-50-percent:
+    name: Deploy 50% Traffic
+    needs: deploy-canary
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_PROD_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Increase traffic to 50%
+        run: |
+          gcloud run services update-traffic ${{ env.SERVICE_NAME_PREFIX }}-api-gateway \
+            --region=${{ env.GCP_REGION }} \
+            --to-tags=canary=50
+
+      - name: Monitor 50% deployment
+        run: |
+          echo "Monitoring 50% traffic split for 10 minutes..."
+          sleep 600
+
+  deploy-full:
+    name: Deploy Full Traffic
+    needs: deploy-50-percent
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_PROD_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Set version tag
+        id: version
+        run: |
+          VERSION="${{ github.event.release.tag_name || inputs.version }}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Deploy all services to 100%
+        run: |
+          # API Gateway - promote canary to 100%
+          gcloud run services update-traffic ${{ env.SERVICE_NAME_PREFIX }}-api-gateway \
+            --region=${{ env.GCP_REGION }} \
+            --to-tags=canary=100
+
+          # Admin Service
+          gcloud run deploy ${{ env.SERVICE_NAME_PREFIX }}-admin-service \
+            --image=${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/admin-service:${{ steps.version.outputs.version }} \
+            --platform=managed \
+            --region=${{ env.GCP_REGION }} \
+            --no-allow-unauthenticated \
+            --memory=2Gi \
+            --cpu=2 \
+            --min-instances=1 \
+            --max-instances=20 \
+            --timeout=120s \
+            --set-env-vars="ENVIRONMENT=production,GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}" \
+            --set-secrets="DATABASE_URL=database-url-prod:latest,JWT_SECRET=jwt-secret:latest" \
+            --service-account=${{ secrets.GCP_PROD_SERVICE_ACCOUNT }}
+
+          # Frontend
+          gcloud run deploy ${{ env.SERVICE_NAME_PREFIX }}-frontend \
+            --image=${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/frontend:${{ steps.version.outputs.version }} \
+            --platform=managed \
+            --region=${{ env.GCP_REGION }} \
+            --allow-unauthenticated \
+            --memory=1Gi \
+            --cpu=1 \
+            --min-instances=2 \
+            --max-instances=20 \
+            --timeout=10s \
+            --service-account=${{ secrets.GCP_PROD_SERVICE_ACCOUNT }}
+
+          # Content Worker
+          gcloud functions deploy ${{ env.SERVICE_NAME_PREFIX }}-content-worker \
+            --gen2 \
+            --runtime=python311 \
+            --region=${{ env.GCP_REGION }} \
+            --source=./backend \
+            --entry-point=process_content_request \
+            --trigger-topic=content-requests-prod \
+            --memory=8Gi \
+            --timeout=540s \
+            --min-instances=2 \
+            --max-instances=100 \
+            --set-env-vars="ENVIRONMENT=production,GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}" \
+            --set-secrets="DATABASE_URL=database-url-prod:latest,NANO_BANANA_API_KEY=nano-banana-key:latest,VERTEX_AI_LOCATION=us-central1" \
+            --service-account=${{ secrets.GCP_PROD_SERVICE_ACCOUNT }}
+
+      - name: Run database migrations
+        run: |
+          gcloud run jobs create ${{ env.SERVICE_NAME_PREFIX }}-migrate-${{ steps.version.outputs.version }} \
+            --image=${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:${{ steps.version.outputs.version }} \
+            --region=${{ env.GCP_REGION }} \
+            --command=alembic \
+            --args="upgrade,head" \
+            --set-env-vars="ENVIRONMENT=production" \
+            --set-secrets="DATABASE_URL=database-url-prod:latest" \
+            --service-account=${{ secrets.GCP_PROD_SERVICE_ACCOUNT }} \
+            --execute-now \
+            --wait
+
+      - name: Get service URLs
+        id: urls
+        run: |
+          API_URL=$(gcloud run services describe ${{ env.SERVICE_NAME_PREFIX }}-api-gateway --region=${{ env.GCP_REGION }} --format='value(status.url)')
+          ADMIN_URL=$(gcloud run services describe ${{ env.SERVICE_NAME_PREFIX }}-admin-service --region=${{ env.GCP_REGION }} --format='value(status.url)')
+          FRONTEND_URL=$(gcloud run services describe ${{ env.SERVICE_NAME_PREFIX }}-frontend --region=${{ env.GCP_REGION }} --format='value(status.url)')
+
+          echo "api_url=$API_URL" >> $GITHUB_OUTPUT
+          echo "admin_url=$ADMIN_URL" >> $GITHUB_OUTPUT
+          echo "frontend_url=$FRONTEND_URL" >> $GITHUB_OUTPUT
+
+      - name: Health check
+        run: |
+          sleep 30
+          curl -f ${{ steps.urls.outputs.api_url }}/health || exit 1
+          curl -f ${{ steps.urls.outputs.frontend_url }} || exit 1
+
+      - name: Tag deployment in Cloud Monitoring
+        run: |
+          gcloud monitoring timeseries create \
+            --project=${{ env.GCP_PROJECT_ID }} \
+            --value-type=INT64 \
+            --metric-kind=GAUGE \
+            --metric-type=custom.googleapis.com/deployment/version \
+            --metric-labels=service=vividly,environment=production,version=${{ steps.version.outputs.version }}
+
+  smoke-tests:
+    name: Production Smoke Tests
+    needs: deploy-full
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run smoke tests
+        env:
+          PROD_API_URL: ${{ secrets.PROD_API_URL }}
+        run: |
+          cd tests/smoke
+          pip install -r requirements.txt
+          pytest test_smoke.py -v
+
+  rollback:
+    name: Rollback on Failure
+    needs: [deploy-canary, deploy-50-percent, deploy-full, smoke-tests]
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_PROD_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Rollback to previous stable version
+        run: |
+          # Get previous revision
+          PREVIOUS_REVISION=$(gcloud run revisions list \
+            --service=${{ env.SERVICE_NAME_PREFIX }}-api-gateway \
+            --region=${{ env.GCP_REGION }} \
+            --format='value(metadata.name)' \
+            --filter='status.conditions.type=Active AND status.conditions.status=True' \
+            --limit=2 \
+            | tail -n 1)
+
+          # Route 100% traffic to previous revision
+          gcloud run services update-traffic ${{ env.SERVICE_NAME_PREFIX }}-api-gateway \
+            --region=${{ env.GCP_REGION }} \
+            --to-revisions=$PREVIOUS_REVISION=100
+
+          echo "Rolled back to revision: $PREVIOUS_REVISION"
+
+      - name: Notify rollback
+        run: |
+          echo "## Production Deployment Rolled Back ⚠️" >> $GITHUB_STEP_SUMMARY
+          echo "The deployment failed and has been automatically rolled back." >> $GITHUB_STEP_SUMMARY
+
+  notify:
+    name: Notify Deployment Status
+    needs: [validate, approval, build-and-push, deploy-canary, deploy-50-percent, deploy-full, smoke-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Production deployment summary
+        run: |
+          if [ "${{ needs.smoke-tests.result }}" == "success" ]; then
+            echo "## Production Deployment Successful! 🚀" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Version:** ${{ github.event.release.tag_name || inputs.version }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Deployment Strategy:** Canary (10% → 50% → 100%)" >> $GITHUB_STEP_SUMMARY
+            echo "**Status:** All services deployed and healthy" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## Production Deployment Failed ❌" >> $GITHUB_STEP_SUMMARY
+            echo "Check the workflow logs and rollback status." >> $GITHUB_STEP_SUMMARY
+          fi

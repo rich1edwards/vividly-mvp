@@ -1,0 +1,275 @@
+name: Deploy to Development
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_DEV_PROJECT_ID }}
+  GCP_REGION: us-central1
+  GAR_LOCATION: us-central1
+  SERVICE_NAME_PREFIX: vividly-dev
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run linters
+        run: |
+          cd backend
+          black --check .
+          flake8 .
+          mypy .
+
+      - name: Run unit tests
+        run: |
+          cd backend
+          pytest tests/unit/ -v --cov=app --cov-report=xml --cov-report=term
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./backend/coverage.xml
+          flags: backend-unit
+          name: backend-coverage
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run frontend linters
+        run: |
+          cd frontend
+          npm run lint
+          npm run type-check
+
+      - name: Run frontend tests
+        run: |
+          cd frontend
+          npm run test:unit
+
+  build-and-push:
+    name: Build and Push Docker Images
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for GAR
+        run: |
+          gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
+
+      - name: Build and push API Gateway image
+        run: |
+          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:${{ github.sha }} \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:dev-latest \
+            -f backend/Dockerfile.api-gateway \
+            ./backend
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:${{ github.sha }}
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:dev-latest
+
+      - name: Build and push Admin Service image
+        run: |
+          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/admin-service:${{ github.sha }} \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/admin-service:dev-latest \
+            -f backend/Dockerfile.admin-service \
+            ./backend
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/admin-service:${{ github.sha }}
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/admin-service:dev-latest
+
+      - name: Build and push Content Worker image
+        run: |
+          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/content-worker:${{ github.sha }} \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/content-worker:dev-latest \
+            -f backend/Dockerfile.content-worker \
+            ./backend
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/content-worker:${{ github.sha }}
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/content-worker:dev-latest
+
+      - name: Build and push Frontend image
+        run: |
+          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/frontend:${{ github.sha }} \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/frontend:dev-latest \
+            --build-arg VITE_API_URL=${{ secrets.DEV_API_URL }} \
+            -f frontend/Dockerfile \
+            ./frontend
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/frontend:${{ github.sha }}
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/frontend:dev-latest
+
+  deploy:
+    name: Deploy to Cloud Run
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy API Gateway
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME_PREFIX }}-api-gateway \
+            --image=${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:${{ github.sha }} \
+            --platform=managed \
+            --region=${{ env.GCP_REGION }} \
+            --allow-unauthenticated \
+            --memory=2Gi \
+            --cpu=2 \
+            --min-instances=1 \
+            --max-instances=10 \
+            --timeout=60s \
+            --set-env-vars="ENVIRONMENT=development,GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}" \
+            --set-secrets="DATABASE_URL=database-url-dev:latest,JWT_SECRET=jwt-secret:latest,VERTEX_AI_LOCATION=us-central1" \
+            --service-account=${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Deploy Admin Service
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME_PREFIX }}-admin-service \
+            --image=${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/admin-service:${{ github.sha }} \
+            --platform=managed \
+            --region=${{ env.GCP_REGION }} \
+            --no-allow-unauthenticated \
+            --memory=1Gi \
+            --cpu=1 \
+            --min-instances=0 \
+            --max-instances=5 \
+            --timeout=120s \
+            --set-env-vars="ENVIRONMENT=development,GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}" \
+            --set-secrets="DATABASE_URL=database-url-dev:latest,JWT_SECRET=jwt-secret:latest" \
+            --service-account=${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Deploy Frontend
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME_PREFIX }}-frontend \
+            --image=${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/frontend:${{ github.sha }} \
+            --platform=managed \
+            --region=${{ env.GCP_REGION }} \
+            --allow-unauthenticated \
+            --memory=512Mi \
+            --cpu=1 \
+            --min-instances=1 \
+            --max-instances=5 \
+            --timeout=10s \
+            --service-account=${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Deploy Content Worker (Cloud Function)
+        run: |
+          gcloud functions deploy ${{ env.SERVICE_NAME_PREFIX }}-content-worker \
+            --gen2 \
+            --runtime=python311 \
+            --region=${{ env.GCP_REGION }} \
+            --source=./backend \
+            --entry-point=process_content_request \
+            --trigger-topic=content-requests-dev \
+            --memory=4Gi \
+            --timeout=540s \
+            --min-instances=0 \
+            --max-instances=20 \
+            --set-env-vars="ENVIRONMENT=development,GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}" \
+            --set-secrets="DATABASE_URL=database-url-dev:latest,NANO_BANANA_API_KEY=nano-banana-key:latest,VERTEX_AI_LOCATION=us-central1" \
+            --service-account=${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Run database migrations
+        run: |
+          gcloud run jobs create ${{ env.SERVICE_NAME_PREFIX }}-migrate-${{ github.run_number }} \
+            --image=${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:${{ github.sha }} \
+            --region=${{ env.GCP_REGION }} \
+            --command=alembic \
+            --args="upgrade,head" \
+            --set-env-vars="ENVIRONMENT=development" \
+            --set-secrets="DATABASE_URL=database-url-dev:latest" \
+            --service-account=${{ secrets.GCP_SERVICE_ACCOUNT }} \
+            --execute-now \
+            --wait
+
+      - name: Get service URLs
+        id: urls
+        run: |
+          API_URL=$(gcloud run services describe ${{ env.SERVICE_NAME_PREFIX }}-api-gateway --region=${{ env.GCP_REGION }} --format='value(status.url)')
+          ADMIN_URL=$(gcloud run services describe ${{ env.SERVICE_NAME_PREFIX }}-admin-service --region=${{ env.GCP_REGION }} --format='value(status.url)')
+          FRONTEND_URL=$(gcloud run services describe ${{ env.SERVICE_NAME_PREFIX }}-frontend --region=${{ env.GCP_REGION }} --format='value(status.url)')
+
+          echo "api_url=$API_URL" >> $GITHUB_OUTPUT
+          echo "admin_url=$ADMIN_URL" >> $GITHUB_OUTPUT
+          echo "frontend_url=$FRONTEND_URL" >> $GITHUB_OUTPUT
+
+      - name: Health check
+        run: |
+          sleep 10
+          curl -f ${{ steps.urls.outputs.api_url }}/health || exit 1
+          curl -f ${{ steps.urls.outputs.frontend_url }} || exit 1
+
+      - name: Post deployment summary
+        run: |
+          echo "## Development Deployment Successful! 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Service URLs:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend:** ${{ steps.urls.outputs.frontend_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **API Gateway:** ${{ steps.urls.outputs.api_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Admin Service:** ${{ steps.urls.outputs.admin_url }}" >> $GITHUB_STEP_SUMMARY
+
+  notify:
+    name: Notify on Failure
+    needs: [test, build-and-push, deploy]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify failure
+        run: |
+          echo "Deployment to development failed!"
+          echo "Check the workflow logs for details."
+          # Add Slack/email notification here if needed

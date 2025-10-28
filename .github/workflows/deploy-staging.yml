@@ -1,0 +1,381 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_STAGING_PROJECT_ID }}
+  GCP_REGION: us-central1
+  GAR_LOCATION: us-central1
+  SERVICE_NAME_PREFIX: vividly-staging
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run linters
+        run: |
+          cd backend
+          black --check .
+          flake8 .
+          mypy .
+
+      - name: Run unit and integration tests
+        run: |
+          cd backend
+          pytest tests/ -v --cov=app --cov-report=xml --cov-report=term --cov-fail-under=80
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./backend/coverage.xml
+          flags: backend-full
+          name: backend-coverage
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run frontend linters
+        run: |
+          cd frontend
+          npm run lint
+          npm run type-check
+
+      - name: Run frontend tests
+        run: |
+          cd frontend
+          npm run test:unit
+          npm run test:integration
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Check for high/critical vulnerabilities
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+
+  build-and-push:
+    name: Build and Push Docker Images
+    needs: [test, security-scan]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_STAGING_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for GAR
+        run: |
+          gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
+
+      - name: Build and push API Gateway image
+        run: |
+          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:${{ github.sha }} \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:staging-latest \
+            -f backend/Dockerfile.api-gateway \
+            ./backend
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:${{ github.sha }}
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:staging-latest
+
+      - name: Build and push Admin Service image
+        run: |
+          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/admin-service:${{ github.sha }} \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/admin-service:staging-latest \
+            -f backend/Dockerfile.admin-service \
+            ./backend
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/admin-service:${{ github.sha }}
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/admin-service:staging-latest
+
+      - name: Build and push Content Worker image
+        run: |
+          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/content-worker:${{ github.sha }} \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/content-worker:staging-latest \
+            -f backend/Dockerfile.content-worker \
+            ./backend
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/content-worker:${{ github.sha }}
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/content-worker:staging-latest
+
+      - name: Build and push Frontend image
+        run: |
+          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/frontend:${{ github.sha }} \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/frontend:staging-latest \
+            --build-arg VITE_API_URL=${{ secrets.STAGING_API_URL }} \
+            -f frontend/Dockerfile \
+            ./frontend
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/frontend:${{ github.sha }}
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/frontend:staging-latest
+
+      - name: Scan images with Trivy
+        run: |
+          trivy image --exit-code 1 --severity CRITICAL \
+            ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:${{ github.sha }}
+
+  deploy:
+    name: Deploy to Cloud Run
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_STAGING_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy API Gateway
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME_PREFIX }}-api-gateway \
+            --image=${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:${{ github.sha }} \
+            --platform=managed \
+            --region=${{ env.GCP_REGION }} \
+            --allow-unauthenticated \
+            --memory=2Gi \
+            --cpu=2 \
+            --min-instances=1 \
+            --max-instances=20 \
+            --timeout=60s \
+            --set-env-vars="ENVIRONMENT=staging,GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}" \
+            --set-secrets="DATABASE_URL=database-url-staging:latest,JWT_SECRET=jwt-secret:latest,VERTEX_AI_LOCATION=us-central1" \
+            --service-account=${{ secrets.GCP_STAGING_SERVICE_ACCOUNT }}
+
+      - name: Deploy Admin Service
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME_PREFIX }}-admin-service \
+            --image=${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/admin-service:${{ github.sha }} \
+            --platform=managed \
+            --region=${{ env.GCP_REGION }} \
+            --no-allow-unauthenticated \
+            --memory=1Gi \
+            --cpu=1 \
+            --min-instances=1 \
+            --max-instances=10 \
+            --timeout=120s \
+            --set-env-vars="ENVIRONMENT=staging,GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}" \
+            --set-secrets="DATABASE_URL=database-url-staging:latest,JWT_SECRET=jwt-secret:latest" \
+            --service-account=${{ secrets.GCP_STAGING_SERVICE_ACCOUNT }}
+
+      - name: Deploy Frontend
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME_PREFIX }}-frontend \
+            --image=${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/frontend:${{ github.sha }} \
+            --platform=managed \
+            --region=${{ env.GCP_REGION }} \
+            --allow-unauthenticated \
+            --memory=512Mi \
+            --cpu=1 \
+            --min-instances=1 \
+            --max-instances=10 \
+            --timeout=10s \
+            --service-account=${{ secrets.GCP_STAGING_SERVICE_ACCOUNT }}
+
+      - name: Deploy Content Worker (Cloud Function)
+        run: |
+          gcloud functions deploy ${{ env.SERVICE_NAME_PREFIX }}-content-worker \
+            --gen2 \
+            --runtime=python311 \
+            --region=${{ env.GCP_REGION }} \
+            --source=./backend \
+            --entry-point=process_content_request \
+            --trigger-topic=content-requests-staging \
+            --memory=4Gi \
+            --timeout=540s \
+            --min-instances=1 \
+            --max-instances=50 \
+            --set-env-vars="ENVIRONMENT=staging,GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}" \
+            --set-secrets="DATABASE_URL=database-url-staging:latest,NANO_BANANA_API_KEY=nano-banana-key:latest,VERTEX_AI_LOCATION=us-central1" \
+            --service-account=${{ secrets.GCP_STAGING_SERVICE_ACCOUNT }}
+
+      - name: Run database migrations
+        run: |
+          gcloud run jobs create ${{ env.SERVICE_NAME_PREFIX }}-migrate-${{ github.run_number }} \
+            --image=${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/vividly/api-gateway:${{ github.sha }} \
+            --region=${{ env.GCP_REGION }} \
+            --command=alembic \
+            --args="upgrade,head" \
+            --set-env-vars="ENVIRONMENT=staging" \
+            --set-secrets="DATABASE_URL=database-url-staging:latest" \
+            --service-account=${{ secrets.GCP_STAGING_SERVICE_ACCOUNT }} \
+            --execute-now \
+            --wait
+
+      - name: Get service URLs
+        id: urls
+        run: |
+          API_URL=$(gcloud run services describe ${{ env.SERVICE_NAME_PREFIX }}-api-gateway --region=${{ env.GCP_REGION }} --format='value(status.url)')
+          ADMIN_URL=$(gcloud run services describe ${{ env.SERVICE_NAME_PREFIX }}-admin-service --region=${{ env.GCP_REGION }} --format='value(status.url)')
+          FRONTEND_URL=$(gcloud run services describe ${{ env.SERVICE_NAME_PREFIX }}-frontend --region=${{ env.GCP_REGION }} --format='value(status.url)')
+
+          echo "api_url=$API_URL" >> $GITHUB_OUTPUT
+          echo "admin_url=$ADMIN_URL" >> $GITHUB_OUTPUT
+          echo "frontend_url=$FRONTEND_URL" >> $GITHUB_OUTPUT
+
+      - name: Health check
+        run: |
+          sleep 15
+          curl -f ${{ steps.urls.outputs.api_url }}/health || exit 1
+          curl -f ${{ steps.urls.outputs.frontend_url }} || exit 1
+
+  e2e-tests:
+    name: End-to-End Tests
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+          npx playwright install --with-deps
+
+      - name: Run E2E tests
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: ${{ secrets.STAGING_FRONTEND_URL }}
+        run: |
+          cd frontend
+          npm run test:e2e
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 30
+
+  performance-tests:
+    name: Performance Tests
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Locust
+        run: pip install locust
+
+      - name: Run load tests
+        env:
+          TARGET_URL: ${{ secrets.STAGING_API_URL }}
+        run: |
+          cd tests/performance
+          locust -f locustfile.py \
+            --host=$TARGET_URL \
+            --users=50 \
+            --spawn-rate=10 \
+            --run-time=5m \
+            --headless \
+            --html=report.html
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: tests/performance/report.html
+
+  notify:
+    name: Notify Deployment Status
+    needs: [test, security-scan, build-and-push, deploy, e2e-tests, performance-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check deployment status
+        run: |
+          if [ "${{ needs.deploy.result }}" == "success" ]; then
+            echo "## Staging Deployment Successful! 🎉" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+            echo "**E2E Tests:** ${{ needs.e2e-tests.result }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Performance Tests:** ${{ needs.performance-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## Staging Deployment Failed ❌" >> $GITHUB_STEP_SUMMARY
+            echo "Check the workflow logs for details." >> $GITHUB_STEP_SUMMARY
+          fi
