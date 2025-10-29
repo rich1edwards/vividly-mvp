@@ -5,7 +5,7 @@ Combines all endpoint routers for the v1 API.
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, students, teachers, classes, admin, topics, content, cache
+from app.api.v1.endpoints import auth, students, teachers, classes, admin, topics, content, cache, notifications
 
 
 api_router = APIRouter()
@@ -22,3 +22,7 @@ api_router.include_router(content.router, prefix="/content", tags=["Content Meta
 
 # Internal API endpoints (Sprint 3)
 api_router.include_router(cache.router, prefix="/internal/v1", tags=["Cache (Internal)"])
+api_router.include_router(notifications.router, prefix="/internal/v1/notifications", tags=["Notifications (Internal)"])
+
+# User-facing notification endpoints
+api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
