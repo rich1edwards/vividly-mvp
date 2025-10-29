@@ -312,12 +312,21 @@ def bulk_upload_users(
 
             # Check for duplicate email
             if email in existing_emails_set:
+                error_msg = "Email already exists"
                 results["failed_rows"].append({
                     "row_number": idx,
                     "email": email,
-                    "error": "Email already exists",
+                    "error": error_msg,
                     "error_code": "DUPLICATE_EMAIL",
                 })
+
+                # If atomic mode, rollback and fail immediately
+                if transaction_mode == "atomic":
+                    db.rollback()
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Upload failed at row {idx}: {error_msg}",
+                    )
                 continue
 
             # Validate email format

@@ -142,7 +142,7 @@ async def get_topic_details(
     }
 
 
-@router.get("/topics/{topic_id}/prerequisites", response_model=dict)
+@router.get("/topics/{topic_id}/prerequisites", response_model=list)
 async def get_topic_prerequisites(
     topic_id: str,
     current_user: User = Depends(get_current_user),

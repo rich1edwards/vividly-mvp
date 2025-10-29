@@ -41,19 +41,22 @@ def check_content_exists(db: Session, topic_id: str, interest: str) -> Dict:
     Args:
         db: Database session
         topic_id: Topic ID
-        interest: Interest name
+        interest: Interest name (e.g., "basketball")
 
     Returns:
         Dict with cache hit status and content info
     """
+    # Convert interest name to interest_id format (e.g., "basketball" -> "int_basketball")
+    interest_id = f"int_{interest}"
+
     # Look for completed content
     content = (
         db.query(ContentMetadata)
         .filter(
             and_(
                 ContentMetadata.topic_id == topic_id,
-                ContentMetadata.interest == interest,
-                ContentMetadata.status == GenerationStatus.COMPLETED,
+                ContentMetadata.interest_id == interest_id,
+                ContentMetadata.status == GenerationStatus.COMPLETED.value,
             )
         )
         .first()
@@ -63,8 +66,9 @@ def check_content_exists(db: Session, topic_id: str, interest: str) -> Dict:
         return {
             "cache_hit": True,
             "cache_key": content.content_id,  # Use content_id as cache_key
-            "status": content.status,
-            "video_url": content.video_url,
+            "status": content.status,  # Expose status at top level
+            "video_url": content.video_url,  # Expose video_url at top level
+            "message": "Content found in cache",
             "metadata": {
                 "title": content.title,
                 "duration_seconds": content.duration_seconds,
@@ -79,10 +83,10 @@ def check_content_exists(db: Session, topic_id: str, interest: str) -> Dict:
             .filter(
                 and_(
                     ContentMetadata.topic_id == topic_id,
-                    ContentMetadata.interest == interest,
+                    ContentMetadata.interest_id == interest_id,
                     ContentMetadata.status.in_([
-                        GenerationStatus.PENDING,
-                        GenerationStatus.GENERATING,
+                        GenerationStatus.PENDING.value,
+                        GenerationStatus.GENERATING.value,
                     ]),
                 )
             )
@@ -94,12 +98,15 @@ def check_content_exists(db: Session, topic_id: str, interest: str) -> Dict:
                 "cache_hit": False,
                 "cache_key": in_progress.content_id,
                 "status": in_progress.status,
+                "video_url": None,
                 "message": "Content is currently being generated",
             }
         else:
             return {
                 "cache_hit": False,
                 "cache_key": None,
+                "status": None,
+                "video_url": None,
                 "message": "Content needs to be generated",
             }
 
@@ -132,7 +139,9 @@ def get_recent_content(
     if topic_id:
         query = query.filter(ContentMetadata.topic_id == topic_id)
     if interest:
-        query = query.filter(ContentMetadata.interest == interest)
+        # Convert interest name to interest_id format
+        interest_id = f"int_{interest}"
+        query = query.filter(ContentMetadata.interest_id == interest_id)
     if student_id:
         # TODO: Filter by content created for this student
         pass
@@ -222,4 +231,36 @@ def get_content_feedback_summary(db: Session, cache_key: str) -> Dict:
             "1": 0,
         },
         "feedback_types": {},
+    }
+
+
+def get_student_content_history(
+    db: Session,
+    student_id: str,
+    limit: int = 20,
+) -> Dict:
+    """
+    Get student's content viewing history.
+
+    Args:
+        db: Database session
+        student_id: Student ID
+        limit: Results limit
+
+    Returns:
+        Dict with content list
+    """
+    content_list = (
+        db.query(ContentMetadata)
+        .filter(ContentMetadata.student_id == student_id)
+        .order_by(desc(ContentMetadata.created_at))  # Use created_at column, not generated_at property
+        .limit(limit)
+        .all()
+    )
+
+    return {
+        "content": content_list,
+        "pagination": {
+            "has_more": len(content_list) == limit,
+        },
     }

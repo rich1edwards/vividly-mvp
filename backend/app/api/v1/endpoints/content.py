@@ -184,7 +184,7 @@ async def get_recent_content(
     }
 
 
-@router.post("/{cache_key}/feedback", response_model=ContentFeedbackResponse)
+@router.post("/{cache_key}/feedback", response_model=ContentFeedbackResponse, status_code=status.HTTP_201_CREATED)
 async def submit_content_feedback(
     cache_key: str,
     feedback_data: ContentFeedbackSubmit,
@@ -606,3 +606,76 @@ async def get_content_analytics(
         )
 
     return ContentAnalytics(**analytics)
+
+
+@router.get(
+    "/student/{student_id}/history",
+    response_model=dict,
+    summary="Get student content history",
+    description="""
+    Get student's content viewing history.
+
+    Returns list of content the student has viewed or generated.
+    Students can only access their own history.
+    """,
+    status_code=status.HTTP_200_OK
+)
+async def get_student_history(
+    student_id: str,
+    limit: int = 20,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get student content history.
+
+    Args:
+        student_id: Student ID
+        limit: Results limit (max 50)
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        Dict with content list
+    """
+    # Students can only access their own history
+    if current_user.role == "student" and current_user.user_id != student_id:
+        # Return empty result instead of forbidden
+        return {
+            "content": [],
+            "pagination": {"has_more": False},
+        }
+
+    if limit > 50:
+        limit = 50
+
+    result = content_service.get_student_content_history(
+        db=db,
+        student_id=student_id,
+        limit=limit
+    )
+
+    # Format content list
+    formatted_content = []
+    for content in result["content"]:
+        # Extract interest name from interest_id (remove "int_" prefix)
+        interest_name = content.interest_id.replace("int_", "") if content.interest_id else None
+
+        formatted_content.append({
+            "content_id": content.content_id,
+            "topic_id": content.topic_id,
+            "topic_name": content.topic_id,  # Use topic_id as fallback for topic_name
+            "interest": interest_name,
+            "title": content.title,
+            "status": content.status,
+            "video_url": content.video_url,
+            "thumbnail_url": content.thumbnail_url,
+            "duration_seconds": content.duration_seconds,
+            "generated_at": content.created_at,  # Use created_at column, not generated_at property
+            "views": content.view_count or 0,  # Use view_count column, not views property
+        })
+
+    return {
+        "content": formatted_content,
+        "pagination": result["pagination"],
+    }
