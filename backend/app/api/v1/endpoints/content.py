@@ -26,8 +26,16 @@ from app.schemas.content_delivery import (
     BatchURLResponse,
     ContentAccessStats,
 )
+from app.schemas.content_tracking import (
+    ViewTrackingRequest,
+    ProgressTrackingRequest,
+    CompletionTrackingRequest,
+    CompletionResponse,
+    ContentAnalytics,
+)
 from app.services import content_service
 from app.services.content_delivery_service import ContentDeliveryService
+from app.services.content_tracking_service import ContentTrackingService
 from app.utils.dependencies import get_current_user
 from app.models.user import User
 
@@ -404,3 +412,197 @@ async def get_delivery_stats(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve delivery statistics"
         )
+
+
+# ============================================================================
+# Story 3.2.2: Content Access Tracking
+# ============================================================================
+
+def get_tracking_service() -> ContentTrackingService:
+    """Dependency to get content tracking service instance."""
+    return ContentTrackingService()
+
+
+@router.post(
+    "/{cache_key}/view",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Track content view event",
+    description="""
+    Track when a student starts watching content.
+
+    Called by frontend when video playback begins.
+    Logs view event for analytics and increments view count.
+    """
+)
+async def track_view(
+    cache_key: str,
+    request: ViewTrackingRequest,
+    current_user: User = Depends(get_current_user),
+    tracking_service: ContentTrackingService = Depends(get_tracking_service),
+    db: Session = Depends(get_db)
+):
+    """
+    Track content view event.
+
+    Args:
+        cache_key: Content cache key
+        request: View tracking request with quality, device, browser
+        current_user: Authenticated user
+        tracking_service: Tracking service
+        db: Database session
+
+    Returns:
+        204 No Content on success
+    """
+    success = tracking_service.track_view(
+        db=db,
+        cache_key=cache_key,
+        student_id=current_user.user_id,
+        quality=request.quality,
+        device_type=request.device_type,
+        browser=request.browser
+    )
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Content not found"
+        )
+
+    return None
+
+
+@router.post(
+    "/{cache_key}/progress",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Track playback progress",
+    description="""
+    Track student's playback progress.
+
+    Called periodically by frontend (e.g., every 10 seconds) during playback.
+    Updates student progress record with current position.
+    """
+)
+async def track_progress(
+    cache_key: str,
+    request: ProgressTrackingRequest,
+    current_user: User = Depends(get_current_user),
+    tracking_service: ContentTrackingService = Depends(get_tracking_service),
+    db: Session = Depends(get_db)
+):
+    """
+    Track playback progress.
+
+    Args:
+        cache_key: Content cache key
+        request: Progress tracking request
+        current_user: Authenticated user
+        tracking_service: Tracking service
+        db: Database session
+
+    Returns:
+        204 No Content on success
+    """
+    success = tracking_service.track_progress(
+        db=db,
+        cache_key=cache_key,
+        student_id=current_user.user_id,
+        current_time_seconds=request.current_time_seconds,
+        duration_seconds=request.duration_seconds,
+        playback_speed=request.playback_speed,
+        paused=request.paused
+    )
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Content not found"
+        )
+
+    return None
+
+
+@router.post(
+    "/{cache_key}/complete",
+    response_model=CompletionResponse,
+    summary="Mark content as completed",
+    description="""
+    Mark content as completed by student.
+
+    Called by frontend when student finishes watching content (>=80% completion).
+    Updates progress to COMPLETED status and checks for achievements.
+    """
+)
+async def track_completion(
+    cache_key: str,
+    request: CompletionTrackingRequest,
+    current_user: User = Depends(get_current_user),
+    tracking_service: ContentTrackingService = Depends(get_tracking_service),
+    db: Session = Depends(get_db)
+):
+    """
+    Mark content as completed.
+
+    Args:
+        cache_key: Content cache key
+        request: Completion tracking request
+        current_user: Authenticated user
+        tracking_service: Tracking service
+        db: Database session
+
+    Returns:
+        CompletionResponse with achievement and streak info
+    """
+    result = tracking_service.track_completion(
+        db=db,
+        cache_key=cache_key,
+        student_id=current_user.user_id,
+        watch_duration_seconds=request.watch_duration_seconds,
+        completion_percentage=request.completion_percentage,
+        skipped_segments=request.skipped_segments
+    )
+
+    return CompletionResponse(**result)
+
+
+@router.get(
+    "/{cache_key}/analytics",
+    response_model=ContentAnalytics,
+    summary="Get content analytics",
+    description="""
+    Get analytics data for content.
+
+    Returns view counts, completion rates, and engagement metrics.
+    Useful for teachers and admins to understand content performance.
+    """
+)
+async def get_content_analytics(
+    cache_key: str,
+    current_user: User = Depends(get_current_user),
+    tracking_service: ContentTrackingService = Depends(get_tracking_service),
+    db: Session = Depends(get_db)
+):
+    """
+    Get content analytics.
+
+    Args:
+        cache_key: Content cache key
+        current_user: Authenticated user
+        tracking_service: Tracking service
+        db: Database session
+
+    Returns:
+        ContentAnalytics with view and engagement metrics
+    """
+    analytics = tracking_service.get_content_analytics(
+        db=db,
+        cache_key=cache_key
+    )
+
+    if not analytics:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Content not found"
+        )
+
+    return ContentAnalytics(**analytics)
