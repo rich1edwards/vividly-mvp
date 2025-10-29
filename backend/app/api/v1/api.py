@@ -11,6 +11,7 @@ from app.api.v1.endpoints import auth, students, teachers
 api_router = APIRouter()
 
 # Include all endpoint routers
-api_router.include_router(auth.router)
-api_router.include_router(students.router)
-api_router.include_router(teachers.router)
+# Note: Students and Teachers routers have prefixes defined in their own files
+api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+api_router.include_router(students.router, tags=["Students"])
+api_router.include_router(teachers.router, tags=["Teachers"])

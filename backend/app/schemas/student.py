@@ -4,7 +4,7 @@ Student service schemas.
 Pydantic models for student service layer.
 """
 from typing import Optional, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 
 
@@ -46,6 +46,14 @@ class InterestBase(BaseModel):
 class StudentInterestsUpdate(BaseModel):
     """Update student interests (1-5 interests)."""
     interest_ids: List[str] = Field(..., min_length=1, max_length=5)
+
+    @field_validator('interest_ids', mode='after')
+    @classmethod
+    def validate_unique_interests(cls, v: List[str]) -> List[str]:
+        """Ensure interest IDs are unique."""
+        if len(v) != len(set(v)):
+            raise ValueError('Interest IDs must be unique')
+        return v
 
 
 class TopicProgress(BaseModel):

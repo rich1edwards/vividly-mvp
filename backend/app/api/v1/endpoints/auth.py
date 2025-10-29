@@ -23,7 +23,7 @@ from app.models.user import User
 router = APIRouter()
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 def register(
     user_data: UserRegister,
     db: Session = Depends(get_db),
@@ -35,9 +35,12 @@ def register(
     - **password**: Minimum 8 characters
     - **role**: student or teacher
     - **grade_level**: Required for students (9-12)
+
+    Returns access and refresh tokens (auto-login).
     """
     user = auth_service.register_user(db, user_data)
-    return user
+    tokens = auth_service.create_user_tokens(db, user)
+    return tokens
 
 
 @router.post("/login", response_model=Token)
@@ -70,7 +73,7 @@ def refresh_token(
     )
 
 
-@router.post("/logout")
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Session = Depends(get_db),
@@ -79,10 +82,10 @@ def logout(
     Logout user by revoking current session.
     """
     auth_service.revoke_user_sessions(db, current_user.user_id)
-    return {"message": "Logged out successfully"}
+    return None
 
 
-@router.post("/logout-all")
+@router.post("/logout-all", status_code=status.HTTP_204_NO_CONTENT)
 def logout_all(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Session = Depends(get_db),
@@ -91,7 +94,7 @@ def logout_all(
     Logout from all devices by revoking all sessions.
     """
     auth_service.revoke_user_sessions(db, current_user.user_id, all_sessions=True)
-    return {"message": "Logged out from all devices"}
+    return None
 
 
 @router.get("/me", response_model=UserResponse)

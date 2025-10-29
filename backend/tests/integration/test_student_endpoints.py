@@ -28,23 +28,10 @@ class TestGetStudentProfile:
 
     def test_student_cannot_access_other_profile(self, client, sample_student, sample_teacher, student_headers):
         """Test student cannot access another student's profile."""
-        # Create another student
-        from app.models.user import User, UserRole, UserStatus
-        from app.utils.security import get_password_hash
-        other_student = User(
-            user_id="user_other_student",
-            email="other@test.com",
-            password_hash=get_password_hash("Password123"),
-            first_name="Other",
-            last_name="Student",
-            role=UserRole.STUDENT,
-            status=UserStatus.ACTIVE,
-        )
-        client.application.dependency_overrides[lambda: None]  # Get db from override
-        # We'll just test the authorization check
-
+        # Try to access another student's profile (use teacher's ID as "other student")
+        # The authorization check should prevent access before even checking if user exists
         response = client.get(
-            "/api/v1/students/user_other_student",
+            f"/api/v1/students/{sample_teacher.user_id}",
             headers=student_headers
         )
 
