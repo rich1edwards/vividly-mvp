@@ -2,10 +2,12 @@
 Content Metadata API endpoints.
 
 Endpoints for checking content availability, retrieving metadata, and submitting feedback.
+Sprint 3.2.1: Added signed URL generation for secure content delivery.
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Optional
+import logging
 
 from app.core.database import get_db
 from app.schemas.content import (
@@ -17,9 +19,19 @@ from app.schemas.content import (
     ContentFeedbackResponse,
     ContentFeedbackSummary,
 )
+from app.schemas.content_delivery import (
+    SignedURLRequest,
+    SignedURLResponse,
+    BatchURLRequest,
+    BatchURLResponse,
+    ContentAccessStats,
+)
 from app.services import content_service
+from app.services.content_delivery_service import ContentDeliveryService
 from app.utils.dependencies import get_current_user
 from app.models.user import User
+
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter()
@@ -218,3 +230,177 @@ async def get_content_feedback_summary(
     result = content_service.get_content_feedback_summary(db=db, cache_key=cache_key)
 
     return result
+
+
+# ============================================================================
+# Story 3.2.1: Signed URL Generation for Content Delivery
+# ============================================================================
+
+def get_content_delivery_service() -> ContentDeliveryService:
+    """
+    Dependency to get content delivery service instance.
+
+    For production: Inject GCS client
+    For testing: Can inject mocks
+    """
+    # TODO: In production, initialize with actual GCS client
+    # from google.cloud import storage
+    # gcs_client = storage.Client()
+    return ContentDeliveryService(gcs_client=None)
+
+
+@router.get(
+    "/{cache_key}/url",
+    response_model=SignedURLResponse,
+    summary="Generate signed URL for content asset",
+    description="""
+    Generate time-limited signed URL for secure content delivery.
+
+    **Security:**
+    - URLs expire after 15 minutes (default)
+    - Signed with GCS credentials
+    - Cannot be tampered with
+
+    **Supported Asset Types:**
+    - video: MP4 video file (with quality selection)
+    - audio: MP3 audio file
+    - script: JSON script file
+    - thumbnail: JPG thumbnail image
+
+    **Quality Levels (video only):**
+    - 1080p: Full HD (default)
+    - 720p: HD
+    - 480p: SD
+    """,
+    status_code=status.HTTP_200_OK
+)
+async def get_content_url(
+    cache_key: str,
+    asset_type: str = "video",
+    quality: str = "1080p",
+    current_user: User = Depends(get_current_user),
+    delivery_service: ContentDeliveryService = Depends(get_content_delivery_service)
+):
+    """
+    Generate signed URL for content asset.
+
+    Args:
+        cache_key: Content cache key
+        asset_type: Asset type (video, audio, script, thumbnail)
+        quality: Quality level for video (1080p, 720p, 480p)
+        current_user: Authenticated user
+        delivery_service: Content delivery service
+
+    Returns:
+        SignedURLResponse with URL and metadata
+    """
+    try:
+        result = await delivery_service.generate_signed_url(
+            cache_key=cache_key,
+            asset_type=asset_type,
+            quality=quality
+        )
+
+        return SignedURLResponse(**result)
+
+    except ValueError as e:
+        logger.error(f"Invalid request: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except FileNotFoundError as e:
+        logger.error(f"Content not found: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Content asset not found"
+        )
+    except Exception as e:
+        logger.error(f"Failed to generate signed URL: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate signed URL"
+        )
+
+
+@router.post(
+    "/urls/batch",
+    response_model=BatchURLResponse,
+    summary="Generate multiple signed URLs in batch",
+    description="""
+    Generate multiple signed URLs in a single request.
+
+    Useful for fetching all assets (video, audio, script, thumbnail) for a content piece at once.
+
+    **Limits:**
+    - Maximum 10 URLs per batch
+    - All URLs expire after 15 minutes
+    """,
+    status_code=status.HTTP_200_OK
+)
+async def get_batch_urls(
+    request: BatchURLRequest,
+    current_user: User = Depends(get_current_user),
+    delivery_service: ContentDeliveryService = Depends(get_content_delivery_service)
+):
+    """
+    Generate multiple signed URLs in batch.
+
+    Args:
+        request: Batch URL request with list of requests
+        current_user: Authenticated user
+        delivery_service: Content delivery service
+
+    Returns:
+        BatchURLResponse with list of signed URLs
+    """
+    try:
+        result = await delivery_service.generate_batch_urls(
+            requests=[req.model_dump() for req in request.requests]
+        )
+
+        return BatchURLResponse(**result)
+
+    except Exception as e:
+        logger.error(f"Failed to generate batch URLs: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate batch URLs"
+        )
+
+
+@router.get(
+    "/delivery/stats",
+    response_model=ContentAccessStats,
+    summary="Get content delivery statistics",
+    description="""
+    Get statistics about content URL generation and access patterns.
+
+    Useful for monitoring and analytics.
+    """,
+    status_code=status.HTTP_200_OK
+)
+async def get_delivery_stats(
+    current_user: User = Depends(get_current_user),
+    delivery_service: ContentDeliveryService = Depends(get_content_delivery_service)
+):
+    """
+    Get content delivery statistics.
+
+    Args:
+        current_user: Authenticated user
+        delivery_service: Content delivery service
+
+    Returns:
+        ContentAccessStats with statistics
+    """
+    try:
+        stats = delivery_service.get_access_stats()
+        return ContentAccessStats(**stats)
+
+    except Exception as e:
+        logger.error(f"Failed to get delivery stats: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve delivery statistics"
+        )

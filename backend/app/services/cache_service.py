@@ -1,16 +1,26 @@
 """
-Redis Caching Service
+Cache Service for Content Metadata
 
-Provides caching functionality for API responses, session data,
-and rate limiting using Redis.
+Provides two-tier caching (Redis hot cache + GCS cold cache) for content metadata,
+along with API response caching, session data, and rate limiting using Redis.
+
+Sprint 3.1.1: Cache Key Generation & Lookup
+- SHA256-based deterministic cache keys
+- Redis hot cache (TTL 1 hour, <100ms p95)
+- GCS cold cache fallback (permanent storage)
+- Cache statistics tracking
 """
 
 import os
 import json
-from typing import Optional, Any
-from datetime import timedelta
+import hashlib
+import logging
+from typing import Optional, Any, Dict, Tuple
+from datetime import timedelta, datetime
 import redis
 from functools import wraps
+
+logger = logging.getLogger(__name__)
 
 
 class CacheService:
@@ -24,15 +34,397 @@ class CacheService:
     - Session storage
     """
 
-    def __init__(self, redis_url: Optional[str] = None):
+    def __init__(self, redis_url: Optional[str] = None, gcs_client=None):
         """
         Initialize cache service.
 
         Args:
             redis_url: Redis connection URL (default: from environment)
+            gcs_client: Google Cloud Storage client for cold cache (optional)
         """
         self.redis_url = redis_url or os.getenv('REDIS_URL', 'redis://localhost:6379/0')
         self.client = redis.from_url(self.redis_url, decode_responses=True)
+        self.gcs = gcs_client
+
+        # Cache statistics (Story 3.1.1 requirement)
+        self.stats = {
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "redis_hits": 0,
+            "gcs_hits": 0,
+        }
+
+    # ========================================================================
+    # Story 3.1.1: Cache Key Generation & Two-Tier Lookup
+    # ========================================================================
+
+    def generate_cache_key(
+        self,
+        topic_id: str,
+        interest: str,
+        style: str = "standard"
+    ) -> str:
+        """
+        Generate deterministic cache key from content parameters.
+
+        Uses SHA256 hash of: topic_id|interest|style
+        This ensures the same inputs always produce the same cache key.
+
+        Args:
+            topic_id: Canonical topic ID (e.g., "topic_phys_mech_newton_3")
+            interest: Student interest (e.g., "basketball")
+            style: Content style (default: "standard")
+
+        Returns:
+            Cache key as hex string (64 characters)
+
+        Example:
+            >>> cache.generate_cache_key("topic_newton_1", "basketball", "standard")
+            "a7f3e2b1c9d8f6e4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0"
+        """
+        # Normalize inputs (lowercase, strip whitespace)
+        topic_id = topic_id.strip().lower()
+        interest = interest.strip().lower()
+        style = style.strip().lower()
+
+        # Build cache key string with pipe delimiter
+        cache_input = f"{topic_id}|{interest}|{style}"
+
+        # Generate SHA256 hash (deterministic)
+        cache_key = hashlib.sha256(cache_input.encode('utf-8')).hexdigest()
+
+        logger.debug(f"Generated cache key: {cache_key} for {cache_input}")
+
+        return cache_key
+
+    async def check_content_cache(
+        self,
+        topic_id: str,
+        interest: str,
+        style: str = "standard"
+    ) -> Tuple[bool, Optional[Dict]]:
+        """
+        Check if content exists in cache (Redis hot cache → GCS cold cache).
+
+        Two-tier cache strategy:
+        1. Check Redis hot cache (fast, <100ms p95)
+        2. If miss, check GCS cold cache (slower, permanent storage)
+        3. If GCS hit, warm up Redis for next time
+
+        Args:
+            topic_id: Canonical topic ID
+            interest: Student interest
+            style: Content style (default: "standard")
+
+        Returns:
+            Tuple of (cache_hit: bool, metadata: dict | None)
+                cache_hit: True if found in either Redis or GCS
+                metadata: Content metadata dict if found, None otherwise
+
+        Example:
+            >>> hit, metadata = await cache.check_content_cache("topic_newton_1", "basketball")
+            >>> if hit:
+            ...     print(f"Video URL: {metadata['video_url']}")
+        """
+        # Generate cache key
+        cache_key = self.generate_cache_key(topic_id, interest, style)
+
+        # 1. Check Redis hot cache (fast path <100ms)
+        try:
+            redis_data = await self._check_redis_content(cache_key)
+            if redis_data:
+                self.stats["cache_hits"] += 1
+                self.stats["redis_hits"] += 1
+                logger.info(f"Cache HIT (Redis): {cache_key}")
+                return True, redis_data
+        except Exception as e:
+            logger.error(f"Redis check failed: {e}")
+            # Fall through to GCS check
+
+        # 2. Check GCS cold cache (slow path, but permanent)
+        if self.gcs:
+            try:
+                gcs_data = await self._check_gcs_content(cache_key)
+                if gcs_data:
+                    # Warm up Redis cache for next time
+                    await self._store_redis_content(cache_key, gcs_data)
+
+                    self.stats["cache_hits"] += 1
+                    self.stats["gcs_hits"] += 1
+                    logger.info(f"Cache HIT (GCS): {cache_key}")
+                    return True, gcs_data
+            except Exception as e:
+                logger.error(f"GCS check failed: {e}")
+
+        # 3. Cache miss
+        self.stats["cache_misses"] += 1
+        logger.info(f"Cache MISS: {cache_key}")
+        return False, None
+
+    async def _check_redis_content(self, cache_key: str) -> Optional[Dict]:
+        """
+        Check Redis for cached content metadata.
+
+        Args:
+            cache_key: Cache key to lookup
+
+        Returns:
+            Metadata dict if found, None otherwise
+        """
+        try:
+            # Get from Redis with namespace prefix
+            data = self.client.get(f"content:metadata:{cache_key}")
+
+            if data:
+                # Parse JSON
+                metadata = json.loads(data)
+                return metadata
+
+            return None
+
+        except Exception as e:
+            logger.error(f"Redis get failed for {cache_key}: {e}")
+            return None
+
+    async def _check_gcs_content(self, cache_key: str) -> Optional[Dict]:
+        """
+        Check GCS for cached content metadata.
+
+        Args:
+            cache_key: Cache key to lookup
+
+        Returns:
+            Metadata dict if found, None otherwise
+        """
+        if not self.gcs:
+            return None
+
+        try:
+            bucket_name = os.getenv("GCS_CACHE_BUCKET", "vividly-content-cache-dev")
+            blob_path = f"metadata/{cache_key}.json"
+
+            # Get bucket
+            bucket = self.gcs.bucket(bucket_name)
+            blob = bucket.blob(blob_path)
+
+            # Check if exists
+            if not blob.exists():
+                return None
+
+            # Download and parse JSON
+            data = blob.download_as_text()
+            metadata = json.loads(data)
+
+            return metadata
+
+        except Exception as e:
+            logger.error(f"GCS get failed for {cache_key}: {e}")
+            return None
+
+    async def _store_redis_content(self, cache_key: str, metadata: Dict) -> bool:
+        """
+        Store metadata in Redis with 1-hour TTL.
+
+        Args:
+            cache_key: Cache key
+            metadata: Content metadata dict
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Serialize to JSON
+            data = json.dumps(metadata)
+
+            # Store in Redis with 1 hour TTL (Story 3.1.1 requirement)
+            self.client.setex(
+                f"content:metadata:{cache_key}",
+                timedelta(hours=1),
+                data
+            )
+
+            logger.debug(f"Stored in Redis: {cache_key} (TTL: 1 hour)")
+            return True
+
+        except Exception as e:
+            logger.error(f"Redis store failed for {cache_key}: {e}")
+            return False
+
+    async def store_content_cache(
+        self,
+        cache_key: str,
+        metadata: Dict
+    ) -> bool:
+        """
+        Store content metadata in both Redis and GCS.
+
+        Args:
+            cache_key: Cache key
+            metadata: Content metadata including:
+                - video_url: CDN URL for video
+                - audio_url: CDN URL for audio
+                - script_url: GCS URL for script JSON
+                - thumbnail_url: CDN URL for thumbnail
+                - duration_seconds: Video duration
+                - topic_id: Topic ID
+                - interest_id: Interest ID
+                - generated_at: ISO timestamp
+
+        Returns:
+            True if successful, False otherwise
+        """
+        # Add timestamp if not present
+        if "cached_at" not in metadata:
+            metadata["cached_at"] = datetime.utcnow().isoformat()
+
+        # Store in both caches
+        redis_success = await self._store_redis_content(cache_key, metadata)
+        gcs_success = await self._store_gcs_content(cache_key, metadata)
+
+        if redis_success and gcs_success:
+            logger.info(f"Cached content: {cache_key}")
+            return True
+        elif gcs_success:
+            logger.warning(f"Cached to GCS only (Redis failed): {cache_key}")
+            return True
+        else:
+            logger.error(f"Cache storage failed: {cache_key}")
+            return False
+
+    async def _store_gcs_content(self, cache_key: str, metadata: Dict) -> bool:
+        """
+        Store metadata in GCS (permanent cold cache).
+
+        Args:
+            cache_key: Cache key
+            metadata: Content metadata dict
+
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self.gcs:
+            logger.warning("GCS client not configured, skipping cold cache storage")
+            return False
+
+        try:
+            bucket_name = os.getenv("GCS_CACHE_BUCKET", "vividly-content-cache-dev")
+            blob_path = f"metadata/{cache_key}.json"
+
+            # Get bucket
+            bucket = self.gcs.bucket(bucket_name)
+            blob = bucket.blob(blob_path)
+
+            # Set metadata
+            blob.metadata = {
+                "content-type": "application/json",
+                "cache-control": "public, max-age=3600"
+            }
+
+            # Upload JSON
+            data = json.dumps(metadata, indent=2)
+            blob.upload_from_string(
+                data,
+                content_type="application/json"
+            )
+
+            logger.debug(f"Stored in GCS: {cache_key}")
+            return True
+
+        except Exception as e:
+            logger.error(f"GCS store failed for {cache_key}: {e}")
+            return False
+
+    async def invalidate_content_cache(
+        self,
+        cache_key: str,
+        invalidate_redis: bool = True,
+        invalidate_gcs: bool = False
+    ) -> bool:
+        """
+        Invalidate cached content.
+
+        Typically only invalidates Redis (hot cache). GCS is preserved
+        for audit and recovery purposes.
+
+        Args:
+            cache_key: Cache key to invalidate
+            invalidate_redis: Invalidate Redis hot cache (default: True)
+            invalidate_gcs: Invalidate GCS cold cache (default: False, for audit)
+
+        Returns:
+            True if successful
+        """
+        success = True
+
+        # Invalidate Redis
+        if invalidate_redis:
+            try:
+                self.client.delete(f"content:metadata:{cache_key}")
+                logger.info(f"Invalidated Redis cache: {cache_key}")
+            except Exception as e:
+                logger.error(f"Redis invalidation failed: {e}")
+                success = False
+
+        # Invalidate GCS (rare - only for content removal)
+        if invalidate_gcs and self.gcs:
+            try:
+                bucket_name = os.getenv("GCS_CACHE_BUCKET", "vividly-content-cache-dev")
+                blob_path = f"metadata/{cache_key}.json"
+
+                bucket = self.gcs.bucket(bucket_name)
+                blob = bucket.blob(blob_path)
+
+                if blob.exists():
+                    blob.delete()
+                    logger.info(f"Invalidated GCS cache: {cache_key}")
+            except Exception as e:
+                logger.error(f"GCS invalidation failed: {e}")
+                success = False
+
+        return success
+
+    def get_cache_stats(self) -> Dict:
+        """
+        Get cache statistics (Story 3.1.1 requirement).
+
+        Returns:
+            Dict with cache stats:
+                - cache_hits: Total cache hits
+                - cache_misses: Total cache misses
+                - hit_rate: Cache hit rate (0.0 - 1.0)
+                - redis_hits: Redis hot cache hits
+                - gcs_hits: GCS cold cache hits
+                - total_requests: Total requests processed
+        """
+        total_requests = self.stats["cache_hits"] + self.stats["cache_misses"]
+
+        hit_rate = (
+            self.stats["cache_hits"] / total_requests
+            if total_requests > 0
+            else 0.0
+        )
+
+        return {
+            "cache_hits": self.stats["cache_hits"],
+            "cache_misses": self.stats["cache_misses"],
+            "hit_rate": round(hit_rate, 3),
+            "redis_hits": self.stats["redis_hits"],
+            "gcs_hits": self.stats["gcs_hits"],
+            "total_requests": total_requests,
+        }
+
+    def reset_cache_stats(self):
+        """Reset cache statistics (for testing)."""
+        self.stats = {
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "redis_hits": 0,
+            "gcs_hits": 0,
+        }
+
+    # ========================================================================
+    # Original Cache Service Methods (General Purpose)
+    # ========================================================================
 
     def get(self, key: str) -> Optional[Any]:
         """
