@@ -110,9 +110,14 @@ def search_topics(db: Session, query_text: str, limit: int = 10) -> Dict:
         if query_text.lower() in (topic.description or "").lower():
             relevance_score += 0.2
 
+        # Serialize topic to dict
         results.append({
-            "topic": topic,
+            "topic_id": topic.topic_id,
+            "name": topic.name,
+            "subject": topic.subject,
+            "category": topic.category,
             "relevance_score": min(relevance_score, 1.0),
+            "highlights": [topic.name] if query_text.lower() in topic.name.lower() else [],
         })
 
     # Sort by relevance
