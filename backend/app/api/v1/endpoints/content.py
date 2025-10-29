@@ -65,7 +65,7 @@ async def get_content_metadata(
 
     # Build response based on status
     response = {
-        "cache_key": content.cache_key,
+        "cache_key": content.content_id,  # Use content_id as cache_key
         "topic_id": content.topic_id,
         "topic_name": content.topic.name if content.topic else content.topic_id,
         "interest": content.interest,

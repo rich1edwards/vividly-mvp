@@ -12,11 +12,11 @@ from app.models.content_metadata import ContentMetadata, GenerationStatus
 
 def get_content_by_cache_key(db: Session, cache_key: str) -> ContentMetadata:
     """
-    Get content metadata by cache key.
+    Get content metadata by cache key (content_id).
 
     Args:
         db: Database session
-        cache_key: Content cache key
+        cache_key: Content cache key (content_id)
 
     Returns:
         ContentMetadata: Content metadata
@@ -24,7 +24,7 @@ def get_content_by_cache_key(db: Session, cache_key: str) -> ContentMetadata:
     Raises:
         HTTPException: 404 if content not found
     """
-    content = db.query(ContentMetadata).filter(ContentMetadata.cache_key == cache_key).first()
+    content = db.query(ContentMetadata).filter(ContentMetadata.content_id == cache_key).first()
     if not content:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -62,7 +62,7 @@ def check_content_exists(db: Session, topic_id: str, interest: str) -> Dict:
     if content:
         return {
             "cache_hit": True,
-            "cache_key": content.cache_key,
+            "cache_key": content.content_id,  # Use content_id as cache_key
             "status": content.status,
             "video_url": content.video_url,
             "metadata": {
@@ -92,7 +92,7 @@ def check_content_exists(db: Session, topic_id: str, interest: str) -> Dict:
         if in_progress:
             return {
                 "cache_hit": False,
-                "cache_key": in_progress.cache_key,
+                "cache_key": in_progress.content_id,
                 "status": in_progress.status,
                 "message": "Content is currently being generated",
             }
