@@ -17,6 +17,8 @@ from app.services.nlu_service import get_nlu_service
 from app.services.rag_service import get_rag_service
 from app.services.script_generation_service import get_script_generation_service
 from app.services.cache_service import CacheService
+from app.services.tts_service import get_tts_service
+from app.services.video_service import get_video_service
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +36,8 @@ class ContentGenerationService:
         self.rag_service = get_rag_service()
         self.script_service = get_script_generation_service()
         self.cache_service = CacheService()
+        self.tts_service = get_tts_service()
+        self.video_service = get_video_service()
 
     async def generate_content_from_query(
         self,
@@ -147,20 +151,46 @@ class ContentGenerationService:
                 duration_seconds=180
             )
 
-            # Step 5 & 6: Generate audio + video (placeholder)
-            # In production, these would be async jobs
-            logger.info(f"[{generation_id}] Step 5-6: Audio/Video generation (async)")
+            # Step 5: Generate audio (TTS)
+            logger.info(f"[{generation_id}] Step 5: Audio generation")
+            audio = await self.tts_service.generate_audio(
+                script=script,
+                voice_type="female_professional",
+                output_format="mp3"
+            )
 
-            # Return generation status
+            # Step 6: Generate video
+            logger.info(f"[{generation_id}] Step 6: Video generation")
+            video = await self.video_service.generate_video(
+                script=script,
+                audio_url=audio["audio_url"],
+                interest=interest_value,
+                subject=self._infer_subject(topic_id)
+            )
+
+            # Step 7: Cache the complete content
+            logger.info(f"[{generation_id}] Step 7: Caching content")
+            content = {
+                "script": script,
+                "audio": audio,
+                "video": video
+            }
+            await self.cache_service.cache_content(
+                topic_id=topic_id,
+                interest=interest_value,
+                style="standard",
+                content=content
+            )
+
+            # Return complete content
             return {
-                "status": "generating",
+                "status": "completed",
                 "generation_id": generation_id,
                 "cache_hit": False,
                 "topic_id": topic_id,
                 "topic_name": topic_name,
-                "script": script,
-                "message": "Content generation in progress. Audio and video will be ready in 2-3 minutes.",
-                "estimated_completion_seconds": 180
+                "content": content,
+                "message": "Content generation complete!"
             }
 
         except Exception as e:
@@ -244,6 +274,25 @@ class ContentGenerationService:
         timestamp = datetime.utcnow().isoformat()
         hash_val = hashlib.sha256(timestamp.encode()).hexdigest()[:16]
         return f"gen_{hash_val}"
+
+    def _infer_subject(self, topic_id: str) -> str:
+        """Infer subject area from topic ID."""
+        topic_id_lower = topic_id.lower()
+
+        if "phys" in topic_id_lower:
+            return "physics"
+        elif "math" in topic_id_lower or "calc" in topic_id_lower or "algebra" in topic_id_lower:
+            return "math"
+        elif "chem" in topic_id_lower:
+            return "chemistry"
+        elif "bio" in topic_id_lower:
+            return "biology"
+        elif "hist" in topic_id_lower:
+            return "history"
+        elif "lit" in topic_id_lower or "eng" in topic_id_lower:
+            return "literature"
+        else:
+            return "default"
 
 
 # Singleton

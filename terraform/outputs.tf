@@ -94,3 +94,34 @@ output "database_url_secret_name" {
   description = "Secret Manager secret name for database URL"
   value       = google_secret_manager_secret.database_url.secret_id
 }
+
+# Cloud Run Outputs
+output "backend_api_url" {
+  description = "Backend API Cloud Run service URL"
+  value       = google_cloud_run_v2_service.backend_api.uri
+}
+
+output "backend_api_name" {
+  description = "Backend API Cloud Run service name"
+  value       = google_cloud_run_v2_service.backend_api.name
+}
+
+output "cloud_run_service_account" {
+  description = "Cloud Run service account email"
+  value       = google_service_account.cloud_run_sa.email
+}
+
+output "artifact_registry_repository" {
+  description = "Artifact Registry repository for Vividly images"
+  value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.vividly_images.repository_id}"
+}
+
+output "content_worker_job_name" {
+  description = "Content Worker Cloud Run Job name"
+  value       = google_cloud_run_v2_job.content_worker.name
+}
+
+output "vpc_connector_name" {
+  description = "VPC Access Connector name"
+  value       = google_vpc_access_connector.cloud_run_connector.name
+}
