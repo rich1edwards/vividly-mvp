@@ -167,6 +167,27 @@ async def delete_user(
     return None
 
 
+@router.get("/stats")
+async def get_admin_stats(
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    Get admin dashboard statistics.
+
+    **Returns**:
+    - total_users: Total user count
+    - total_students: Student count
+    - total_teachers: Teacher count
+    - total_admins: Admin count
+    - active_users_today: Users active in last 24h
+    - total_classes: Total class count
+    - total_content: Total content count
+    """
+    stats = admin_service.get_dashboard_stats(db=db)
+    return stats
+
+
 @router.post("/users/bulk-upload", response_model=BulkUploadResponse)
 async def bulk_upload_users(
     file: UploadFile = File(...),
@@ -225,7 +246,7 @@ async def bulk_upload_users(
     return result
 
 
-@router.get("/pending-requests", response_model=RequestListResponse)
+@router.get("/requests", response_model=RequestListResponse)
 async def list_pending_requests(
     school_id: Optional[str] = None,
     teacher_id: Optional[str] = None,
@@ -257,7 +278,25 @@ async def list_pending_requests(
     return result
 
 
-@router.put("/requests/{request_id}/approve", response_model=ApproveRequestResponse)
+@router.get("/requests/{request_id}")
+async def get_request_details(
+    request_id: str,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    Get detailed information about a specific account request.
+
+    **Returns**:
+    - Request details
+    - Student information
+    - Requesting teacher information
+    """
+    result = admin_service.get_request_details(db=db, request_id=request_id)
+    return result
+
+
+@router.post("/requests/{request_id}/approve", response_model=ApproveRequestResponse)
 async def approve_request(
     request_id: str,
     current_user: User = Depends(require_admin),
@@ -287,7 +326,7 @@ async def approve_request(
     return result
 
 
-@router.put("/requests/{request_id}/deny", response_model=DenyRequestResponse)
+@router.post("/requests/{request_id}/deny", response_model=DenyRequestResponse)
 async def deny_request(
     request_id: str,
     deny_data: DenyRequestRequest,

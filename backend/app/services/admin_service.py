@@ -401,13 +401,20 @@ def list_pending_requests(
 
     requests = query.order_by(StudentRequest.requested_at.desc()).limit(limit).all()
 
-    # Enrich with teacher names
+    # Enrich with teacher names and serialize
     results = []
     for request in requests:
         teacher = db.query(User).filter(User.user_id == request.requested_by).first()
         results.append({
-            "request": request,
+            "request_id": request.request_id,
+            "student_email": request.student_email,
+            "student_first_name": request.student_first_name,
+            "student_last_name": request.student_last_name,
+            "grade_level": request.grade_level,
+            "status": request.status.value,
+            "requested_by": request.requested_by,
             "teacher_name": f"{teacher.first_name} {teacher.last_name}" if teacher else "Unknown",
+            "requested_at": request.requested_at,
         })
 
     return {
@@ -415,6 +422,46 @@ def list_pending_requests(
         "pagination": {
             "has_more": len(requests) == limit,
         },
+    }
+
+
+def get_request_details(db: Session, request_id: str) -> Dict:
+    """
+    Get detailed information about a specific account request.
+
+    Args:
+        db: Database session
+        request_id: Request ID
+
+    Returns:
+        Dict with request details
+
+    Raises:
+        HTTPException: 404 if request not found
+    """
+    request = db.query(StudentRequest).filter(StudentRequest.request_id == request_id).first()
+    if not request:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Request not found",
+        )
+
+    # Get teacher information
+    teacher = db.query(User).filter(User.user_id == request.requested_by).first()
+
+    return {
+        "request_id": request.request_id,
+        "student_email": request.student_email,
+        "student_first_name": request.student_first_name,
+        "student_last_name": request.student_last_name,
+        "grade_level": request.grade_level,
+        "status": request.status.value,
+        "requested_by": request.requested_by,
+        "teacher_name": f"{teacher.first_name} {teacher.last_name}" if teacher else "Unknown",
+        "requested_at": request.requested_at,
+        "school_id": request.school_id,
+        "class_id": request.class_id,
+        "notes": request.notes,
     }
 
 
@@ -547,4 +594,57 @@ def deny_request(db: Session, request_id: str, admin_id: str, reason: str) -> Di
         "denied_by": admin_id,
         "denial_reason": reason,
         "teacher_notified": True,
+    }
+
+
+def get_dashboard_stats(db: Session) -> Dict:
+    """
+    Get admin dashboard statistics.
+
+    Args:
+        db: Database session
+
+    Returns:
+        Dict with various statistics
+    """
+    from app.models.class_model import Class
+    from app.models.content_metadata import ContentMetadata
+    from datetime import timedelta
+
+    # Get user counts
+    total_users = db.query(func.count(User.user_id)).filter(User.archived == False).scalar()
+    total_students = db.query(func.count(User.user_id)).filter(
+        User.role == "student",
+        User.archived == False
+    ).scalar()
+    total_teachers = db.query(func.count(User.user_id)).filter(
+        User.role == "teacher",
+        User.archived == False
+    ).scalar()
+    total_admins = db.query(func.count(User.user_id)).filter(
+        User.role == "admin",
+        User.archived == False
+    ).scalar()
+
+    # Get active users in last 24 hours
+    yesterday = datetime.utcnow() - timedelta(days=1)
+    active_users_today = db.query(func.count(func.distinct(UserSession.user_id))).filter(
+        UserSession.created_at >= yesterday,
+        UserSession.revoked_at.is_(None)
+    ).scalar() or 0
+
+    # Get class count
+    total_classes = db.query(func.count(Class.class_id)).filter(Class.archived == False).scalar() or 0
+
+    # Get content count
+    total_content = db.query(func.count(ContentMetadata.content_id)).scalar() or 0
+
+    return {
+        "total_users": total_users or 0,
+        "total_students": total_students or 0,
+        "total_teachers": total_teachers or 0,
+        "total_admins": total_admins or 0,
+        "active_users_today": active_users_today,
+        "total_classes": total_classes,
+        "total_content": total_content,
     }
