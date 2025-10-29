@@ -190,6 +190,39 @@ async def list_interests(
     return result
 
 
+@router.get("/interests/{interest_id}", response_model=dict)
+async def get_interest_details(
+    interest_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Get detailed interest information.
+
+    **Returns**:
+    - Interest details
+    - Popularity score
+    - Content count
+    """
+    from app.models.interest import Interest
+
+    interest = db.query(Interest).filter(Interest.interest_id == interest_id).first()
+
+    if not interest:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Interest not found",
+        )
+
+    return {
+        "interest_id": interest.interest_id,
+        "name": interest.name,
+        "category": interest.category,
+        "description": interest.description,
+        "icon_url": None,  # TODO: Add icon_url field to Interest model
+    }
+
+
 @router.get("/interests/categories", response_model=InterestCategoryListResponse)
 async def list_interest_categories(
     current_user: User = Depends(get_current_user),

@@ -112,10 +112,13 @@ def search_topics(db: Session, query_text: str, limit: int = 10) -> Dict:
 
         # Serialize topic to dict
         results.append({
-            "topic_id": topic.topic_id,
-            "name": topic.name,
-            "subject": topic.subject,
-            "category": topic.category,
+            "topic": {
+                "topic_id": topic.topic_id,
+                "name": topic.name,
+                "subject": topic.subject,
+                "category": topic.category,
+                "description": topic.description,
+            },
             "relevance_score": min(relevance_score, 1.0),
             "highlights": [topic.name] if query_text.lower() in topic.name.lower() else [],
         })
@@ -280,7 +283,7 @@ def list_interests(db: Session) -> Dict:
             "interest_id": interest.interest_id,
             "name": interest.name,
             "category": interest.category,
-            "icon_url": interest.icon_url,
+            "icon_url": None,  # TODO: Add icon_url field to Interest model
             "description": interest.description,
             "popularity": round(popularity, 2),
             "content_count": 0,  # TODO: Count videos using this interest
