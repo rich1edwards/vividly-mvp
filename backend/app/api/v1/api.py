@@ -5,7 +5,7 @@ Combines all endpoint routers for the v1 API.
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, students, teachers
+from app.api.v1.endpoints import auth, students, teachers, classes
 
 
 api_router = APIRouter()
@@ -15,3 +15,4 @@ api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(students.router, tags=["Students"])
 api_router.include_router(teachers.router, tags=["Teachers"])
+api_router.include_router(classes.router, prefix="/classes", tags=["Classes"])
