@@ -164,10 +164,7 @@ async def get_topic_prerequisites(
         student_id=student_id,
     )
 
-    return {
-        "topic_id": topic_id,
-        "prerequisites": prerequisites,
-    }
+    return prerequisites
 
 
 @router.get("/interests", response_model=InterestListResponse)
@@ -186,6 +183,24 @@ async def list_interests(
     - Content count (videos available per interest)
     """
     result = topics_service.list_interests(db=db)
+
+    return result
+
+
+@router.get("/interests/categories", response_model=InterestCategoryListResponse)
+async def list_interest_categories(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    List interest categories with their interests.
+
+    **Returns**:
+    - All interest categories
+    - Interests grouped by category
+    - Interest counts per category
+    """
+    result = topics_service.list_interest_categories(db=db)
 
     return result
 
@@ -221,21 +236,3 @@ async def get_interest_details(
         "description": interest.description,
         "icon_url": None,  # TODO: Add icon_url field to Interest model
     }
-
-
-@router.get("/interests/categories", response_model=InterestCategoryListResponse)
-async def list_interest_categories(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    """
-    List interest categories with their interests.
-
-    **Returns**:
-    - All interest categories
-    - Interests grouped by category
-    - Interest counts per category
-    """
-    result = topics_service.list_interest_categories(db=db)
-
-    return result

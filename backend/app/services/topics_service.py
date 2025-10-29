@@ -40,8 +40,11 @@ def list_topics(
     if category:
         query = query.filter(Topic.category == category)
     if grade_level:
-        # Filter topics that include this grade level
-        query = query.filter(Topic.grade_levels.contains([grade_level]))
+        # Filter topics that include this grade level (grade_level_min <= grade <= grade_level_max)
+        query = query.filter(
+            Topic.grade_level_min <= grade_level,
+            Topic.grade_level_max >= grade_level
+        )
 
     # Apply cursor pagination
     if cursor:
