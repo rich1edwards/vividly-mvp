@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from app.models.content_metadata import ContentMetadata, ContentView
+from app.models.content_metadata import ContentMetadata
 from app.models.progress import StudentProgress, ProgressStatus
 
 logger = logging.getLogger(__name__)
@@ -51,18 +51,8 @@ class ContentTrackingService:
                 logger.warning(f"Content not found for cache_key: {cache_key}")
                 return False
 
-            # Create view record
-            view = ContentView(
-                content_id=content.content_id,
-                student_id=student_id,
-                quality=quality,
-                device_type=device_type,
-                browser=browser,
-                viewed_at=datetime.utcnow()
-            )
-            db.add(view)
-
             # Increment view count on content
+            # TODO: Store detailed view records in ContentView table when it's created
             if content.views is None:
                 content.views = 0
             content.views += 1
@@ -272,14 +262,9 @@ class ContentTrackingService:
                 return None
 
             # Get view statistics
-            views_query = db.query(ContentView).filter(
-                ContentView.content_id == content.content_id
-            )
-
-            total_views = views_query.count()
-            unique_viewers = db.query(func.count(func.distinct(ContentView.student_id))).filter(
-                ContentView.content_id == content.content_id
-            ).scalar() or 0
+            # TODO: Query ContentView table when it's created
+            total_views = content.views or 0
+            unique_viewers = 0  # TODO: Count unique viewers from ContentView table
 
             # Get average completion rate from progress
             progress_stats = db.query(
@@ -294,16 +279,8 @@ class ContentTrackingService:
             avg_watch_duration = progress_stats.avg_duration or 0.0
 
             # Get most popular quality
-            popular_quality_result = db.query(
-                ContentView.quality,
-                func.count(ContentView.quality).label('count')
-            ).filter(
-                ContentView.content_id == content.content_id
-            ).group_by(ContentView.quality).order_by(
-                func.count(ContentView.quality).desc()
-            ).first()
-
-            popular_quality = popular_quality_result.quality if popular_quality_result else "1080p"
+            # TODO: Query from ContentView table when it's created
+            popular_quality = "1080p"  # Default
 
             return {
                 "cache_key": cache_key,
