@@ -1,0 +1,37 @@
+# Bandit Configuration for Vividly Backend
+# SAST (Static Application Security Testing) for Python
+
+[bandit]
+# Paths to scan
+targets = app/
+
+# Excluded paths (tests, migrations, etc.)
+exclude_dirs =
+    /tests/,
+    /venv/,
+    /venv_test/,
+    /.venv/,
+    /migrations/,
+    /__pycache__/
+
+# Test IDs to skip (use sparingly)
+# skips = B201,B301
+
+# Severity levels: LOW, MEDIUM, HIGH
+# Report only MEDIUM and HIGH by default
+severity = MEDIUM
+
+# Confidence levels: LOW, MEDIUM, HIGH
+confidence = MEDIUM
+
+# Output format: csv, html, json, screen, txt, xml, yaml
+format = json
+
+# Output file
+output = security-reports/bandit-report.json
+
+# Show only issues with HIGH severity
+# severity = HIGH
+
+# Include all severity levels in verbose mode
+# severity = LOW

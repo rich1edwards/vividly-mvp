@@ -1,0 +1,49 @@
+# OWASP ZAP Baseline Scan Rules
+# Format: ID	THRESHOLD	[IGNORE	[COMMENT]]
+#
+# Available thresholds: IGNORE, INFO, LOW, MEDIUM, HIGH
+#
+# Common rules:
+# 10202 = Absence of Anti-CSRF Tokens
+# 10020 = X-Frame-Options Header Not Set
+# 10021 = X-Content-Type-Options Header Missing
+# 10035 = Strict-Transport-Security Header Not Set
+# 10038 = Content Security Policy (CSP) Header Not Set
+# 10040 = Secure Pages Include Mixed Content
+# 10054 = Cookie Without SameSite Attribute
+# 10055 = CSP: Wildcard Directive
+# 10056 = X-Debug-Token Information Leak
+# 10096 = Timestamp Disclosure
+# 10098 = Cross-Domain Misconfiguration
+# 90001 = Insecure JSF ViewState
+# 90011 = Charset Mismatch
+# 90022 = Application Error Disclosure
+
+# Security Headers - Set to HIGH priority
+10020	HIGH	# X-Frame-Options Header Not Set
+10021	HIGH	# X-Content-Type-Options Header Missing
+10035	HIGH	# Strict-Transport-Security Header Not Set
+10038	MEDIUM	# Content Security Policy (CSP) Header Not Set
+10054	HIGH	# Cookie Without SameSite Attribute
+
+# CSRF Protection
+10202	HIGH	# Absence of Anti-CSRF Tokens
+
+# Mixed Content
+10040	HIGH	# Secure Pages Include Mixed Content
+
+# Information Disclosure
+10056	MEDIUM	# X-Debug-Token Information Leak
+10096	INFO	# Timestamp Disclosure - Can be noisy, set to INFO
+90022	HIGH	# Application Error Disclosure
+
+# Cross-Domain Issues
+10098	HIGH	# Cross-Domain Misconfiguration
+
+# Informational (can be noisy in development)
+90011	INFO	# Charset Mismatch
+
+# Ignore rules that may cause false positives in API-first applications
+# Uncomment these if needed:
+# 10055	IGNORE	# CSP: Wildcard Directive - APIs may not need strict CSP
+# 90001	IGNORE	# Insecure JSF ViewState - Not using JSF

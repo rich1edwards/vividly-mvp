@@ -1,0 +1,27 @@
+# Security Testing Dependencies for Vividly Backend
+
+# Static Application Security Testing (SAST)
+bandit==1.7.5                    # Python security linter
+safety==3.0.1                    # Dependency vulnerability checker
+semgrep==1.45.0                  # Advanced SAST tool
+
+# Dependency Auditing
+pip-audit==2.6.1                 # Audit Python packages for vulnerabilities
+
+# Security Testing
+pytest-security==0.1.1           # Security-focused pytest plugin
+
+# Secret Scanning
+detect-secrets==1.4.0            # Detect secrets in code
+
+# API Security Testing
+requests==2.31.0                 # For API security tests
+owasp-zap-api-python==0.3.0     # OWASP ZAP automation
+
+# Code Quality (security-related)
+pylint==3.0.3                    # Python linter with security checks
+flake8==6.1.0                    # Style guide enforcement
+flake8-bandit==4.1.1            # Bandit integration for flake8
+
+# Reporting
+jinja2==3.1.2                    # For generating security reports

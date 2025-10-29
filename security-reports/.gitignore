@@ -1,0 +1,16 @@
+# Security Reports - Do not commit to repository
+# These files may contain sensitive vulnerability information
+
+# All report files
+*.json
+*.html
+*.xml
+*.txt
+*.sarif
+*.csv
+
+# But keep this .gitignore file
+!.gitignore
+
+# Keep README if present
+!README.md

@@ -256,6 +256,21 @@ test-outputs/
 github-secrets.json
 
 # ========================================
+# Security Reports
+# ========================================
+# Never commit security reports - they may contain sensitive vulnerability information
+security-reports/
+*.sarif
+*-security-report.*
+*-audit-report.*
+bandit-report.*
+semgrep-report.*
+trivy-report.*
+tfsec-report.*
+zap-report.*
+secrets-baseline.json
+
+# ========================================
 # Custom
 # ========================================
 # Add any project-specific files to ignore here
