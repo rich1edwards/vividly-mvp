@@ -5,7 +5,7 @@ Combines all endpoint routers for the v1 API.
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, students, teachers, classes, admin, topics, content, cache, notifications
+from app.api.v1.endpoints import auth, students, teachers, classes, admin, topics, content, cache, notifications, nlu
 
 
 api_router = APIRouter()
@@ -26,3 +26,6 @@ api_router.include_router(notifications.router, prefix="/internal/v1/notificatio
 
 # User-facing notification endpoints
 api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
+
+# Phase 3: AI Pipeline endpoints
+api_router.include_router(nlu.router, tags=["NLU & Topic Extraction"])
