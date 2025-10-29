@@ -38,6 +38,7 @@ class Topic(Base):
     """
 
     __tablename__ = "topics"
+    __table_args__ = {"extend_existing": True}
 
     # Primary key
     topic_id = Column(String(100), primary_key=True, index=True)
@@ -49,14 +50,73 @@ class Topic(Base):
     description = Column(Text, nullable=True)
     topic_order = Column(Integer, nullable=True)
 
-    # Difficulty level
-    grade_level = Column(Integer, nullable=True)
+    # Grade level range (Sprint 2)
+    grade_level = Column(Integer, nullable=True)  # Legacy field
+    grade_level_min = Column(Integer, default=9)
+    grade_level_max = Column(Integer, default=12)
+
+    # Curriculum metadata (Sprint 2)
+    standards = Column(JSON, default={})  # Common Core, NGSS, etc.
+    prerequisites = Column(JSON, default=[])  # Array of prerequisite topic_ids
 
     # Metadata
     meta_data = Column(JSON, nullable=True, default={})
 
+    # Timestamps
+    created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
+    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False)
+    active = Column(String(10), default="true")
+
     # Relationships
     student_progress = relationship("StudentProgress", back_populates="topic", cascade="all, delete-orphan")
+
+    # Helper properties for API compatibility
+    @property
+    def category(self):
+        """Alias for unit field."""
+        return self.unit
+
+    @property
+    def grade_levels(self):
+        """Return list of grade levels this topic covers."""
+        if self.grade_level_min and self.grade_level_max:
+            return list(range(self.grade_level_min, self.grade_level_max + 1))
+        return []
+
+    @property
+    def difficulty(self):
+        """Determine difficulty based on grade level."""
+        if self.grade_level_min <= 9:
+            return "beginner"
+        elif self.grade_level_min <= 10:
+            return "intermediate"
+        else:
+            return "advanced"
+
+    @property
+    def estimated_duration_min(self):
+        """Estimated duration for topic."""
+        return 15  # Default 15 minutes
+
+    @property
+    def related_topics(self):
+        """Related topics (could be enhanced)."""
+        return []
+
+    @property
+    def content_available(self):
+        """Check if content is available (placeholder)."""
+        return True  # TODO: Query content_metadata
+
+    @property
+    def popularity_score(self):
+        """Popularity score (placeholder)."""
+        return 0.5  # TODO: Calculate from student_progress
+
+    @property
+    def learning_objectives(self):
+        """Learning objectives (placeholder)."""
+        return []  # TODO: Store in JSONB
 
     def __repr__(self) -> str:
         return f"<Topic {self.subject}: {self.name}>"
