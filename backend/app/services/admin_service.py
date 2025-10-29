@@ -44,7 +44,7 @@ def list_users(
     Returns:
         Dict with users list and pagination info
     """
-    query = db.query(User).filter(User.is_active == True)
+    query = db.query(User).filter(User.archived == False)
 
     # Apply filters
     if role:
@@ -76,7 +76,7 @@ def list_users(
     # Get total count (expensive, only if no filters)
     total_count = None
     if not role and not school_id and not search:
-        total_count = db.query(func.count(User.user_id)).filter(User.is_active == True).scalar()
+        total_count = db.query(func.count(User.user_id)).filter(User.archived == False).scalar()
 
     return {
         "users": users,
@@ -134,14 +134,14 @@ def create_user(
     new_user = User(
         user_id=generate_user_id(),
         email=email,
-        hashed_password=get_password_hash(default_password),
+        password_hash=get_password_hash(default_password),
         first_name=first_name,
         last_name=last_name,
         role=role,
         grade_level=grade_level,
         school_id=school_id,
         organization_id=organization_id,
-        is_active=True,
+        archived=False,
     )
 
     db.add(new_user)
@@ -235,11 +235,12 @@ def delete_user(db: Session, user_id: str, admin_id: str) -> None:
         )
 
     # Soft delete
-    user.is_active = False
+    user.archived = True
+    user.archived_at = datetime.utcnow()
 
     # Revoke all sessions
     db.query(UserSession).filter(UserSession.user_id == user_id).update(
-        {"is_active": False, "revoked_at": datetime.utcnow()}
+        {"revoked_at": datetime.utcnow()}
     )
 
     db.commit()

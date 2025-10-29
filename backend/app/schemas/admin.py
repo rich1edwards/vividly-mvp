@@ -1,8 +1,8 @@
 """
 Pydantic schemas for admin operations.
 """
-from pydantic import BaseModel, EmailStr, Field, field_validator
-from typing import Optional, List
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_serializer
+from typing import Optional, List, Any
 from datetime import datetime
 
 
@@ -39,9 +39,18 @@ class UserResponse(BaseModel):
     grade_level: Optional[int]
     school_id: Optional[str]
     organization_id: Optional[str]
-    is_active: bool
+    archived: bool  # Internal field from model
     created_at: datetime
     last_login_at: Optional[datetime]
+
+    @model_serializer(mode='wrap')
+    def _serialize(self, serializer: Any, info: Any) -> dict:
+        """Convert archived to is_active on serialization."""
+        data = serializer(self)
+        # Replace archived with is_active (inverted)
+        if 'archived' in data:
+            data['is_active'] = not data.pop('archived')
+        return data
 
     class Config:
         from_attributes = True

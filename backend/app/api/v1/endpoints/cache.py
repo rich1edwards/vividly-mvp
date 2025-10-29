@@ -17,7 +17,7 @@ from app.schemas.cache import (
     CacheStatsResponse
 )
 from app.services.cache_service import CacheService
-from app.core.security import require_service_token
+# from app.core.security import require_service_token  # TODO: Implement service-to-service auth
 import logging
 
 logger = logging.getLogger(__name__)
