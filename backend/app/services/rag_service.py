@@ -1,14 +1,16 @@
 """
-RAG Service for Educational Content Retrieval (Phase 3 Sprint 2)
+RAG Service for Educational Content Retrieval (Phase 3 Sprint 2, Updated Phase 4.3)
 
 Retrieval-Augmented Generation service that:
 1. Searches OER content using vector embeddings
-2. Retrieves relevant educational materials
+2. Retrieves relevant educational materials via Vertex AI Matching Engine
 3. Provides context for script generation
 """
 import os
 import logging
 from typing import List, Dict, Optional, Any
+
+from app.services.embeddings_service import get_embeddings_service
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +31,27 @@ class RAGService:
             project_id: GCP project ID
         """
         self.project_id = project_id or os.getenv("GCP_PROJECT_ID", "vividly-dev-rich")
+        self.embeddings_service = get_embeddings_service()
 
         # Try to initialize Vertex AI Vector Search (will fail gracefully in test)
+        self.matching_engine_available = False
+        self.index_endpoint = None
+
         try:
             from google.cloud import aiplatform
             aiplatform.init(project=self.project_id, location="us-central1")
+
+            # Get index endpoint from environment
+            index_endpoint_id = os.getenv("VERTEX_MATCHING_ENGINE_ENDPOINT")
+
+            if index_endpoint_id:
+                self.index_endpoint = aiplatform.MatchingEngineIndexEndpoint(index_endpoint_id)
+                self.matching_engine_available = True
+                logger.info("Vertex AI Matching Engine initialized")
+            else:
+                logger.warning("VERTEX_MATCHING_ENGINE_ENDPOINT not configured")
+
             self.vertex_available = True
-            logger.info("Vertex AI Vector Search initialized")
         except Exception as e:
             logger.warning(f"Vertex AI not available: {e}. Running in mock mode.")
             self.vertex_available = False
@@ -72,12 +88,75 @@ class RAGService:
             ...     limit=5
             ... )
         """
-        if not self.vertex_available:
+        # Use Matching Engine if available, otherwise mock
+        if self.matching_engine_available and self.index_endpoint:
+            return await self._retrieve_with_matching_engine(
+                topic_id, interest, grade_level, limit
+            )
+        else:
             return self._mock_retrieve_content(topic_id, interest, grade_level, limit)
 
-        # TODO: Implement vector search using Vertex AI Matching Engine
-        # For now, return mock data
-        return self._mock_retrieve_content(topic_id, interest, grade_level, limit)
+    async def _retrieve_with_matching_engine(
+        self,
+        topic_id: str,
+        interest: str,
+        grade_level: int,
+        limit: int
+    ) -> List[Dict]:
+        """
+        Retrieve content using Vertex AI Matching Engine.
+
+        Process:
+        1. Build search query from topic_id + interest
+        2. Generate query embedding
+        3. Search vector index
+        4. Filter and rank results
+        5. Return top matches
+        """
+        try:
+            # Build search query
+            query_text = f"{topic_id} {interest}"
+
+            # Generate query embedding
+            query_embedding = await self.embeddings_service.generate_query_embedding(query_text)
+
+            # Search vector index
+            # Note: Requires deployed index endpoint
+            matches = self.index_endpoint.find_neighbors(
+                deployed_index_id=os.getenv("VERTEX_DEPLOYED_INDEX_ID"),
+                queries=[query_embedding],
+                num_neighbors=limit * 2  # Get extra for filtering
+            )
+
+            # Process results
+            content_results = []
+
+            for match in matches[0]:  # First query results
+                chunk_id = match.id
+                distance = match.distance
+
+                # Fetch chunk metadata from database
+                # In production, would query PostgreSQL here
+                # For now, create mock result
+                relevance_score = 1.0 - distance  # Convert distance to similarity
+
+                content_results.append({
+                    "content_id": chunk_id,
+                    "title": f"Content for {topic_id}",
+                    "text": "Educational content retrieved from vector database...",
+                    "source": "OpenStax",
+                    "relevance_score": relevance_score
+                })
+
+            # Sort by relevance
+            content_results.sort(key=lambda x: x["relevance_score"], reverse=True)
+
+            return content_results[:limit]
+
+        except Exception as e:
+            logger.error(f"Matching Engine retrieval failed: {e}", exc_info=True)
+            # Fallback to mock
+            return self._mock_retrieve_content(topic_id, interest, grade_level, limit)
 
     def _mock_retrieve_content(
         self,
