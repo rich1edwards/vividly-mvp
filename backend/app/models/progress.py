@@ -56,7 +56,7 @@ class Topic(Base):
     grade_level_max = Column(Integer, default=12)
 
     # Curriculum metadata (Sprint 2)
-    standards = Column(JSON, default={})  # Common Core, NGSS, etc.
+    standards = Column(JSON, default=[])  # Common Core, NGSS, etc. (list of standard IDs or dicts)
     prerequisites = Column(JSON, default=[])  # Array of prerequisite topic_ids
 
     # Metadata

@@ -121,22 +121,24 @@ async def get_topic_details(
     # Format response
     topic = result["topic"]
     return {
-        "topic_id": topic.topic_id,
-        "name": topic.name,
-        "subject": topic.subject,
-        "category": topic.category,
-        "grade_levels": topic.grade_levels,
-        "difficulty": topic.difficulty,
-        "description": topic.description,
-        "learning_objectives": topic.learning_objectives or [],
+        "topic": {
+            "topic_id": topic.topic_id,
+            "name": topic.name,
+            "subject": topic.subject,
+            "category": topic.category,
+            "grade_levels": topic.grade_levels,
+            "difficulty": topic.difficulty,
+            "description": topic.description,
+            "learning_objectives": topic.learning_objectives or [],
+            "standards": topic.standards or [],
+            "estimated_duration_min": topic.estimated_duration_min,
+            "content_available": topic.content_available,
+            "available_interests": [],  # TODO: Query available interests
+            "popularity_score": topic.popularity_score or 0.0,
+            "created_at": topic.created_at,
+        },
         "prerequisites": result["prerequisites"],
         "related_topics": result["related_topics"],
-        "standards": topic.standards or [],
-        "estimated_duration_min": topic.estimated_duration_min,
-        "content_available": topic.content_available,
-        "available_interests": [],  # TODO: Query available interests
-        "popularity_score": topic.popularity_score or 0.0,
-        "created_at": topic.created_at,
     }
 
 
