@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>{% block title %}Vividly{% endblock %}</title>
+  <style>
+    /* Reset styles */
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    body { margin: 0; padding: 0; width: 100% !important; height: 100% !important; }
+
+    /* Fonts */
+    * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+
+    /* Colors */
+    .primary-color { color: #4C9AFF; }
+    .secondary-color { color: #16A34A; }
+    .accent-color { color: #A855F7; }
+    .text-color { color: #111827; }
+    .muted-color { color: #6B7280; }
+
+    /* Utility */
+    .no-underline { text-decoration: none; }
+    
+    /* Responsive */
+    @media only screen and (max-width: 600px) {
+      .container { width: 100% !important; }
+      .mobile-padding { padding-left: 16px !important; padding-right: 16px !important; }
+      .mobile-text { font-size: 14px !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #F9FAFB;">
+  <!-- Preview text -->
+  <div style="display: none; max-height: 0px; overflow: hidden;">
+    {% block preview %}{% endblock %}
+  </div>
+
+  <!-- Email container -->
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #F9FAFB;">
+    <tr>
+      <td align="center" style="padding: 40px 0;">
+        <!-- Main content table -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="container" style="background-color: #FFFFFF; border-radius: 8px; overflow: hidden;">
+          
+          <!-- Header -->
+          <tr>
+            <td style="padding: 32px 40px; text-align: center; background: linear-gradient(135deg, #4C9AFF 0%, #A855F7 100%);">
+              <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.02em;">
+                Vividly
+              </h1>
+              <p style="margin: 8px 0 0 0; font-size: 14px; color: rgba(255, 255, 255, 0.9);">
+                AI-Powered Personalized Learning
+              </p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td class="mobile-padding" style="padding: 40px;">
+              {% block content %}{% endblock %}
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 24px 40px; background-color: #F3F4F6; border-top: 1px solid #E5E7EB;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="text-align: center;">
+                    <p style="margin: 0 0 8px 0; font-size: 14px; color: #6B7280;">
+                      Need help? <a href="mailto:support@vividly.edu" style="color: #4C9AFF; text-decoration: none;">Contact Support</a>
+                    </p>
+                    <p style="margin: 0 0 8px 0; font-size: 12px; color: #9CA3AF;">
+                      Vividly &copy; 2025. All rights reserved.
+                    </p>
+                    <p style="margin: 0; font-size: 11px; color: #9CA3AF;">
+                      {% block footer_address %}
+                      Nashville, TN
+                      {% endblock %}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

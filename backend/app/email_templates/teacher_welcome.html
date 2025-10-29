@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Welcome to Vividly - Teacher Portal</title>
+  <style>
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    body { margin: 0; padding: 0; width: 100% !important; height: 100% !important; }
+    * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    @media only screen and (max-width: 600px) {
+      .container { width: 100% !important; }
+      .mobile-padding { padding-left: 16px !important; padding-right: 16px !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #F9FAFB;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #F9FAFB;">
+    <tr>
+      <td align="center" style="padding: 40px 0;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="container" style="background-color: #FFFFFF; border-radius: 8px;">
+          
+          <!-- Header -->
+          <tr>
+            <td style="padding: 32px 40px; text-align: center; background: linear-gradient(135deg, #16A34A 0%, #4C9AFF 100%);">
+              <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #FFFFFF;">Vividly</h1>
+              <p style="margin: 8px 0 0 0; font-size: 14px; color: rgba(255, 255, 255, 0.9);">Teacher Portal</p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td class="mobile-padding" style="padding: 40px;">
+              <h2 style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #111827;">
+                Welcome to Vividly, {{ teacher_name }}!
+              </h2>
+              
+              <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+                We're excited to have you join <strong>{{ organization_name }}</strong> on Vividly. You now have access to our AI-powered platform that creates personalized video lessons for your students.
+              </p>
+
+              <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+                With Vividly, you can provide individualized support at scale, track student progress in real-time, and ensure every student gets content tailored to their interests and learning style.
+              </p>
+
+              <!-- Call to Action -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td align="center" style="padding: 16px 0;">
+                    <a href="{{ dashboard_link }}" style="display: inline-block; padding: 16px 32px; background-color: #16A34A; color: #FFFFFF; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+                      Go to Teacher Dashboard
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Features -->
+              <h3 style="margin: 32px 0 16px 0; font-size: 18px; font-weight: 600; color: #111827;">What You Can Do</h3>
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="padding: 12px 0; vertical-align: top;">
+                    <div style="display: inline-block; width: 40px; height: 40px; border-radius: 8px; background-color: #ECFDF5; margin-right: 16px; text-align: center; line-height: 40px; vertical-align: top;">📚</div>
+                    <div style="display: inline-block; width: calc(100% - 56px); vertical-align: top;">
+                      <strong style="font-size: 14px; color: #111827;">Create Classes</strong>
+                      <p style="margin: 4px 0 0 0; font-size: 14px; line-height: 1.5; color: #6B7280;">Organize your students into classes and manage rosters easily.</p>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0; vertical-align: top;">
+                    <div style="display: inline-block; width: 40px; height: 40px; border-radius: 8px; background-color: #ECFDF5; margin-right: 16px; text-align: center; line-height: 40px; vertical-align: top;">🎯</div>
+                    <div style="display: inline-block; width: calc(100% - 56px); vertical-align: top;">
+                      <strong style="font-size: 14px; color: #111827;">Track Progress</strong>
+                      <p style="margin: 4px 0 0 0; font-size: 14px; line-height: 1.5; color: #6B7280;">Monitor student engagement and mastery in real-time.</p>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0; vertical-align: top;">
+                    <div style="display: inline-block; width: 40px; height: 40px; border-radius: 8px; background-color: #ECFDF5; margin-right: 16px; text-align: center; line-height: 40px; vertical-align: top;">✨</div>
+                    <div style="display: inline-block; width: calc(100% - 56px); vertical-align: top;">
+                      <strong style="font-size: 14px; color: #111827;">Request Custom Content</strong>
+                      <p style="margin: 4px 0 0 0; font-size: 14px; line-height: 1.5; color: #6B7280;">Generate personalized videos for individual students or whole classes.</p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Getting Started -->
+              <div style="margin: 32px 0; padding: 20px; background-color: #F3F4F6; border-radius: 6px; border-left: 4px solid #16A34A;">
+                <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #111827;">Getting Started</p>
+                <ol style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.8; color: #374151;">
+                  <li>Log in to your dashboard</li>
+                  <li>Create your first class</li>
+                  <li>Invite students to join</li>
+                  <li>Start requesting personalized content</li>
+                </ol>
+              </div>
+
+              <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #6B7280;">
+                Need help? Check out our <a href="{{ help_center_link }}" style="color: #16A34A; text-decoration: none;">Teacher Help Center</a> or <a href="mailto:support@vividly.edu" style="color: #16A34A; text-decoration: none;">contact support</a>.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 24px 40px; background-color: #F3F4F6; border-top: 1px solid #E5E7EB; text-align: center;">
+              <p style="margin: 0 0 8px 0; font-size: 14px; color: #6B7280;">
+                Need help? <a href="mailto:support@vividly.edu" style="color: #4C9AFF; text-decoration: none;">Contact Support</a>
+              </p>
+              <p style="margin: 0 0 8px 0; font-size: 12px; color: #9CA3AF;">Vividly &copy; 2025. All rights reserved.</p>
+              <p style="margin: 0; font-size: 11px; color: #9CA3AF;">Nashville, TN</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -24,6 +24,27 @@ output "database_private_ip" {
   sensitive   = true
 }
 
+output "redis_instance_name" {
+  description = "Redis instance name"
+  value       = google_redis_instance.cache.name
+}
+
+output "redis_host" {
+  description = "Redis instance host"
+  value       = google_redis_instance.cache.host
+  sensitive   = true
+}
+
+output "redis_port" {
+  description = "Redis instance port"
+  value       = google_redis_instance.cache.port
+}
+
+output "redis_url_secret_name" {
+  description = "Secret Manager secret name for Redis URL"
+  value       = google_secret_manager_secret.redis_url.secret_id
+}
+
 output "generated_content_bucket" {
   description = "Generated content storage bucket name"
   value       = google_storage_bucket.generated_content.name

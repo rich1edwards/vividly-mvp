@@ -1,0 +1,29 @@
+# OER Content Ingestion Pipeline Dependencies
+
+# Google Cloud AI
+google-cloud-aiplatform>=1.38.0
+google-cloud-storage>=2.10.0
+
+# XML Processing
+lxml>=4.9.3
+beautifulsoup4>=4.12.2
+
+# Text Processing
+nltk>=3.8.1
+tiktoken>=0.5.1
+
+# Data Processing
+pandas>=2.1.0
+numpy>=1.24.0
+
+# HTTP Requests
+requests>=2.31.0
+aiohttp>=3.9.0
+
+# Utilities
+python-dotenv>=1.0.0
+tqdm>=4.66.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0

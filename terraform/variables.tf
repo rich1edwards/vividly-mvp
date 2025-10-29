@@ -37,6 +37,18 @@ variable "db_disk_size" {
   default     = 100
 }
 
+variable "redis_memory_size" {
+  description = "Redis instance memory size in GB"
+  type        = number
+  default     = 1
+}
+
+variable "redis_reserved_ip_range" {
+  description = "Reserved IP range for Redis instance (e.g., 10.0.1.0/29)"
+  type        = string
+  default     = "10.0.1.0/29"
+}
+
 variable "notification_channels" {
   description = "List of notification channel IDs for alerts"
   type        = list(string)
@@ -45,6 +57,12 @@ variable "notification_channels" {
 
 variable "domain" {
   description = "Custom domain for the application"
+  type        = string
+  default     = ""
+}
+
+variable "cdn_domain" {
+  description = "Custom domain for CDN (for SSL certificate)"
   type        = string
   default     = ""
 }

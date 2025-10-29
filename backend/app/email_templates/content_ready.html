@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Your Personalized Video is Ready!</title>
+  <style>
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    body { margin: 0; padding: 0; width: 100% !important; height: 100% !important; }
+    * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    @media only screen and (max-width: 600px) {
+      .container { width: 100% !important; }
+      .mobile-padding { padding-left: 16px !important; padding-right: 16px !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #F9FAFB;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #F9FAFB;">
+    <tr>
+      <td align="center" style="padding: 40px 0;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="container" style="background-color: #FFFFFF; border-radius: 8px;">
+          
+          <!-- Header -->
+          <tr>
+            <td style="padding: 32px 40px; text-align: center; background: linear-gradient(135deg, #4C9AFF 0%, #A855F7 100%);">
+              <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #FFFFFF;">Vividly</h1>
+              <p style="margin: 8px 0 0 0; font-size: 14px; color: rgba(255, 255, 255, 0.9);">Your Video is Ready!</p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td class="mobile-padding" style="padding: 40px;">
+              <!-- Greeting -->
+              <h2 style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #111827;">
+                ✨ Your Personalized Video is Ready, {{ student_name }}!
+              </h2>
+              
+              <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+                Great news! We've created a personalized video lesson just for you.
+              </p>
+
+              <!-- Video Card -->
+              <div style="margin: 0 0 24px 0; padding: 24px; background: linear-gradient(135deg, #EFF6FF 0%, #FAF5FF 100%); border-radius: 8px; border: 1px solid #E0E7FF;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td>
+                      <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #111827;">
+                        {{ video_title }}
+                      </h3>
+                      <p style="margin: 0 0 4px 0; font-size: 14px; color: #4C9AFF;">
+                        <strong>Subject:</strong> {{ subject }}
+                      </p>
+                      <p style="margin: 0 0 4px 0; font-size: 14px; color: #6B7280;">
+                        <strong>Topic:</strong> {{ topic }}
+                      </p>
+                      <p style="margin: 0 0 16px 0; font-size: 14px; color: #6B7280;">
+                        <strong>Duration:</strong> {{ duration }} minutes
+                      </p>
+                      
+                      <!-- Personalization note -->
+                      <div style="padding: 12px; background-color: rgba(168, 85, 247, 0.1); border-radius: 4px; border-left: 3px solid #A855F7;">
+                        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #6B7280;">
+                          🎯 <strong style="color: #111827;">Personalized for you</strong> based on your interest in <strong>{{ primary_interest }}</strong>
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- Call to Action -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td align="center" style="padding: 8px 0 32px 0;">
+                    <a href="{{ video_link }}" style="display: inline-block; padding: 16px 32px; background: linear-gradient(135deg, #4C9AFF 0%, #A855F7 100%); color: #FFFFFF; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+                      Watch Your Video Now
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Why this video -->
+              <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #111827;">Why This Video is Perfect for You</h3>
+              <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 1.6; color: #6B7280;">
+                {{ personalization_reason }}
+              </p>
+
+              <!-- What's Next -->
+              <div style="margin: 0 0 24px 0; padding: 20px; background-color: #F3F4F6; border-radius: 6px;">
+                <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #111827;">After Watching</p>
+                <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #6B7280;">
+                  Complete the quick quiz to check your understanding. Your teacher will be able to see your progress and provide support if needed.
+                </p>
+              </div>
+
+              <!-- Additional Info -->
+              <p style="margin: 0 0 8px 0; font-size: 13px; color: #6B7280;">
+                <strong>Requested by:</strong> {{ teacher_name }}
+              </p>
+              <p style="margin: 0; font-size: 13px; color: #6B7280;">
+                <strong>Class:</strong> {{ class_name }}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 24px 40px; background-color: #F3F4F6; border-top: 1px solid #E5E7EB; text-align: center;">
+              <p style="margin: 0 0 8px 0; font-size: 14px; color: #6B7280;">
+                Need help? <a href="mailto:support@vividly.edu" style="color: #4C9AFF; text-decoration: none;">Contact Support</a>
+              </p>
+              <p style="margin: 0 0 8px 0; font-size: 12px; color: #9CA3AF;">Vividly &copy; 2025. All rights reserved.</p>
+              <p style="margin: 0; font-size: 11px; color: #9CA3AF;">Nashville, TN</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Playwright Test Artifacts
+# Add these lines to your main .gitignore file
+
+# Playwright test results
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# Playwright traces
+/test-results/
+/*.zip
+
+# Playwright screenshots and videos
+/screenshots/
+/videos/
+
+# Playwright state
+/playwright/.auth/

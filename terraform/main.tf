@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.6.0"
+  required_version = ">= 1.5.0"
 
   required_providers {
     google = {
@@ -37,6 +37,7 @@ resource "google_project_service" "required_apis" {
     "cloudbuild.googleapis.com",
     "artifactregistry.googleapis.com",
     "sqladmin.googleapis.com",
+    "redis.googleapis.com",
     "aiplatform.googleapis.com",
     "storage-api.googleapis.com",
     "pubsub.googleapis.com",
@@ -180,6 +181,63 @@ resource "google_secret_manager_secret_version" "database_url" {
   secret_data = "postgresql://${google_sql_user.vividly.name}:${google_sql_user.vividly.password}@${google_sql_database_instance.postgres.private_ip_address}:5432/${google_sql_database.vividly.name}"
 }
 
+# ============================================================================
+# Cloud Memorystore (Redis)
+# ============================================================================
+
+resource "google_redis_instance" "cache" {
+  name               = "${var.environment}-vividly-cache"
+  tier               = var.environment == "prod" ? "STANDARD_HA" : "BASIC"
+  memory_size_gb     = var.redis_memory_size
+  region             = var.region
+  redis_version      = "REDIS_7_0"
+  display_name       = "${var.environment} Vividly Redis Cache"
+  reserved_ip_range  = var.redis_reserved_ip_range
+  connect_mode       = "PRIVATE_SERVICE_ACCESS"
+  authorized_network = google_compute_network.vpc.id
+
+  redis_configs = {
+    maxmemory-policy = "allkeys-lru"
+    timeout          = "300"
+  }
+
+  maintenance_policy {
+    weekly_maintenance_window {
+      day = "SUNDAY"
+      start_time {
+        hours   = 4
+        minutes = 0
+        seconds = 0
+        nanos   = 0
+      }
+    }
+  }
+
+  location_id             = "${var.region}-a"
+  alternative_location_id = var.environment == "prod" ? "${var.region}-b" : null
+
+  depends_on = [
+    google_project_service.required_apis,
+    google_service_networking_connection.private_vpc_connection
+  ]
+}
+
+# Store Redis connection info in Secret Manager
+resource "google_secret_manager_secret" "redis_url" {
+  secret_id = "redis-url-${var.environment}"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.required_apis]
+}
+
+resource "google_secret_manager_secret_version" "redis_url" {
+  secret      = google_secret_manager_secret.redis_url.id
+  secret_data = "redis://${google_redis_instance.cache.host}:${google_redis_instance.cache.port}"
+}
+
 # Cloud Storage Buckets
 resource "google_storage_bucket" "generated_content" {
   name          = "${var.project_id}-${var.environment}-generated-content"
@@ -236,6 +294,106 @@ resource "google_storage_bucket" "temp_files" {
       type = "Delete"
     }
   }
+}
+
+# ============================================================================
+# Cloud CDN for Video Delivery
+# ============================================================================
+
+# Reserve global IP for CDN
+resource "google_compute_global_address" "cdn_ip" {
+  name = "${var.environment}-vividly-cdn-ip"
+}
+
+# Backend bucket for CDN
+resource "google_compute_backend_bucket" "video_cdn" {
+  name        = "${var.environment}-vividly-video-cdn"
+  bucket_name = google_storage_bucket.generated_content.name
+  enable_cdn  = true
+
+  cdn_policy {
+    cache_mode        = "CACHE_ALL_STATIC"
+    client_ttl        = 3600
+    default_ttl       = 86400    # 24 hours
+    max_ttl           = 2592000  # 30 days
+    negative_caching  = true
+    serve_while_stale = 86400
+
+    cache_key_policy {
+      include_host           = true
+      include_protocol       = true
+      include_query_string   = false
+    }
+
+    negative_caching_policy {
+      code = 404
+      ttl  = 300
+    }
+
+    negative_caching_policy {
+      code = 410
+      ttl  = 300
+    }
+  }
+
+  compression_mode = "AUTOMATIC"
+}
+
+# URL map for CDN
+resource "google_compute_url_map" "cdn_url_map" {
+  name            = "${var.environment}-vividly-cdn-url-map"
+  default_service = google_compute_backend_bucket.video_cdn.id
+}
+
+# HTTPS certificate (managed)
+resource "google_compute_managed_ssl_certificate" "cdn_cert" {
+  name = "${var.environment}-vividly-cdn-cert"
+
+  managed {
+    domains = var.cdn_domain != "" ? [var.cdn_domain] : ["${var.environment}-cdn.vividly.edu"]
+  }
+}
+
+# HTTPS proxy
+resource "google_compute_target_https_proxy" "cdn_https_proxy" {
+  name             = "${var.environment}-vividly-cdn-https-proxy"
+  url_map          = google_compute_url_map.cdn_url_map.id
+  ssl_certificates = [google_compute_managed_ssl_certificate.cdn_cert.id]
+}
+
+# Forwarding rule (global)
+resource "google_compute_global_forwarding_rule" "cdn_forwarding_rule" {
+  name                  = "${var.environment}-vividly-cdn-forwarding-rule"
+  ip_protocol           = "TCP"
+  load_balancing_scheme = "EXTERNAL"
+  port_range            = "443"
+  target                = google_compute_target_https_proxy.cdn_https_proxy.id
+  ip_address            = google_compute_global_address.cdn_ip.id
+}
+
+# HTTP to HTTPS redirect
+resource "google_compute_url_map" "cdn_http_redirect" {
+  name = "${var.environment}-vividly-cdn-http-redirect"
+
+  default_url_redirect {
+    https_redirect         = true
+    redirect_response_code = "MOVED_PERMANENTLY_DEFAULT"
+    strip_query            = false
+  }
+}
+
+resource "google_compute_target_http_proxy" "cdn_http_proxy" {
+  name    = "${var.environment}-vividly-cdn-http-proxy"
+  url_map = google_compute_url_map.cdn_http_redirect.id
+}
+
+resource "google_compute_global_forwarding_rule" "cdn_http_forwarding_rule" {
+  name                  = "${var.environment}-vividly-cdn-http-forwarding-rule"
+  ip_protocol           = "TCP"
+  load_balancing_scheme = "EXTERNAL"
+  port_range            = "80"
+  target                = google_compute_target_http_proxy.cdn_http_proxy.id
+  ip_address            = google_compute_global_address.cdn_ip.id
 }
 
 # Pub/Sub Topics and Subscriptions
