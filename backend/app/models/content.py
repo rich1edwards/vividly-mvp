@@ -4,10 +4,9 @@ Content Library Database Models
 Stores OER content chunks with metadata for RAG retrieval.
 """
 from sqlalchemy import Column, String, Integer, Float, Text, DateTime, JSON, Index
-from sqlalchemy.dialects.postgresql import ARRAY
 from datetime import datetime
 
-from app.models.base import Base
+from app.core.database import Base
 
 
 class ContentChunk(Base):
@@ -35,7 +34,7 @@ class ContentChunk(Base):
     subsection = Column(String(255), nullable=True)
 
     # Topic mapping (links to topics table)
-    topic_ids = Column(ARRAY(String), nullable=False, index=True)  # ["topic_phys_mech_newton_3"]
+    topic_ids = Column(JSON, nullable=False)  # ["topic_phys_mech_newton_3"]
 
     # Content
     text = Column(Text, nullable=False)  # The actual content text
@@ -46,12 +45,12 @@ class ContentChunk(Base):
     reading_level = Column(Integer, nullable=True)  # Flesch-Kincaid grade level
 
     # Images and figures
-    figure_urls = Column(ARRAY(String), nullable=True)  # URLs to related figures
-    equations = Column(ARRAY(String), nullable=True)  # LaTeX equations in chunk
+    figure_urls = Column(JSON, nullable=True)  # URLs to related figures
+    equations = Column(JSON, nullable=True)  # LaTeX equations in chunk
 
     # Keywords and concepts
-    keywords = Column(ARRAY(String), nullable=False, index=True)
-    concepts = Column(ARRAY(String), nullable=False)  # Main concepts covered
+    keywords = Column(JSON, nullable=False)
+    concepts = Column(JSON, nullable=False)  # Main concepts covered
 
     # Quality metrics
     quality_score = Column(Float, nullable=True)  # 0.0-1.0, content quality
@@ -66,10 +65,13 @@ class ContentChunk(Base):
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Indexes for efficient querying
+    # Note: JSON columns (topic_ids, keywords) use GIN indexes for better performance
     __table_args__ = (
-        Index('idx_content_subject_topic', 'subject', 'topic_ids'),
-        Index('idx_content_keywords', 'keywords'),
+        Index('idx_content_subject', 'subject'),
         Index('idx_content_quality', 'quality_score'),
+        # GIN indexes for JSON columns - created via migration or raw SQL
+        # Index('idx_content_topic_ids', 'topic_ids', postgresql_using='gin'),
+        # Index('idx_content_keywords', 'keywords', postgresql_using='gin'),
     )
 
     def __repr__(self):

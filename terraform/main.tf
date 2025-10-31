@@ -426,22 +426,7 @@ resource "google_pubsub_topic" "content_requests_dlq" {
   message_retention_duration = "604800s" # 7 days
 }
 
-# Artifact Registry for Docker Images
-resource "google_artifact_registry_repository" "vividly" {
-  location      = var.region
-  repository_id = "vividly"
-  description   = "Vividly Docker images"
-  format        = "DOCKER"
-
-  cleanup_policies {
-    id     = "keep-recent-versions"
-    action = "KEEP"
-
-    most_recent_versions {
-      keep_count = var.environment == "prod" ? 50 : 10
-    }
-  }
-}
+# Note: Artifact Registry for Docker Images moved to cloud_run.tf
 
 # Service Accounts
 resource "google_service_account" "api_gateway" {

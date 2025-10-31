@@ -113,10 +113,12 @@ class TestUserAuthentication:
 
     def test_authenticate_suspended_user(self, db_session):
         """Test authentication with suspended user fails."""
+        from app.utils.security import get_password_hash
+
         user = User(
             user_id="user_suspended",
             email="suspended@test.com",
-            password_hash="$2b$12$test",
+            password_hash=get_password_hash("Password123"),
             first_name="Suspended",
             last_name="User",
             role=UserRole.STUDENT,
@@ -220,3 +222,94 @@ class TestLogout:
         ).count()
 
         assert active_sessions == 0
+
+    def test_revoke_no_active_sessions(self, db_session, sample_student):
+        """Test revoking sessions when none exist."""
+        # Don't create any sessions
+        # This should not raise an error
+        auth_service.revoke_user_sessions(
+            db_session,
+            sample_student.user_id,
+            all_sessions=False
+        )
+
+        # Should complete without error
+        from app.models.session import Session as SessionModel
+        sessions = db_session.query(SessionModel).filter(
+            SessionModel.user_id == sample_student.user_id
+        ).count()
+
+        assert sessions == 0
+
+
+@pytest.mark.unit
+@pytest.mark.auth
+class TestHelperFunctions:
+    """Test helper functions."""
+
+    def test_generate_user_id(self):
+        """Test user ID generation."""
+        user_id = auth_service.generate_user_id()
+
+        assert user_id.startswith("user_")
+        assert len(user_id) > 10
+
+    def test_generate_session_id(self):
+        """Test session ID generation."""
+        session_id = auth_service.generate_session_id()
+
+        assert session_id.startswith("session_")
+        assert len(session_id) > 15
+
+    def test_user_id_uniqueness(self):
+        """Test that generated user IDs are unique."""
+        user_ids = [auth_service.generate_user_id() for _ in range(100)]
+
+        assert len(set(user_ids)) == 100, "User IDs should be unique"
+
+    def test_session_id_uniqueness(self):
+        """Test that generated session IDs are unique."""
+        session_ids = [auth_service.generate_session_id() for _ in range(100)]
+
+        assert len(set(session_ids)) == 100, "Session IDs should be unique"
+
+
+@pytest.mark.unit
+@pytest.mark.auth
+class TestEdgeCases:
+    """Test edge cases and error handling."""
+
+    def test_authenticate_empty_email(self, db_session):
+        """Test authentication with empty email."""
+        with pytest.raises(HTTPException) as exc:
+            auth_service.authenticate_user(db_session, "", "Password123")
+
+        assert exc.value.status_code == 401
+
+    def test_authenticate_empty_password(self, db_session, sample_student):
+        """Test authentication with empty password."""
+        with pytest.raises(HTTPException) as exc:
+            auth_service.authenticate_user(
+                db_session,
+                sample_student.email,
+                ""
+            )
+
+        assert exc.value.status_code == 401
+
+    def test_create_tokens_without_optional_params(self, db_session, sample_student):
+        """Test creating tokens without IP address and user agent."""
+        tokens = auth_service.create_user_tokens(db_session, sample_student)
+
+        assert tokens.access_token is not None
+        assert tokens.refresh_token is not None
+
+        # Verify session was created with None values
+        from app.models.session import Session as SessionModel
+        session = db_session.query(SessionModel).filter(
+            SessionModel.user_id == sample_student.user_id
+        ).order_by(SessionModel.created_at.desc()).first()
+
+        assert session is not None
+        assert session.ip_address is None
+        assert session.user_agent is None

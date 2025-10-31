@@ -33,9 +33,14 @@ from app.schemas.content_tracking import (
     CompletionResponse,
     ContentAnalytics,
 )
+from app.schemas.content_generation import (
+    ContentGenerationRequest,
+    ContentGenerationResponse,
+)
 from app.services import content_service
 from app.services.content_delivery_service import ContentDeliveryService
 from app.services.content_tracking_service import ContentTrackingService
+from app.services.content_generation_service import ContentGenerationService
 from app.utils.dependencies import get_current_user
 from app.models.user import User
 
@@ -679,3 +684,83 @@ async def get_student_history(
         "content": formatted_content,
         "pagination": result["pagination"],
     }
+
+
+@router.post("/generate", response_model=ContentGenerationResponse, status_code=status.HTTP_202_ACCEPTED)
+async def generate_content(
+    request: ContentGenerationRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Generate personalized educational content from a natural language query.
+
+    **Request Body**:
+    - student_query: What the student wants to learn (natural language)
+    - student_id: Student user ID
+    - grade_level: Student's grade level (optional)
+    - interest: Interest to personalize with (optional)
+
+    **Returns**:
+    - status: Generation status (pending, generating)
+    - request_id: ID to track generation progress
+    - cache_key: Key to retrieve content once completed
+    - message: Human-readable status message
+    - estimated_completion_seconds: Estimated time until completion
+
+    **Example Request**:
+    ```json
+    {
+        "student_query": "Explain photosynthesis using basketball",
+        "student_id": "student_123",
+        "grade_level": 8,
+        "interest": "basketball"
+    }
+    ```
+    """
+    try:
+        # Initialize content generation service
+        content_gen_service = ContentGenerationService()
+
+        # Generate content asynchronously
+        result = await content_gen_service.generate_content_from_query(
+            student_query=request.student_query,
+            student_id=request.student_id,
+            grade_level=request.grade_level,
+            interest=request.interest
+        )
+
+        # Return response based on result status
+        if result.get("status") == "completed":
+            return ContentGenerationResponse(
+                status="completed",
+                request_id=result.get("request_id"),
+                cache_key=result.get("cache_key"),
+                message="Content generation completed successfully",
+                content_url=result.get("video_url"),
+                estimated_completion_seconds=0
+            )
+        elif result.get("status") == "cached":
+            return ContentGenerationResponse(
+                status="completed",
+                cache_key=result.get("cache_key"),
+                message="Content retrieved from cache",
+                content_url=result.get("video_url"),
+                estimated_completion_seconds=0
+            )
+        else:
+            # Generation started or in progress
+            return ContentGenerationResponse(
+                status=result.get("status", "pending"),
+                request_id=result.get("request_id"),
+                cache_key=result.get("cache_key"),
+                message=f"Content generation {result.get('status', 'pending')}",
+                estimated_completion_seconds=result.get("estimated_seconds", 180)
+            )
+
+    except Exception as e:
+        logger.error(f"Content generation failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Content generation failed: {str(e)}"
+        )

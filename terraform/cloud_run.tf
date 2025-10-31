@@ -3,10 +3,12 @@
 # ============================================================================
 
 # Artifact Registry repository for Docker images
-resource "google_artifact_registry_repository" "vividly_images" {
+# Note: This resource was renamed from vividly_images to vividly
+# Use: terraform import google_artifact_registry_repository.vividly projects/vividly-dev-rich/locations/us-central1/repositories/vividly
+resource "google_artifact_registry_repository" "vividly" {
   location      = var.region
-  repository_id = "${var.environment}-vividly-images"
-  description   = "Docker images for Vividly services"
+  repository_id = "vividly"
+  description   = "Vividly Docker images"
   format        = "DOCKER"
 
   cleanup_policy_dry_run = false
@@ -124,7 +126,7 @@ resource "google_cloud_run_v2_service" "backend_api" {
 
     containers {
       # Image will be updated via CI/CD
-      image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.vividly_images.repository_id}/backend-api:latest"
+      image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.vividly.repository_id}/backend-api:latest"
 
       # Resource limits
       resources {
@@ -301,7 +303,7 @@ resource "google_cloud_run_v2_job" "content_worker" {
 
       containers {
         # Image will be updated via CI/CD
-        image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.vividly_images.repository_id}/content-worker:latest"
+        image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.vividly.repository_id}/content-worker:latest"
 
         # Resource limits (higher for video processing)
         resources {

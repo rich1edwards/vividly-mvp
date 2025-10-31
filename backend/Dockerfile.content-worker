@@ -43,9 +43,9 @@ COPY . .
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
-# Expose port for functions framework (local testing)
+# Expose port (not used for Cloud Run Jobs, but kept for local testing)
 EXPOSE 8080
 
-# Run with functions framework (for local testing)
-# In Cloud Functions, this is managed by Google
-CMD ["functions-framework", "--target=process_content_request", "--port=8080"]
+# Run the content worker
+# For Cloud Run Jobs, this is the main entry point
+CMD ["python", "-m", "app.workers.content_worker"]

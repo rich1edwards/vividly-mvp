@@ -226,7 +226,7 @@ class EmbeddingsService:
         hash_val = hashlib.sha256(text.encode()).hexdigest()[:16]
         return f"emb_{hash_val}"
 
-    async def validate_embedding(self, embedding: List[float]) -> bool:
+    def validate_embedding(self, embedding: List[float]) -> bool:
         """
         Validate embedding vector.
 

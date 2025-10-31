@@ -15,6 +15,11 @@ import logging
 
 from app.core.config import settings
 from app.api.v1.api import api_router
+from app.middleware.security import (
+    SecurityHeadersMiddleware,
+    BruteForceProtectionMiddleware,
+    RateLimitMiddleware,
+)
 
 
 # Configure logging
@@ -44,6 +49,11 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+
+# Security middleware (order matters - first in, last out)
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(BruteForceProtectionMiddleware)
+app.add_middleware(RateLimitMiddleware)
 
 # CORS middleware
 app.add_middleware(

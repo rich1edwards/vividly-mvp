@@ -2,64 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Light Mode - Vividly Design System */
+    --background: 0 0% 100%;                    /* #FFFFFF */
+    --foreground: 210 11% 15%;                  /* #212529 */
 
-    /* Vividly Primary Colors */
-    --primary: 217 91% 60%;        /* Blue #4C9AFF */
+    --card: 0 0% 100%;                          /* #FFFFFF */
+    --card-foreground: 210 11% 15%;             /* #212529 */
+
+    --popover: 0 0% 100%;                       /* #FFFFFF */
+    --popover-foreground: 210 11% 15%;          /* #212529 */
+
+    /* Primary - Vivid Blue #2196F3 */
+    --primary: 207 90% 54%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 142 76% 36%;      /* Green #16A34A */
+    /* Secondary - Warm Coral #FF7043 */
+    --secondary: 14 100% 63%;
     --secondary-foreground: 0 0% 100%;
 
-    --accent: 280 89% 60%;         /* Purple #A855F7 */
+    /* Accent - Electric Purple #9C27B0 */
+    --accent: 291 64% 42%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
+    /* Success - Fresh Green #4CAF50 */
+    --success: 122 39% 49%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning - Sunny Yellow #FFC107 */
+    --warning: 45 100% 51%;
+    --warning-foreground: 210 11% 15%;
+
+    /* Error/Destructive - Alert Red #F44336 */
+    --destructive: 4 90% 58%;
     --destructive-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Neutral Grays */
+    --muted: 200 18% 93%;                       /* Light gray background */
+    --muted-foreground: 200 7% 46%;             /* Medium gray text */
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 217 91% 60%;
+    --border: 200 18% 87%;                      /* #CFD8DC */
+    --input: 200 18% 87%;                       /* #CFD8DC */
+    --ring: 207 90% 54%;                        /* Matches primary */
 
-    --radius: 0.5rem;
+    --radius: 0.5rem;                           /* 8px default border radius */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    /* Dark Mode - Vividly Design System */
+    --background: 200 18% 14%;                  /* #263238 */
+    --foreground: 200 18% 93%;                  /* #ECEFF1 */
 
-    --primary: 217 91% 60%;         /* Blue #4C9AFF */
+    --card: 200 16% 20%;                        /* #37474F */
+    --card-foreground: 200 18% 93%;             /* #ECEFF1 */
+
+    --popover: 200 16% 20%;                     /* #37474F */
+    --popover-foreground: 200 18% 93%;          /* #ECEFF1 */
+
+    /* Primary - Vivid Blue (brighter for dark mode) */
+    --primary: 207 90% 61%;                     /* Lighter blue for contrast */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 142 76% 36%;       /* Green #16A34A */
+    /* Secondary - Warm Coral (adjusted) */
+    --secondary: 14 100% 68%;                   /* Lighter coral */
     --secondary-foreground: 0 0% 100%;
 
-    --accent: 280 89% 60%;          /* Purple #A855F7 */
+    /* Accent - Electric Purple (adjusted) */
+    --accent: 291 64% 51%;                      /* Lighter purple */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
+    /* Success - Fresh Green */
+    --success: 122 39% 54%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning - Sunny Yellow */
+    --warning: 45 100% 60%;
+    --warning-foreground: 200 18% 14%;
+
+    /* Error/Destructive - Alert Red */
+    --destructive: 4 90% 63%;
     --destructive-foreground: 0 0% 100%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    /* Neutral Grays for Dark Mode */
+    --muted: 200 16% 24%;                       /* Darker gray background */
+    --muted-foreground: 200 11% 58%;            /* Lighter gray text */
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 217 91% 60%;
+    --border: 200 16% 28%;                      /* #455A64 */
+    --input: 200 16% 28%;                       /* #455A64 */
+    --ring: 207 90% 61%;                        /* Matches primary */
   }
 }
 
@@ -67,8 +101,36 @@
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold;
+  }
+}
+
+@layer utilities {
+  /* Custom scrollbar styles */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-muted rounded;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded hover:bg-muted-foreground/50;
+  }
+
+  /* Focus visible styles */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
   }
 }
