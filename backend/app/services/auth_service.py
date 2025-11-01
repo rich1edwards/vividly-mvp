@@ -8,7 +8,7 @@ import secrets
 
 from app.models.user import User, UserRole, UserStatus
 from app.models.session import Session as SessionModel
-from app.schemas.auth import UserRegister, Token
+from app.schemas.auth import UserRegister, Token, TokenWithUser, UserResponse
 from app.utils.security import (
     get_password_hash,
     verify_password,
@@ -165,6 +165,62 @@ def create_user_tokens(
         refresh_token=refresh_token,
         token_type="bearer",
         expires_in=1440 * 60,  # 24 hours in seconds
+    )
+
+
+def create_user_tokens_with_profile(
+    db: Session, user: User, ip_address: str = None, user_agent: str = None
+) -> TokenWithUser:
+    """
+    Create access and refresh tokens for user, including user profile.
+    Used for login and registration endpoints.
+
+    Args:
+        db: Database session
+        user: User object
+        ip_address: Client IP address
+        user_agent: Client user agent
+
+    Returns:
+        TokenWithUser: Access and refresh tokens with user profile
+    """
+    # Create tokens
+    access_token = create_access_token(data={"sub": user.user_id})
+    refresh_token = create_refresh_token(data={"sub": user.user_id})
+
+    # Store refresh token in database
+    session = SessionModel(
+        session_id=generate_session_id(),
+        user_id=user.user_id,
+        refresh_token_hash=get_password_hash(refresh_token),
+        ip_address=ip_address,
+        user_agent=user_agent,
+        expires_at=datetime.utcnow() + timedelta(days=30),
+    )
+
+    db.add(session)
+    db.commit()
+
+    # Create user response - convert to dict to avoid Pydantic validation issues
+    user_dict = {
+        "user_id": user.user_id,
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "role": user.role.value,
+        "status": user.status.value,
+        "grade_level": user.grade_level,
+        "created_at": user.created_at,
+        "last_login_at": user.last_login_at,
+        "organization_id": user.organization_id,
+    }
+
+    return TokenWithUser(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer",
+        expires_in=1440 * 60,  # 24 hours in seconds
+        user=user_dict,  # Pass as dict, Pydantic will convert to UserResponse
     )
 
 

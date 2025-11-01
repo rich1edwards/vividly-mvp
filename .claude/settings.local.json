@@ -93,7 +93,16 @@
       "Bash(/opt/homebrew/share/google-cloud-sdk/bin/gcloud auth configure-docker us-central1-docker.pkg.dev --quiet)",
       "Bash(/opt/homebrew/share/google-cloud-sdk/bin/gcloud run jobs describe dev-vividly-content-worker --region=us-central1 --project=vividly-dev-rich --format=\"value(metadata.name,spec.template.spec.containers[0].image)\")",
       "Bash(/opt/homebrew/share/google-cloud-sdk/bin/gcloud run jobs describe dev-vividly-content-worker --region=us-central1 --project=vividly-dev-rich)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(/opt/homebrew/share/google-cloud-sdk/bin/gcloud auth print-access-token)",
+      "Bash(/opt/homebrew/share/google-cloud-sdk/bin/gcloud run services list --project=vividly-dev-rich --region=us-central1)",
+      "Bash(/opt/homebrew/share/google-cloud-sdk/bin/gcloud run services logs read:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh run list:*)",
+      "Bash(black:*)",
+      "Bash(mypy:*)",
+      "Bash(env DATABASE_URL=\"sqlite:///:memory:\" SECRET_KEY=\"test_secret_key_12345\" PYTHONPATH=/Users/richedwards/AI-Dev-Projects/Vividly/backend /Users/richedwards/AI-Dev-Projects/Vividly/backend/venv_test/bin/python -m pytest:*)",
+      "Bash(env DATABASE_URL=\"sqlite:///:memory:\" SECRET_KEY=\"test_secret_key_12345\" PYTHONPATH=/Users/richedwards/AI-Dev-Projects/Vividly/backend /Users/richedwards/AI-Dev-Projects/Vividly/backend/venv_test/bin/python:*)"
     ],
     "deny": [],
     "ask": []

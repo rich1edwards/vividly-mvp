@@ -35,9 +35,10 @@ class TestMassAssignment:
 
         # Should either reject or ignore the admin role
         if response.status_code == 201:
-            user_data = response.json()
+            response_data = response.json()
+            # Registration now returns {access_token, user, ...}
             assert (
-                user_data["role"] != "admin"
+                response_data["user"]["role"] != "admin"
             ), "Users should not be able to self-assign admin role"
 
     def test_cannot_modify_readonly_fields(self):

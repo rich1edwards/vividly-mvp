@@ -13,6 +13,7 @@ from app.schemas.auth import (
     UserRegister,
     UserLogin,
     Token,
+    TokenWithUser,
     UserResponse,
     PasswordResetRequest,
     PasswordResetConfirm,
@@ -23,7 +24,7 @@ from app.models.user import User
 router = APIRouter()
 
 
-@router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=TokenWithUser, status_code=status.HTTP_201_CREATED)
 def register(
     user_data: UserRegister,
     db: Session = Depends(get_db),
@@ -36,20 +37,20 @@ def register(
     - **role**: student or teacher
     - **grade_level**: Required for students (9-12)
 
-    Returns access and refresh tokens (auto-login).
+    Returns access and refresh tokens with user profile (auto-login).
     """
     user = auth_service.register_user(db, user_data)
-    tokens = auth_service.create_user_tokens(db, user)
+    tokens = auth_service.create_user_tokens_with_profile(db, user)
     return tokens
 
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=TokenWithUser)
 def login(
     credentials: UserLogin,
     db: Session = Depends(get_db),
 ):
     """
-    Authenticate user and return access + refresh tokens.
+    Authenticate user and return access + refresh tokens with user profile.
 
     - **email**: Registered email address
     - **password**: User password
@@ -63,7 +64,7 @@ def login(
     )
     print(f"[Auth Endpoint] Creating tokens for user...")
 
-    tokens = auth_service.create_user_tokens(db, user)
+    tokens = auth_service.create_user_tokens_with_profile(db, user)
 
     print(f"[Auth Endpoint] Tokens created successfully, returning response")
     return tokens

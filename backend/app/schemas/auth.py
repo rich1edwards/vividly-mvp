@@ -321,11 +321,23 @@ class UserResponse(BaseModel):
     last_name: str
     role: str
     status: str
-    grade_level: Optional[int]
+    grade_level: Optional[int] = None
     created_at: datetime
+    last_login_at: Optional[datetime] = None
+    organization_id: Optional[str] = None
 
     class Config:
         from_attributes = True
+
+
+class TokenWithUser(BaseModel):
+    """JWT token response with user profile - used for login/register."""
+
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int
+    user: UserResponse  # Now UserResponse is defined above
 
 
 class PasswordResetRequest(BaseModel):
