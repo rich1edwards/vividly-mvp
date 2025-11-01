@@ -35,10 +35,12 @@ class ScriptGenerationService:
 
         # Try to initialize Vertex AI
         try:
-            from google.cloud import aiplatform
+            # Modern import pattern (google-cloud-aiplatform >= 1.60.0)
+            import vertexai
             from vertexai.generative_models import GenerativeModel
 
-            aiplatform.init(project=self.project_id, location="us-central1")
+            # Initialize Vertex AI before using models
+            vertexai.init(project=self.project_id, location="us-central1")
             # Use Gemini with LearnLM tuning for education
             self.model = GenerativeModel("gemini-1.5-pro")
             self.vertex_available = True

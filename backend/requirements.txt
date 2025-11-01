@@ -26,11 +26,19 @@ google-cloud-secret-manager==2.16.4
 google-cloud-storage==2.10.0
 google-cloud-logging==3.8.0
 # google-cloud-sql-connector>=1.4.0  # Optional - for Cloud SQL Connector (not needed for direct PostgreSQL)
-google-cloud-aiplatform==1.38.0
-google-generativeai==0.3.1
+
+# Google Cloud AI Platform & Vertex AI
+# Includes vertexai module for Gemini models
+# Modern usage (v1.60+):
+#   import vertexai
+#   vertexai.init(project=PROJECT_ID, location=LOCATION)
+#   from vertexai.generative_models import GenerativeModel
+google-cloud-aiplatform==1.60.0
+
+# Google Cloud Text-to-Speech for audio generation
+google-cloud-texttospeech==2.16.3
 
 # Vertex AI & ML
-# vertexai>=1.38.0  # Conflicts with google-cloud-aiplatform - vertex AI included in aiplatform
 redis==5.0.1
 
 # TTS & Video Generation

@@ -193,10 +193,12 @@ async def match_interest_to_request(
         project_id = project_id or os.getenv("GCP_PROJECT_ID", "vividly-dev-rich")
 
         try:
-            from google.cloud import aiplatform
+            # Modern import pattern (google-cloud-aiplatform >= 1.60.0)
+            import vertexai
             from vertexai.generative_models import GenerativeModel
 
-            aiplatform.init(project=project_id, location=location)
+            # Initialize Vertex AI before using models
+            vertexai.init(project=project_id, location=location)
             model = GenerativeModel("gemini-1.5-pro")
             vertex_available = True
         except Exception as e:

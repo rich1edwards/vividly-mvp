@@ -10,6 +10,8 @@ from typing import List, Dict, Optional
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
+# Modern import pattern (google-cloud-aiplatform >= 1.60.0)
+import vertexai
 from google.cloud import aiplatform
 from google.cloud.aiplatform import MatchingEngineIndex, MatchingEngineIndexEndpoint
 from vertexai.language_models import TextEmbeddingModel
@@ -45,7 +47,8 @@ class VertexAIEmbeddings:
         self.location = location
         self.model_name = model_name
 
-        # Initialize Vertex AI
+        # Initialize Vertex AI (modern pattern requires vertexai.init())
+        vertexai.init(project=project_id, location=location)
         aiplatform.init(project=project_id, location=location)
 
         # Load model

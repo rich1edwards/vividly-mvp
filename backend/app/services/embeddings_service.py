@@ -42,8 +42,12 @@ class EmbeddingsService:
         # Try to initialize Vertex AI
         self.vertex_available = False
         try:
+            # Modern import pattern (google-cloud-aiplatform >= 1.60.0)
+            import vertexai
             from vertexai.language_models import TextEmbeddingModel
 
+            # Initialize Vertex AI before using models
+            vertexai.init(project=self.project_id, location="us-central1")
             self.embedding_model = TextEmbeddingModel.from_pretrained(self.model_name)
             self.vertex_available = True
             logger.info(f"Vertex AI Embeddings initialized: {self.model_name}")

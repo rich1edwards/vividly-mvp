@@ -39,10 +39,12 @@ class NLUService:
 
         # Try to initialize Vertex AI (will fail gracefully in test env)
         try:
-            from google.cloud import aiplatform
+            # Modern import pattern (google-cloud-aiplatform >= 1.60.0)
+            import vertexai
             from vertexai.generative_models import GenerativeModel
 
-            aiplatform.init(project=self.project_id, location=self.location)
+            # Initialize Vertex AI before using models
+            vertexai.init(project=self.project_id, location=self.location)
             self.model = GenerativeModel(self.model_name)
             self.vertex_available = True
             logger.info(f"Vertex AI initialized: {self.project_id}/{self.location}")

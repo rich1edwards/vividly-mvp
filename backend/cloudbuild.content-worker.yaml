@@ -1,0 +1,12 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/vividly-dev-rich/vividly/content-worker:latest'
+      - '-f'
+      - 'Dockerfile.content-worker'
+      - '.'
+images:
+  - 'us-central1-docker.pkg.dev/vividly-dev-rich/vividly/content-worker:latest'
+timeout: '900s'
