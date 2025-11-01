@@ -1,17 +1,17 @@
+# Set TESTING environment variable BEFORE ANY imports
+import os
+os.environ["TESTING"] = "true"
+
 """
 Security Test Configuration and Fixtures
 
 Provides test database and users specifically for security tests.
 Security tests use module-level TestClient, so we need session-scoped fixtures.
 """
-import os
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
-
-# Set TESTING environment variable BEFORE importing app
-os.environ["TESTING"] = "true"
 
 from app.core.database import Base, get_db
 from app.main import app

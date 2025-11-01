@@ -11,16 +11,18 @@ class CreateClassRequest(BaseModel):
     """Schema for creating a class."""
 
     name: str = Field(..., min_length=1, max_length=255)
-    subject: Optional[str] = Field(None, max_length=100)
+    subject: Optional[str] = Field(None, min_length=1, max_length=100)
     description: Optional[str] = None
     grade_levels: Optional[List[int]] = Field(
-        None, description="List of grade levels (9-12)"
+        None, min_items=1, description="List of grade levels (9-12)"
     )
 
     @validator("grade_levels")
     def validate_grade_levels(cls, v):
         """Validate grade levels are between 9-12."""
-        if v:
+        if v is not None:
+            if len(v) == 0:
+                raise ValueError("Grade levels list cannot be empty")
             for grade in v:
                 if grade < 9 or grade > 12:
                     raise ValueError("Grade levels must be between 9 and 12")

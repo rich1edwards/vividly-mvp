@@ -123,10 +123,14 @@ async def get_current_user(
     Raises:
         HTTPException: If token is invalid or user not found
     """
+    from app.models.session import Session as SessionModel
+
     token = credentials.credentials
     payload = decode_token(token)
 
     user_id: str = payload.get("sub")
+    session_id: str = payload.get("sid")  # Session ID from token
+
     if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -141,6 +145,22 @@ async def get_current_user(
             detail="User not found",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    # If token has session_id, validate that specific session
+    # This allows proper logout by revoking specific sessions
+    if session_id:
+        session = db.query(SessionModel).filter(
+            SessionModel.session_id == session_id,
+            SessionModel.user_id == user_id,
+            SessionModel.revoked == False
+        ).first()
+
+        if session is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Session has been revoked",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
     return user
 

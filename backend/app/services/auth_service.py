@@ -184,13 +184,16 @@ def create_user_tokens_with_profile(
     Returns:
         TokenWithUser: Access and refresh tokens with user profile
     """
-    # Create tokens
-    access_token = create_access_token(data={"sub": user.user_id})
-    refresh_token = create_refresh_token(data={"sub": user.user_id})
+    # Generate session ID first
+    session_id = generate_session_id()
+
+    # Create tokens with session_id embedded
+    access_token = create_access_token(data={"sub": user.user_id, "sid": session_id})
+    refresh_token = create_refresh_token(data={"sub": user.user_id, "sid": session_id})
 
     # Store refresh token in database
     session = SessionModel(
-        session_id=generate_session_id(),
+        session_id=session_id,
         user_id=user.user_id,
         refresh_token_hash=get_password_hash(refresh_token),
         ip_address=ip_address,

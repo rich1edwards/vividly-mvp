@@ -52,13 +52,18 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Security middleware (order matters - first in, last out)
 import os
-if os.getenv("TESTING") != "true":
+# Check for TESTING environment variable (case-insensitive)
+TESTING = os.getenv("TESTING", "").lower() in ["true", "1", "yes"]
+
+if not TESTING:
     # Only add these middlewares in non-test environments
+    logger.info("Adding security middlewares (NOT in test mode)")
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(BruteForceProtectionMiddleware)
     app.add_middleware(RateLimitMiddleware)
 else:
     # In test mode, only add security headers middleware
+    logger.info("Test mode detected - adding only SecurityHeadersMiddleware")
     app.add_middleware(SecurityHeadersMiddleware)
 
 # CORS middleware
