@@ -1,7 +1,7 @@
 # FastAPI and ASGI server
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-python-multipart==0.0.7  # Updated from 0.0.6 to fix CVE-2024-24762
+python-multipart==0.0.18  # Updated from 0.0.7 to fix CVE-2024-53981 (HIGH) - DoS via deformation vulnerability
 
 # Database
 sqlalchemy==2.0.23
