@@ -4,18 +4,51 @@
  * Main dashboard for student users
  */
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import DashboardLayout from '../../components/DashboardLayout'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
+import { InterestSelectionModal } from '../../components/InterestSelectionModal'
+import { interestsApi } from '../../api/interests'
 
 export const StudentDashboard: React.FC = () => {
   const navigate = useNavigate()
   const { user } = useAuthStore()
+  const [showInterestModal, setShowInterestModal] = useState(false)
+  const [_isCheckingInterests, setIsCheckingInterests] = useState(true)
+
+  // Check if student has selected interests on mount
+  useEffect(() => {
+    const checkInterests = async () => {
+      try {
+        const hasSelected = await interestsApi.hasSelected()
+        if (!hasSelected) {
+          setShowInterestModal(true)
+        }
+      } catch (error) {
+        console.error('Failed to check interests:', error)
+      } finally {
+        setIsCheckingInterests(false)
+      }
+    }
+
+    checkInterests()
+  }, [])
+
+  const handleInterestsComplete = () => {
+    setShowInterestModal(false)
+  }
 
   return (
     <DashboardLayout>
+      {/* Interest Selection Modal */}
+      <InterestSelectionModal
+        isOpen={showInterestModal}
+        onClose={() => {}} // Don't allow closing without selection
+        onComplete={handleInterestsComplete}
+      />
+
       <div className="space-y-6">
         {/* Welcome Header */}
         <div>

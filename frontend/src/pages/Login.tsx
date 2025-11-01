@@ -23,26 +23,39 @@ export const LoginPage: React.FC = () => {
 
   // Redirect if already authenticated
   useEffect(() => {
+    console.log('[Login] useEffect triggered', {
+      isAuthenticated,
+      user: user ? { id: user.user_id, email: user.email, role: user.role } : null
+    })
+
     if (isAuthenticated && user) {
+      console.log('[Login] User is authenticated, redirecting based on role:', user.role)
       // Redirect based on role
       switch (user.role) {
         case 'student':
+          console.log('[Login] Navigating to /student/dashboard')
           navigate('/student/dashboard')
           break
         case 'teacher':
+          console.log('[Login] Navigating to /teacher/dashboard')
           navigate('/teacher/dashboard')
           break
         case 'admin':
           // Organization Admin - access to their org only
+          console.log('[Login] Navigating to /admin/dashboard')
           navigate('/admin/dashboard')
           break
         case 'super_admin':
           // Vividly Platform Admin - full system access
+          console.log('[Login] Navigating to /super-admin/dashboard')
           navigate('/super-admin/dashboard')
           break
         default:
+          console.log('[Login] Navigating to /')
           navigate('/')
       }
+    } else {
+      console.log('[Login] User not authenticated, staying on login page')
     }
   }, [isAuthenticated, user, navigate])
 

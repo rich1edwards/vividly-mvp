@@ -46,6 +46,9 @@ export const ENDPOINTS = {
   TOPICS_LIST: '/topics',
   TOPICS_BY_SUBJECT: (subject: string) => `/topics/subject/${subject}`,
 
+  // Interests
+  INTERESTS: '/interests',
+
   // Teachers
   TEACHER_CLASSES: '/teachers/classes',
   TEACHER_CLASS_DETAIL: (classId: string) => `/teachers/classes/${classId}`,
@@ -55,5 +58,8 @@ export const ENDPOINTS = {
   // Admin
   ADMIN_USERS: '/admin/users',
   ADMIN_REQUESTS: '/admin/requests',
-  ADMIN_ANALYTICS: '/admin/analytics'
+  ADMIN_ANALYTICS: '/admin/analytics',
+
+  // Monitoring (Super Admin only)
+  MONITORING: '/monitoring'
 } as const

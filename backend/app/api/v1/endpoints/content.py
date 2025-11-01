@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Optional
 import logging
+import uuid
 
 from app.core.database import get_db
 from app.schemas.content import (
@@ -41,6 +42,8 @@ from app.services import content_service
 from app.services.content_delivery_service import ContentDeliveryService
 from app.services.content_tracking_service import ContentTrackingService
 from app.services.content_generation_service import ContentGenerationService
+from app.services import interest_service
+from app.services.request_monitoring_service import get_monitoring_service, RequestMonitoringService
 from app.utils.dependencies import get_current_user
 from app.models.user import User
 
@@ -719,15 +722,84 @@ async def generate_content(
     ```
     """
     try:
+        # Generate unique request ID for monitoring
+        request_id = str(uuid.uuid4())
+        monitoring_service = get_monitoring_service()
+
+        # Track: Request Received
+        monitoring_service.track_event(
+            request_id=request_id,
+            student_id=request.student_id,
+            stage=RequestMonitoringService.STAGE_REQUEST_RECEIVED,
+            status="completed",
+            metadata={
+                "student_query": request.student_query[:100],  # First 100 chars
+                "grade_level": request.grade_level
+            }
+        )
+
         # Initialize content generation service
         content_gen_service = ContentGenerationService()
+
+        # If interest not provided, use LLM to match student's interest to their request
+        interest_to_use = request.interest
+        if not interest_to_use and current_user.role == "student":
+            logger.info(f"Matching interest for student {current_user.user_id}")
+
+            # Track: Interest Matching Started
+            monitoring_service.track_event(
+                request_id=request_id,
+                student_id=request.student_id,
+                stage=RequestMonitoringService.STAGE_INTEREST_MATCH,
+                status="in_progress"
+            )
+
+            interest_match = await interest_service.match_interest_to_request(
+                db=db,
+                student_id=current_user.user_id,
+                student_query=request.student_query
+            )
+            if interest_match and interest_match.get("interest_name"):
+                interest_to_use = interest_match["interest_name"]
+
+                # Track: Interest Matching Completed
+                monitoring_service.track_event(
+                    request_id=request_id,
+                    student_id=request.student_id,
+                    stage=RequestMonitoringService.STAGE_INTEREST_MATCH,
+                    status="completed",
+                    confidence_score=interest_match.get("confidence"),
+                    metadata={
+                        "interest_name": interest_to_use,
+                        "reasoning": interest_match.get("reasoning"),
+                        "fallback_used": interest_match.get("fallback_used")
+                    }
+                )
+
+                logger.info(
+                    f"Matched interest: {interest_to_use} "
+                    f"(confidence: {interest_match.get('confidence', 0):.2f}, "
+                    f"reasoning: {interest_match.get('reasoning', 'N/A')})"
+                )
+            else:
+                logger.warning(f"No interest match found for student {current_user.user_id}")
+
+                # Track: Interest Matching Failed
+                monitoring_service.track_event(
+                    request_id=request_id,
+                    student_id=request.student_id,
+                    stage=RequestMonitoringService.STAGE_INTEREST_MATCH,
+                    status="completed",
+                    confidence_score=0.0,
+                    metadata={"no_match": True}
+                )
 
         # Generate content asynchronously
         result = await content_gen_service.generate_content_from_query(
             student_query=request.student_query,
             student_id=request.student_id,
             grade_level=request.grade_level,
-            interest=request.interest
+            interest=interest_to_use
         )
 
         # Return response based on result status

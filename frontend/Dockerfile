@@ -28,16 +28,22 @@ CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
 # ============================================================================
 FROM node:20-alpine as build
 
+# Build-time argument for API URL
+ARG VITE_API_URL=http://localhost:8000
+
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies (production only)
-RUN npm ci --only=production
+# Install all dependencies (needed for build)
+RUN npm ci
 
 # Copy source code
 COPY . .
+
+# Set environment variable for Vite build
+ENV VITE_API_URL=$VITE_API_URL
 
 # Build application
 RUN npm run build
@@ -54,8 +60,12 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port
-EXPOSE 80
+# Expose port 8080 for Cloud Run
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:8080/ || exit 1
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]

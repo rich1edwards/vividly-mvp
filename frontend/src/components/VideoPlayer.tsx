@@ -102,7 +102,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<Plyr | null>(null);
-  const progressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const progressTimerRef = useRef<number | null>(null);
   const lastProgressTimeRef = useRef<number>(0);
 
   const [isReady, setIsReady] = useState(false);
@@ -206,7 +206,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
       },
       quality: {
-        default: sources.find((s) => s.size === 720)?.size || sources[0].size,
+        default: sources.find((s) => s.size === 720)?.size || sources[0]?.size || 720,
         options: sources.map((s) => s.size).filter((size) => size !== undefined) as number[],
         forced: true,
         onChange: (quality: number) => {
@@ -319,7 +319,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             key={index}
             src={source.src}
             type={source.type}
-            size={source.size}
+            data-size={source.size}
           />
         ))}
 

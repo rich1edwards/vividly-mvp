@@ -13,23 +13,38 @@ export const authApi = {
    * Login user with email and password
    */
   async login(credentials: LoginCredentials): Promise<{ user: User; tokens: AuthTokens }> {
-    const formData = new FormData()
-    formData.append('username', credentials.email)
-    formData.append('password', credentials.password)
+    console.log('[authApi] Login request starting', {
+      email: credentials.email,
+      endpoint: ENDPOINTS.AUTH_LOGIN
+    })
 
-    const response = await apiClient.post<AuthTokens>(ENDPOINTS.AUTH_LOGIN, formData, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
+    const response = await apiClient.post<AuthTokens>(ENDPOINTS.AUTH_LOGIN, {
+      email: credentials.email,
+      password: credentials.password
+    })
+
+    console.log('[authApi] Login response received', {
+      status: response.status,
+      hasAccessToken: !!response.data.access_token,
+      hasRefreshToken: !!response.data.refresh_token
     })
 
     // Store tokens
     localStorage.setItem(ACCESS_TOKEN_KEY, response.data.access_token)
     localStorage.setItem(REFRESH_TOKEN_KEY, response.data.refresh_token)
+    console.log('[authApi] Tokens stored in localStorage')
 
     // Fetch user profile
+    console.log('[authApi] Fetching user profile from', ENDPOINTS.AUTH_ME)
     const userResponse = await apiClient.get<User>(ENDPOINTS.AUTH_ME)
+    console.log('[authApi] User profile received', {
+      userId: userResponse.data.user_id,
+      email: userResponse.data.email,
+      role: userResponse.data.role
+    })
+
     localStorage.setItem(USER_KEY, JSON.stringify(userResponse.data))
+    console.log('[authApi] User data stored in localStorage')
 
     return {
       user: userResponse.data,

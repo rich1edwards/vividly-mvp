@@ -40,10 +40,16 @@ export const useAuthStore = create<AuthStore>()(
 
       // Actions
       login: async (credentials: LoginCredentials) => {
+        console.log('[AuthStore] Login attempt started', { email: credentials.email })
         set({ isLoading: true, error: null })
 
         try {
+          console.log('[AuthStore] Calling authApi.login...')
           const { user, tokens } = await authApi.login(credentials)
+          console.log('[AuthStore] Login successful', {
+            user: { id: user.user_id, email: user.email, role: user.role },
+            hasTokens: !!tokens
+          })
 
           set({
             user,
@@ -52,7 +58,15 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
             error: null
           })
+          console.log('[AuthStore] State updated after successful login')
         } catch (error: any) {
+          console.error('[AuthStore] Login failed', {
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+            message: error.message
+          })
+
           const errorMessage =
             error.response?.data?.detail ||
             error.message ||

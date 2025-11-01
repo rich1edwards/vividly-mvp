@@ -80,8 +80,14 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "msg": error.get("msg", ""),
             "type": error.get("type", ""),
         }
+        # Don't include input field for bytes or large data to avoid serialization issues
         if "input" in error:
-            error_dict["input"] = error["input"]
+            input_value = error["input"]
+            # Skip bytes input or large multipart data
+            if not isinstance(input_value, bytes):
+                # Only include simple types (str, int, float, bool, None)
+                if isinstance(input_value, (str, int, float, bool, type(None))):
+                    error_dict["input"] = input_value
         errors.append(error_dict)
 
     return JSONResponse(

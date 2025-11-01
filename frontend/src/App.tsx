@@ -18,6 +18,7 @@ import RegisterPage from './pages/Register'
 
 // Student Pages
 import StudentDashboard from './pages/student/StudentDashboard'
+import StudentProfile from './pages/student/StudentProfile'
 import ContentRequestPage from './pages/student/ContentRequestPage'
 import StudentVideosPage from './pages/student/StudentVideosPage'
 import VideoPlayerPage from './pages/student/VideoPlayerPage'
@@ -31,6 +32,7 @@ import AdminDashboard from './pages/AdminDashboard'
 
 // Super Admin Pages
 import SuperAdminDashboard from './pages/SuperAdminDashboard'
+import RequestMonitoring from './pages/super-admin/RequestMonitoring'
 
 // Toast Notifications Container
 const ToastContainer: React.FC = () => {
@@ -69,6 +71,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[UserRole.STUDENT]}>
               <StudentDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/profile"
+          element={
+            <ProtectedRoute allowedRoles={[UserRole.STUDENT]}>
+              <StudentProfile />
             </ProtectedRoute>
           }
         />
@@ -171,6 +181,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
               <div>System Settings Page (Coming Soon)</div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/super-admin/monitoring"
+          element={
+            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
+              <RequestMonitoring />
             </ProtectedRoute>
           }
         />

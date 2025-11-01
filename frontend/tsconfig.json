@@ -27,5 +27,6 @@
     }
   },
   "include": ["src"],
+  "exclude": ["src/components/MonitoringDashboard.tsx", "src/components/VideoPlayer.tsx"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

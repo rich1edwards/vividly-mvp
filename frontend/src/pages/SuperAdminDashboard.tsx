@@ -1,10 +1,12 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '../components/DashboardLayout'
 import { Card, CardHeader, CardTitle, CardDescription } from '../components/ui/Card'
 import { useAuthStore } from '../store/authStore'
 
 export const SuperAdminDashboard: React.FC = () => {
   const { user } = useAuthStore()
+  const navigate = useNavigate()
 
   return (
     <DashboardLayout>
@@ -19,6 +21,16 @@ export const SuperAdminDashboard: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card
+            className="cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/super-admin/monitoring')}
+          >
+            <CardHeader>
+              <CardTitle>Request Monitoring</CardTitle>
+              <CardDescription>Real-time tracking of content generation requests and pipeline status</CardDescription>
+            </CardHeader>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>All Organizations</CardTitle>

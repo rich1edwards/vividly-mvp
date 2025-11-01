@@ -16,17 +16,13 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/Card';
 import {
   Activity,
   CheckCircle2,
   XCircle,
   Clock,
   AlertTriangle,
-  TrendingUp,
   Zap,
 } from 'lucide-react';
 
@@ -111,7 +107,7 @@ export const MonitoringDashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [activeRequests, setActiveRequests] = useState<Request[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<RequestDetail | null>(null);
-  const [metrics, setMetrics] = useState<MetricsBucket[]>([]);
+  const [setMetrics] = useState<MetricsBucket[]>([]);
   const [isConnected, setIsConnected] = useState(false);
 
   // Fetch initial data

@@ -54,8 +54,16 @@ def login(
     - **email**: Registered email address
     - **password**: User password
     """
+    print(f"[Auth Endpoint] Login request received for email: {credentials.email}")
+
     user = auth_service.authenticate_user(db, credentials.email, credentials.password)
+
+    print(f"[Auth Endpoint] User authenticated successfully: user_id={user.user_id}, email={user.email}")
+    print(f"[Auth Endpoint] Creating tokens for user...")
+
     tokens = auth_service.create_user_tokens(db, user)
+
+    print(f"[Auth Endpoint] Tokens created successfully, returning response")
     return tokens
 
 

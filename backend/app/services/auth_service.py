@@ -78,21 +78,39 @@ def authenticate_user(db: Session, email: str, password: str) -> User:
     Raises:
         HTTPException: 401 if credentials invalid, 403 if account suspended
     """
+    print(f"[AuthService] Authentication attempt for email: {email}")
+
     user = db.query(User).filter(User.email == email).first()
 
-    if not user or not verify_password(password, user.password_hash):
+    if not user:
+        print(f"[AuthService] User not found for email: {email}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+        )
+
+    print(f"[AuthService] User found: user_id={user.user_id}, email={user.email}, role={user.role}, status={user.status}")
+    print(f"[AuthService] Verifying password...")
+
+    password_valid = verify_password(password, user.password_hash)
+    print(f"[AuthService] Password verification result: {password_valid}")
+
+    if not password_valid:
+        print(f"[AuthService] Password verification failed for user: {user.email}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
         )
 
     if user.status != UserStatus.ACTIVE:
+        print(f"[AuthService] User account not active: {user.email}, status={user.status}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Account is {user.status.value}",
         )
 
     # Update last login
+    print(f"[AuthService] Authentication successful for user: {user.email}, updating last_login_at")
     user.last_login_at = datetime.utcnow()
     db.commit()
 

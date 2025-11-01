@@ -250,6 +250,19 @@ jobs:
           curl -f ${{ steps.urls.outputs.api_url }}/health || exit 1
           curl -f ${{ steps.urls.outputs.frontend_url }} || exit 1
 
+      - name: Run integration tests
+        env:
+          FRONTEND_URL: ${{ steps.urls.outputs.frontend_url }}
+          BACKEND_URL: ${{ steps.urls.outputs.api_url }}
+        run: |
+          chmod +x scripts/verify-deployment.sh
+          ./scripts/verify-deployment.sh \
+            --frontend-url "$FRONTEND_URL" \
+            --backend-url "$BACKEND_URL" \
+            --environment dev \
+            --test-email "${{ secrets.TEST_USER_EMAIL }}" \
+            --test-password "${{ secrets.TEST_USER_PASSWORD }}"
+
       - name: Post deployment summary
         run: |
           echo "## Development Deployment Successful! 🚀" >> $GITHUB_STEP_SUMMARY
