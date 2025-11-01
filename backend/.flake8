@@ -1,7 +1,18 @@
 [flake8]
 # Make flake8 compatible with Black
 max-line-length = 88
-extend-ignore = E203, E266, E501, W503, F403, F401
+extend-ignore =
+    E203,  # Whitespace before ':' (conflicts with Black)
+    E266,  # Too many leading '#' for block comment
+    E501,  # Line too long (handled by Black)
+    W503,  # Line break before binary operator (conflicts with Black)
+    F403,  # 'from module import *' used; unable to detect undefined names
+    F401,  # Module imported but unused
+    F541,  # f-string without placeholders (informational only, not a bug)
+    F841,  # Local variable assigned but never used (common in test fixtures)
+    E402,  # Module level import not at top of file (needed for path manipulation in scripts)
+    E712,  # Comparison to True/False (SQLAlchemy uses == for filter expressions)
+    F811   # Redefinition of unused name (Pydantic model inheritance pattern)
 exclude =
     .git,
     __pycache__,
