@@ -238,10 +238,11 @@ class TestAuthorizationSecurity:
 
         student_token = response.json()["access_token"]
 
-        # Try to access teacher endpoint
-        response = client.get(
-            "/api/v1/teacher/classes",
+        # Try to access teacher endpoint (POST /teachers/classes requires teacher role)
+        response = client.post(
+            "/api/v1/teachers/classes",
             headers={"Authorization": f"Bearer {student_token}"},
+            json={"name": "Test Class", "subject": "Math", "grade_levels": [9, 10]},
         )
 
         assert (
@@ -276,9 +277,16 @@ class TestAuthorizationSecurity:
         student1_token = response1.json()["access_token"]
         student1_id = response1.json()["user"]["user_id"]
 
-        # Try to access student 2's data
+        # Login as student 2 to get their user_id
+        response2 = client.post(
+            "/api/v1/auth/login",
+            json={"email": "student2@test.com", "password": "Password123!"},
+        )
+        student2_id = response2.json()["user"]["user_id"]
+
+        # Try to access student 2's data using student 1's token
         response = client.get(
-            f"/api/v1/students/student2_id/profile",
+            f"/api/v1/students/{student2_id}",
             headers={"Authorization": f"Bearer {student1_token}"},
         )
 
