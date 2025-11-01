@@ -4,42 +4,20 @@ Security Test Configuration and Fixtures
 Provides test database and users specifically for security tests.
 Security tests use module-level TestClient, so we need session-scoped fixtures.
 """
+import os
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
+
+# Set TESTING environment variable BEFORE importing app
+os.environ["TESTING"] = "true"
 
 from app.core.database import Base, get_db
 from app.main import app
 from app.models.user import User, UserRole, UserStatus
 from app.models.class_model import Class
 from app.utils.security import get_password_hash
-
-# Increase rate limits for test environment
-# This allows tests to run without hitting limits, while still testing rate limit functionality
-from app.middleware.security import RateLimitMiddleware, BruteForceProtectionMiddleware
-
-# Find and reconfigure rate limit middleware
-for middleware in app.user_middleware:
-    if hasattr(middleware, 'cls'):
-        if middleware.cls.__name__ == 'RateLimitMiddleware':
-            # Increase limits significantly for tests
-            if hasattr(middleware, 'options') and 'app' in middleware.options:
-                rate_middleware = middleware.options['app']
-                if hasattr(rate_middleware, 'rate_limits'):
-                    rate_middleware.rate_limits = {
-                        "/api/v1/auth/login": (100, 60),  # 100 requests per 60 seconds
-                        "/api/v1/auth/register": (100, 60),
-                        "/api/v1/auth/logout": (100, 60),
-                    }
-        elif middleware.cls.__name__ == 'BruteForceProtectionMiddleware':
-            # Increase brute force thresholds for tests
-            if hasattr(middleware, 'options') and 'app' in middleware.options:
-                brute_middleware = middleware.options['app']
-                if hasattr(brute_middleware, 'max_attempts'):
-                    brute_middleware.max_attempts = 50  # Allow 50 failed attempts
-                    brute_middleware.lockout_duration = 1  # 1 second lockout
-
 
 # Test database URL (SQLite in-memory for security tests)
 TEST_DATABASE_URL = "sqlite:///:memory:"
