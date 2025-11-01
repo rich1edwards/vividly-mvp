@@ -192,7 +192,7 @@ class TestSessionManagement:
         # Login to get token
         response = client.post(
             "/api/v1/auth/login",
-            json={"email": "student@test.com", "password": "TestPassword123!"},
+            json={"email": "student@test.com", "password": "Password123!"},
         )
 
         assert response.status_code == 200
@@ -233,7 +233,7 @@ class TestAuthorizationSecurity:
         # Login as student
         response = client.post(
             "/api/v1/auth/login",
-            json={"email": "student@test.com", "password": "TestPassword123!"},
+            json={"email": "student@test.com", "password": "Password123!"},
         )
 
         student_token = response.json()["access_token"]
@@ -321,7 +321,7 @@ class TestInputValidationSecurity:
                 "/api/v1/auth/register",
                 json={
                     "email": "test@test.com",
-                    "password": "TestPassword123!",
+                    "password": "Password123!",
                     "first_name": payload,
                     "last_name": "User",
                     "role": "student",

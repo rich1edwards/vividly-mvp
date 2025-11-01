@@ -33,13 +33,12 @@ class TestMassAssignment:
             },
         )
 
-        # Should either reject or ignore the admin role
-        if response.status_code == 201:
-            response_data = response.json()
-            # Registration now returns {access_token, user, ...}
-            assert (
-                response_data["user"]["role"] != "admin"
-            ), "Users should not be able to self-assign admin role"
+        # Should reject with 422 validation error
+        assert response.status_code == 422, "Admin role registration should be rejected"
+        error_detail = response.json().get("detail", [])
+        # Check that error mentions role validation
+        error_msg = str(error_detail).lower()
+        assert "role" in error_msg or "admin" in error_msg, "Error should mention role issue"
 
     def test_cannot_modify_readonly_fields(self):
         """Test that readonly fields like user_id, created_at cannot be modified."""

@@ -295,6 +295,34 @@ class UserRegister(BaseModel):
     role: UserRole
     grade_level: Optional[int] = Field(None, ge=9, le=12)
 
+    @field_validator("role")
+    @classmethod
+    def validate_role_for_registration(cls, v):
+        """Prevent users from registering as admin or super_admin."""
+        if v in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+            raise ValueError("Cannot register as admin or super_admin role")
+        return v
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_strength(cls, v):
+        """Validate password contains mixed case, number."""
+        if not re.search(r"[a-z]", v):
+            raise ValueError("Password must contain at least one lowercase letter")
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"\d", v):
+            raise ValueError("Password must contain at least one number")
+        return v
+
+    @field_validator("grade_level")
+    @classmethod
+    def validate_grade_level_for_students(cls, v, info):
+        """Validate grade_level is required for students."""
+        if "role" in info.data and info.data["role"] == UserRole.STUDENT and v is None:
+            raise ValueError("grade_level is required for students")
+        return v
+
 
 class UserLogin(BaseModel):
     """User login request."""
