@@ -14,9 +14,10 @@ from app.schemas.cache import (
     CacheCheckResponse,
     CacheStoreRequest,
     CacheStoreResponse,
-    CacheStatsResponse
+    CacheStatsResponse,
 )
 from app.services.cache_service import CacheService
+
 # from app.core.security import require_service_token  # TODO: Implement service-to-service auth
 import logging
 
@@ -57,7 +58,7 @@ def get_cache_service() -> CacheService:
     2. If miss, check GCS cold cache (permanent)
     3. If GCS hit, warm up Redis for next time
     """,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def check_cache(
     request: CacheCheckRequest,
@@ -77,9 +78,7 @@ async def check_cache(
     try:
         # Check cache (Redis → GCS)
         cache_hit, metadata = await cache_service.check_content_cache(
-            topic_id=request.topic_id,
-            interest=request.interest,
-            style=request.style
+            topic_id=request.topic_id, interest=request.interest, style=request.style
         )
 
         # Build response
@@ -94,26 +93,22 @@ async def check_cache(
                 thumbnail_url=metadata.get("thumbnail_url"),
                 duration_seconds=metadata.get("duration_seconds"),
                 generated_at=metadata.get("generated_at"),
-                cached_at=metadata.get("cached_at")
+                cached_at=metadata.get("cached_at"),
             )
         else:
             # Cache miss
             cache_key = cache_service.generate_cache_key(
                 topic_id=request.topic_id,
                 interest=request.interest,
-                style=request.style
+                style=request.style,
             )
-            return CacheCheckResponse(
-                cache_hit=False,
-                cache_key=cache_key,
-                status=None
-            )
+            return CacheCheckResponse(cache_hit=False, cache_key=cache_key, status=None)
 
     except Exception as e:
         logger.error(f"Cache check failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Cache check failed"
+            detail="Cache check failed",
         )
 
 
@@ -131,7 +126,7 @@ async def check_cache(
     - Redis: 1 hour TTL (hot cache)
     - GCS: Permanent (cold cache, audit trail)
     """,
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
 )
 async def store_cache(
     request: CacheStoreRequest,
@@ -160,13 +155,12 @@ async def store_cache(
             "topic_id": request.topic_id,
             "interest_id": request.interest_id,
             "generated_at": request.generated_at,
-            "status": "completed"
+            "status": "completed",
         }
 
         # Store in cache
         success = await cache_service.store_content_cache(
-            cache_key=request.cache_key,
-            metadata=metadata
+            cache_key=request.cache_key, metadata=metadata
         )
 
         # Check which caches succeeded
@@ -176,16 +170,18 @@ async def store_cache(
         return CacheStoreResponse(
             success=success,
             cache_key=request.cache_key,
-            message="Content cached successfully" if success else "Cache storage failed",
+            message="Content cached successfully"
+            if success
+            else "Cache storage failed",
             redis_stored=redis_stored and success,
-            gcs_stored=gcs_stored and success
+            gcs_stored=gcs_stored and success,
         )
 
     except Exception as e:
         logger.error(f"Cache storage failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Cache storage failed"
+            detail="Cache storage failed",
         )
 
 
@@ -198,7 +194,7 @@ async def store_cache(
 
     Useful for monitoring cache hit rates and optimizing cache strategy.
     """,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def get_cache_stats(
     cache_service: CacheService = Depends(get_cache_service),
@@ -221,7 +217,7 @@ async def get_cache_stats(
         logger.error(f"Failed to get cache stats: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve cache statistics"
+            detail="Failed to retrieve cache statistics",
         )
 
 
@@ -233,7 +229,7 @@ async def get_cache_stats(
 
     GCS cache (cold cache) is preserved by default for audit purposes.
     """,
-    status_code=status.HTTP_204_NO_CONTENT
+    status_code=status.HTTP_204_NO_CONTENT,
 )
 async def invalidate_cache(
     cache_key: str,
@@ -254,15 +250,13 @@ async def invalidate_cache(
     """
     try:
         success = await cache_service.invalidate_content_cache(
-            cache_key=cache_key,
-            invalidate_redis=True,
-            invalidate_gcs=invalidate_gcs
+            cache_key=cache_key, invalidate_redis=True, invalidate_gcs=invalidate_gcs
         )
 
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Cache invalidation failed"
+                detail="Cache invalidation failed",
             )
 
         return None
@@ -273,5 +267,5 @@ async def invalidate_cache(
         logger.error(f"Cache invalidation failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Cache invalidation failed"
+            detail="Cache invalidation failed",
         )

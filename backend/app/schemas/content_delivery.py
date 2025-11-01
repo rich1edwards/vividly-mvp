@@ -10,16 +10,15 @@ from typing import Optional, List
 class SignedURLRequest(BaseModel):
     """Request for single signed URL."""
 
-    asset_type: str = Field(..., description="Asset type: video, audio, script, thumbnail")
-    quality: str = Field(default="1080p", description="Quality level for video (1080p, 720p, 480p)")
+    asset_type: str = Field(
+        ..., description="Asset type: video, audio, script, thumbnail"
+    )
+    quality: str = Field(
+        default="1080p", description="Quality level for video (1080p, 720p, 480p)"
+    )
 
     class Config:
-        json_schema_extra = {
-            "example": {
-                "asset_type": "video",
-                "quality": "1080p"
-            }
-        }
+        json_schema_extra = {"example": {"asset_type": "video", "quality": "1080p"}}
 
 
 class SignedURLResponse(BaseModel):
@@ -31,9 +30,13 @@ class SignedURLResponse(BaseModel):
     url: str = Field(..., description="Signed GCS URL")
     expires_at: str = Field(..., description="ISO timestamp when URL expires")
     expires_in_seconds: int = Field(..., description="Seconds until URL expires")
-    cdn_cache_status: str = Field(..., description="CDN cache status (HIT, MISS, BYPASS)")
+    cdn_cache_status: str = Field(
+        ..., description="CDN cache status (HIT, MISS, BYPASS)"
+    )
     file_size_bytes: Optional[int] = Field(None, description="File size in bytes")
-    duration_seconds: Optional[int] = Field(None, description="Duration in seconds (video/audio)")
+    duration_seconds: Optional[int] = Field(
+        None, description="Duration in seconds (video/audio)"
+    )
 
     class Config:
         json_schema_extra = {
@@ -46,7 +49,7 @@ class SignedURLResponse(BaseModel):
                 "expires_in_seconds": 900,
                 "cdn_cache_status": "HIT",
                 "file_size_bytes": 25600000,
-                "duration_seconds": 180
+                "duration_seconds": 180,
             }
         }
 
@@ -54,7 +57,9 @@ class SignedURLResponse(BaseModel):
 class BatchURLRequestItem(BaseModel):
     """Single URL request in batch."""
 
-    cache_key: str = Field(..., description="Content cache key", min_length=64, max_length=64)
+    cache_key: str = Field(
+        ..., description="Content cache key", min_length=64, max_length=64
+    )
     type: str = Field(..., description="Asset type: video, audio, script, thumbnail")
     quality: str = Field(default="1080p", description="Quality level for video")
 
@@ -63,7 +68,7 @@ class BatchURLRequestItem(BaseModel):
             "example": {
                 "cache_key": "a7f3e2b1c9d8f6e4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0",
                 "type": "video",
-                "quality": "720p"
+                "quality": "720p",
             }
         }
 
@@ -71,7 +76,9 @@ class BatchURLRequestItem(BaseModel):
 class BatchURLRequest(BaseModel):
     """Request for multiple signed URLs."""
 
-    requests: List[BatchURLRequestItem] = Field(..., description="List of URL requests", min_length=1, max_length=10)
+    requests: List[BatchURLRequestItem] = Field(
+        ..., description="List of URL requests", min_length=1, max_length=10
+    )
 
     class Config:
         json_schema_extra = {
@@ -80,12 +87,12 @@ class BatchURLRequest(BaseModel):
                     {
                         "cache_key": "a7f3e2b1c9d8f6e4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0",
                         "type": "video",
-                        "quality": "720p"
+                        "quality": "720p",
                     },
                     {
                         "cache_key": "a7f3e2b1c9d8f6e4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0",
-                        "type": "audio"
-                    }
+                        "type": "audio",
+                    },
                 ]
             }
         }
@@ -96,7 +103,9 @@ class BatchURLResponse(BaseModel):
 
     urls: List[SignedURLResponse] = Field(..., description="List of signed URLs")
     generated_at: str = Field(..., description="ISO timestamp when URLs were generated")
-    expires_in_seconds: int = Field(..., description="Minimum expiration time across all URLs")
+    expires_in_seconds: int = Field(
+        ..., description="Minimum expiration time across all URLs"
+    )
 
     class Config:
         json_schema_extra = {
@@ -111,7 +120,7 @@ class BatchURLResponse(BaseModel):
                         "expires_in_seconds": 900,
                         "cdn_cache_status": "HIT",
                         "file_size_bytes": 15360000,
-                        "duration_seconds": 180
+                        "duration_seconds": 180,
                     },
                     {
                         "cache_key": "a7f3e2b1...",
@@ -122,11 +131,11 @@ class BatchURLResponse(BaseModel):
                         "expires_in_seconds": 900,
                         "cdn_cache_status": "HIT",
                         "file_size_bytes": 5120000,
-                        "duration_seconds": 180
-                    }
+                        "duration_seconds": 180,
+                    },
                 ],
                 "generated_at": "2025-10-29T10:00:00Z",
-                "expires_in_seconds": 900
+                "expires_in_seconds": 900,
             }
         }
 
@@ -145,6 +154,6 @@ class ContentAccessStats(BaseModel):
                 "total_requests": 500,
                 "video_requests": 300,
                 "audio_requests": 150,
-                "script_requests": 50
+                "script_requests": 50,
             }
         }

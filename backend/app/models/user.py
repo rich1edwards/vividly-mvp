@@ -12,6 +12,7 @@ from app.core.database import Base
 
 class UserRole(str, enum.Enum):
     """User role enumeration."""
+
     STUDENT = "student"
     TEACHER = "teacher"
     ADMIN = "admin"
@@ -20,6 +21,7 @@ class UserRole(str, enum.Enum):
 
 class UserStatus(str, enum.Enum):
     """User status enumeration."""
+
     ACTIVE = "active"
     SUSPENDED = "suspended"
     PENDING = "pending"
@@ -67,9 +69,15 @@ class User(Base):
     archived_at = Column(TIMESTAMP, nullable=True)
 
     # Relationships
-    sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
-    student_interests = relationship("StudentInterest", back_populates="user", cascade="all, delete-orphan")
-    student_progress = relationship("StudentProgress", back_populates="user", cascade="all, delete-orphan")
+    sessions = relationship(
+        "Session", back_populates="user", cascade="all, delete-orphan"
+    )
+    student_interests = relationship(
+        "StudentInterest", back_populates="user", cascade="all, delete-orphan"
+    )
+    student_progress = relationship(
+        "StudentProgress", back_populates="user", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         return f"<User {self.email} ({self.role})>"

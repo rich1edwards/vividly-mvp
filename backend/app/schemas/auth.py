@@ -13,6 +13,7 @@ from app.models.user import UserRole
 
 class RegisterRequest(BaseModel):
     """Alias for UserRegister - for backwards compatibility."""
+
     """
     User registration request.
 
@@ -32,7 +33,9 @@ class RegisterRequest(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=100, description="First name")
     last_name: str = Field(..., min_length=1, max_length=100, description="Last name")
     role: str = Field(..., description="User role (student, teacher)")
-    grade_level: Optional[int] = Field(None, ge=9, le=12, description="Grade level (required for students)")
+    grade_level: Optional[int] = Field(
+        None, ge=9, le=12, description="Grade level (required for students)"
+    )
 
     @field_validator("password")
     @classmethod
@@ -210,7 +213,9 @@ class PasswordResetResponse(BaseModel):
         }
     """
 
-    message: str = "If an account exists with this email, a password reset link has been sent."
+    message: str = (
+        "If an account exists with this email, a password reset link has been sent."
+    )
 
 
 class PasswordResetConfirmRequest(BaseModel):
@@ -225,7 +230,9 @@ class PasswordResetConfirmRequest(BaseModel):
     """
 
     reset_token: str = Field(..., description="Reset token from email")
-    new_password: str = Field(..., min_length=8, description="New password (min 8 characters)")
+    new_password: str = Field(
+        ..., min_length=8, description="New password (min 8 characters)"
+    )
 
     @field_validator("new_password")
     @classmethod
@@ -268,6 +275,7 @@ class ErrorResponse(BaseModel):
 
     error: dict = Field(..., description="Error details")
 
+
 # Aliases for backwards compatibility with Sprint 1 implementation
 UserRegister = RegisterRequest
 UserLogin = LoginRequest
@@ -275,9 +283,11 @@ Token = RefreshTokenResponse
 UserResponse = RegisterResponse
 PasswordResetConfirm = PasswordResetConfirmRequest
 
+
 # Proper schemas for Sprint 1
 class UserRegister(BaseModel):
     """User registration request."""
+
     email: EmailStr
     password: str = Field(..., min_length=8)
     first_name: str = Field(..., min_length=1, max_length=100)
@@ -285,20 +295,26 @@ class UserRegister(BaseModel):
     role: UserRole
     grade_level: Optional[int] = Field(None, ge=9, le=12)
 
+
 class UserLogin(BaseModel):
     """User login request."""
+
     email: EmailStr
     password: str
 
+
 class Token(BaseModel):
     """JWT token response."""
+
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
     expires_in: int
 
+
 class UserResponse(BaseModel):
     """User response."""
+
     user_id: str
     email: str
     first_name: str
@@ -307,15 +323,19 @@ class UserResponse(BaseModel):
     status: str
     grade_level: Optional[int]
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
+
 class PasswordResetRequest(BaseModel):
     """Password reset request."""
+
     email: EmailStr
+
 
 class PasswordResetConfirm(BaseModel):
     """Password reset confirmation."""
+
     token: str
     new_password: str = Field(..., min_length=8)

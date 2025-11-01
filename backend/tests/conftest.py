@@ -25,7 +25,11 @@ from app.models.session import Session as SessionModel
 from app.models.class_model import Class
 from app.models.interest import Interest, StudentInterest
 from app.models.progress import Topic, ProgressStatus
-from app.utils.security import get_password_hash, create_access_token, create_refresh_token
+from app.utils.security import (
+    get_password_hash,
+    create_access_token,
+    create_refresh_token,
+)
 from datetime import datetime, timedelta
 
 
@@ -49,7 +53,9 @@ def db_engine():
 @pytest.fixture(scope="function")
 def db_session(db_engine) -> Generator[Session, None, None]:
     """Create a test database session."""
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=db_engine)
+    TestingSessionLocal = sessionmaker(
+        autocommit=False, autoflush=False, bind=db_engine
+    )
     session = TestingSessionLocal()
     try:
         yield session
@@ -60,6 +66,7 @@ def db_session(db_engine) -> Generator[Session, None, None]:
 @pytest.fixture(scope="function")
 def client(db_session) -> Generator[TestClient, None, None]:
     """Create a test client with database override."""
+
     def override_get_db():
         try:
             yield db_session
@@ -97,21 +104,21 @@ def sample_topics(db_session) -> list[Topic]:
             subject="Physics",
             unit="Newton's Laws",
             name="Newton's First Law",
-            topic_order=1
+            topic_order=1,
         ),
         Topic(
             topic_id="topic_newton_2",
             subject="Physics",
             unit="Newton's Laws",
             name="Newton's Second Law",
-            topic_order=2
+            topic_order=2,
         ),
         Topic(
             topic_id="topic_newton_3",
             subject="Physics",
             unit="Newton's Laws",
             name="Newton's Third Law",
-            topic_order=3
+            topic_order=3,
         ),
     ]
     for topic in topics:

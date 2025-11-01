@@ -1,7 +1,18 @@
 """
 Content Metadata model for generated video content.
 """
-from sqlalchemy import Column, String, Integer, Boolean, Text, TIMESTAMP, Enum as SQLEnum, ForeignKey, DECIMAL, JSON
+from sqlalchemy import (
+    Column,
+    String,
+    Integer,
+    Boolean,
+    Text,
+    TIMESTAMP,
+    Enum as SQLEnum,
+    ForeignKey,
+    DECIMAL,
+    JSON,
+)
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -11,6 +22,7 @@ from app.core.database import Base
 
 class GenerationStatus(str, enum.Enum):
     """Content generation status enum."""
+
     PENDING = "pending"
     GENERATING = "generating"
     COMPLETED = "completed"
@@ -57,7 +69,9 @@ class ContentMetadata(Base):
     average_rating = Column(DECIMAL(3, 2))
 
     created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False)
-    updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    updated_at = Column(
+        TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
     archived = Column(Boolean, default=False)
 
     # Relationships

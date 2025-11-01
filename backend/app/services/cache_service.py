@@ -42,7 +42,7 @@ class CacheService:
             redis_url: Redis connection URL (default: from environment)
             gcs_client: Google Cloud Storage client for cold cache (optional)
         """
-        self.redis_url = redis_url or os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+        self.redis_url = redis_url or os.getenv("REDIS_URL", "redis://localhost:6379/0")
         self.client = redis.from_url(self.redis_url, decode_responses=True)
         self.gcs = gcs_client
 
@@ -59,10 +59,7 @@ class CacheService:
     # ========================================================================
 
     def generate_cache_key(
-        self,
-        topic_id: str,
-        interest: str,
-        style: str = "standard"
+        self, topic_id: str, interest: str, style: str = "standard"
     ) -> str:
         """
         Generate deterministic cache key from content parameters.
@@ -91,17 +88,14 @@ class CacheService:
         cache_input = f"{topic_id}|{interest}|{style}"
 
         # Generate SHA256 hash (deterministic)
-        cache_key = hashlib.sha256(cache_input.encode('utf-8')).hexdigest()
+        cache_key = hashlib.sha256(cache_input.encode("utf-8")).hexdigest()
 
         logger.debug(f"Generated cache key: {cache_key} for {cache_input}")
 
         return cache_key
 
     async def check_content_cache(
-        self,
-        topic_id: str,
-        interest: str,
-        style: str = "standard"
+        self, topic_id: str, interest: str, style: str = "standard"
     ) -> Tuple[bool, Optional[Dict]]:
         """
         Check if content exists in cache (Redis hot cache → GCS cold cache).
@@ -237,11 +231,7 @@ class CacheService:
             data = json.dumps(metadata)
 
             # Store in Redis with 1 hour TTL (Story 3.1.1 requirement)
-            self.client.setex(
-                f"content:metadata:{cache_key}",
-                timedelta(hours=1),
-                data
-            )
+            self.client.setex(f"content:metadata:{cache_key}", timedelta(hours=1), data)
 
             logger.debug(f"Stored in Redis: {cache_key} (TTL: 1 hour)")
             return True
@@ -250,11 +240,7 @@ class CacheService:
             logger.error(f"Redis store failed for {cache_key}: {e}")
             return False
 
-    async def store_content_cache(
-        self,
-        cache_key: str,
-        metadata: Dict
-    ) -> bool:
+    async def store_content_cache(self, cache_key: str, metadata: Dict) -> bool:
         """
         Store content metadata in both Redis and GCS.
 
@@ -317,15 +303,12 @@ class CacheService:
             # Set metadata
             blob.metadata = {
                 "content-type": "application/json",
-                "cache-control": "public, max-age=3600"
+                "cache-control": "public, max-age=3600",
             }
 
             # Upload JSON
             data = json.dumps(metadata, indent=2)
-            blob.upload_from_string(
-                data,
-                content_type="application/json"
-            )
+            blob.upload_from_string(data, content_type="application/json")
 
             logger.debug(f"Stored in GCS: {cache_key}")
             return True
@@ -338,7 +321,7 @@ class CacheService:
         self,
         cache_key: str,
         invalidate_redis: bool = True,
-        invalidate_gcs: bool = False
+        invalidate_gcs: bool = False,
     ) -> bool:
         """
         Invalidate cached content.
@@ -399,9 +382,7 @@ class CacheService:
         total_requests = self.stats["cache_hits"] + self.stats["cache_misses"]
 
         hit_rate = (
-            self.stats["cache_hits"] / total_requests
-            if total_requests > 0
-            else 0.0
+            self.stats["cache_hits"] / total_requests if total_requests > 0 else 0.0
         )
 
         return {
@@ -451,12 +432,7 @@ class CacheService:
             print(f"Cache get error for key {key}: {e}")
             return None
 
-    def set(
-        self,
-        key: str,
-        value: Any,
-        ttl: Optional[int] = None
-    ) -> bool:
+    def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
         """
         Set value in cache with optional TTL.
 
@@ -571,10 +547,9 @@ class CacheService:
 # Caching Decorators
 # ============================================================================
 
+
 def cached(
-    ttl: int = 300,
-    key_prefix: str = "cache",
-    key_fn: Optional[callable] = None
+    ttl: int = 300, key_prefix: str = "cache", key_fn: Optional[callable] = None
 ):
     """
     Decorator to cache function results.
@@ -589,6 +564,7 @@ def cached(
         def get_user(user_id: str):
             return db.query(User).filter(User.id == user_id).first()
     """
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -616,12 +592,14 @@ def cached(
             return result
 
         return wrapper
+
     return decorator
 
 
 # ============================================================================
 # Common Caching Patterns
 # ============================================================================
+
 
 class UserCache:
     """Cache for user data."""

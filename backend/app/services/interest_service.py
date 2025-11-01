@@ -25,10 +25,7 @@ def get_all_interests(db: Session) -> List[Interest]:
     Returns:
         List[Interest]: All available interests ordered by category and display_order
     """
-    return db.query(Interest).order_by(
-        Interest.category,
-        Interest.display_order
-    ).all()
+    return db.query(Interest).order_by(Interest.category, Interest.display_order).all()
 
 
 def get_student_interests(db: Session, student_id: str) -> List[Interest]:
@@ -42,17 +39,15 @@ def get_student_interests(db: Session, student_id: str) -> List[Interest]:
     Returns:
         List[Interest]: Student's selected interests
     """
-    student_interests = db.query(StudentInterest).filter(
-        StudentInterest.student_id == student_id
-    ).all()
+    student_interests = (
+        db.query(StudentInterest).filter(StudentInterest.student_id == student_id).all()
+    )
 
     return [si.interest for si in student_interests]
 
 
 def set_student_interests(
-    db: Session,
-    student_id: str,
-    interest_data: StudentInterestCreate
+    db: Session, student_id: str, interest_data: StudentInterestCreate
 ) -> List[Interest]:
     """
     Set student's interests (replaces existing).
@@ -72,38 +67,36 @@ def set_student_interests(
     student = db.query(User).filter(User.user_id == student_id).first()
     if not student:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Student not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Student not found"
         )
 
     # Validate interest count
     if len(interest_data.interest_ids) < 2 or len(interest_data.interest_ids) > 5:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Must select between 2-5 interests"
+            detail="Must select between 2-5 interests",
         )
 
     # Validate all interests exist
-    interests = db.query(Interest).filter(
-        Interest.interest_id.in_(interest_data.interest_ids)
-    ).all()
+    interests = (
+        db.query(Interest)
+        .filter(Interest.interest_id.in_(interest_data.interest_ids))
+        .all()
+    )
 
     if len(interests) != len(interest_data.interest_ids):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="One or more interests not found"
+            detail="One or more interests not found",
         )
 
     # Remove existing student interests
-    db.query(StudentInterest).filter(
-        StudentInterest.student_id == student_id
-    ).delete()
+    db.query(StudentInterest).filter(StudentInterest.student_id == student_id).delete()
 
     # Add new student interests
     for interest_id in interest_data.interest_ids:
         student_interest = StudentInterest(
-            student_id=student_id,
-            interest_id=interest_id
+            student_id=student_id, interest_id=interest_id
         )
         db.add(student_interest)
 
@@ -124,9 +117,11 @@ def has_selected_interests(db: Session, student_id: str) -> bool:
     Returns:
         bool: True if student has selected interests
     """
-    count = db.query(StudentInterest).filter(
-        StudentInterest.student_id == student_id
-    ).count()
+    count = (
+        db.query(StudentInterest)
+        .filter(StudentInterest.student_id == student_id)
+        .count()
+    )
 
     return count >= 2
 
@@ -136,7 +131,7 @@ async def match_interest_to_request(
     student_id: str,
     student_query: str,
     project_id: Optional[str] = None,
-    location: str = "us-central1"
+    location: str = "us-central1",
 ) -> Dict[str, Any]:
     """
     Use LLM to determine which student interest best aligns with their request.
@@ -177,7 +172,7 @@ async def match_interest_to_request(
             "interest_name": None,
             "confidence": 0.0,
             "reasoning": "Student has not selected any interests",
-            "fallback_used": True
+            "fallback_used": True,
         }
 
     # If only one interest, return it directly
@@ -189,7 +184,7 @@ async def match_interest_to_request(
             "interest_name": interest.name,
             "confidence": 1.0,
             "reasoning": "Only one interest available",
-            "fallback_used": False
+            "fallback_used": False,
         }
 
     # Multiple interests - use LLM to match
@@ -212,12 +207,14 @@ async def match_interest_to_request(
             # Build prompt for LLM
             interests_list = []
             for interest in interests:
-                interests_list.append({
-                    "interest_id": interest.interest_id,
-                    "name": interest.name,
-                    "category": interest.category,
-                    "description": interest.description
-                })
+                interests_list.append(
+                    {
+                        "interest_id": interest.interest_id,
+                        "name": interest.name,
+                        "category": interest.category,
+                        "description": interest.description,
+                    }
+                )
 
             prompt = f"""You are an AI assistant helping to personalize educational content.
 
@@ -276,8 +273,7 @@ Response:"""
 
                 # Find the matched interest
                 matched_interest = next(
-                    (i for i in interests if i.interest_id == matched_interest_id),
-                    None
+                    (i for i in interests if i.interest_id == matched_interest_id), None
                 )
 
                 if matched_interest:
@@ -287,10 +283,12 @@ Response:"""
                         "interest_name": matched_interest.name,
                         "confidence": confidence,
                         "reasoning": reasoning,
-                        "fallback_used": False
+                        "fallback_used": False,
                     }
                 else:
-                    logger.warning(f"LLM returned invalid interest_id: {matched_interest_id}")
+                    logger.warning(
+                        f"LLM returned invalid interest_id: {matched_interest_id}"
+                    )
                     # Fall through to fallback
             except (json.JSONDecodeError, KeyError, ValueError) as e:
                 logger.error(f"Failed to parse LLM response: {e}")
@@ -310,5 +308,5 @@ Response:"""
         "interest_name": fallback_interest.name,
         "confidence": 0.5,
         "reasoning": "Fallback: Using first interest due to matching error",
-        "fallback_used": True
+        "fallback_used": True,
     }

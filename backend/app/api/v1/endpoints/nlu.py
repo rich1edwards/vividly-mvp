@@ -12,7 +12,7 @@ from app.schemas.nlu import (
     TopicExtractionResponse,
     ClarificationRequest,
     TopicSuggestionRequest,
-    TopicSuggestionsResponse
+    TopicSuggestionsResponse,
 )
 from app.services.nlu_service import get_nlu_service, NLUService
 from app.utils.dependencies import get_current_user
@@ -43,13 +43,13 @@ router = APIRouter(prefix="/nlu", tags=["nlu"])
     - "Help me understand chemical bonds"
     - "What is photosynthesis?"
     """,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def extract_topic(
     request: TopicExtractionRequest,
     current_user: User = Depends(get_current_user),
     nlu_service: NLUService = Depends(get_nlu_service),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Extract topic from natural language query using AI.
@@ -75,7 +75,7 @@ async def extract_topic(
             grade_level=grade_level,
             student_id=current_user.user_id,
             recent_topics=request.recent_topics or [],
-            subject_context=request.subject_context
+            subject_context=request.subject_context,
         )
 
         return TopicExtractionResponse(**result)
@@ -84,7 +84,7 @@ async def extract_topic(
         logger.error(f"Topic extraction failed: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Topic extraction failed. Please try again."
+            detail="Topic extraction failed. Please try again.",
         )
 
 
@@ -97,13 +97,13 @@ async def extract_topic(
 
     Used when initial extraction was ambiguous and clarifying questions were asked.
     """,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def clarify_topic(
     request: ClarificationRequest,
     current_user: User = Depends(get_current_user),
     nlu_service: NLUService = Depends(get_nlu_service),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Re-extract topic with clarification from student.
@@ -119,7 +119,9 @@ async def clarify_topic(
     """
     try:
         # Combine original query with clarification
-        combined_query = f"{request.original_query}. Specifically: {request.clarification_answer}"
+        combined_query = (
+            f"{request.original_query}. Specifically: {request.clarification_answer}"
+        )
 
         # Extract with combined context
         result = await nlu_service.extract_topic(
@@ -127,7 +129,7 @@ async def clarify_topic(
             grade_level=request.grade_level,
             student_id=current_user.user_id,
             recent_topics=[],
-            subject_context=None
+            subject_context=None,
         )
 
         return TopicExtractionResponse(**result)
@@ -136,7 +138,7 @@ async def clarify_topic(
         logger.error(f"Clarification failed: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Topic clarification failed. Please try again."
+            detail="Topic clarification failed. Please try again.",
         )
 
 
@@ -158,12 +160,12 @@ async def clarify_topic(
     - Empty state on dashboard
     - After completing a topic
     """,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def suggest_topics(
     request: TopicSuggestionRequest,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get personalized topic suggestions.
@@ -185,32 +187,33 @@ async def suggest_topics(
             db=db,
             subject=request.subject,
             grade_level=request.grade_level,
-            limit=request.limit
+            limit=request.limit,
         )
 
         # Simple suggestion logic (can be enhanced with ML)
         suggestions = []
         for topic_data in topics.get("topics", []):
             topic = topic_data["topic"]
-            suggestions.append({
-                "topic_id": topic["topic_id"],
-                "topic_name": topic["name"],
-                "subject": topic["subject"],
-                "difficulty": topic.get("difficulty", "intermediate"),
-                "relevance_score": 0.8,  # Placeholder - ML model would provide this
-                "reason": "Recommended for your grade level"
-            })
+            suggestions.append(
+                {
+                    "topic_id": topic["topic_id"],
+                    "topic_name": topic["name"],
+                    "subject": topic["subject"],
+                    "difficulty": topic.get("difficulty", "intermediate"),
+                    "relevance_score": 0.8,  # Placeholder - ML model would provide this
+                    "reason": "Recommended for your grade level",
+                }
+            )
 
         return TopicSuggestionsResponse(
-            suggestions=suggestions,
-            total_suggestions=len(suggestions)
+            suggestions=suggestions, total_suggestions=len(suggestions)
         )
 
     except Exception as e:
         logger.error(f"Topic suggestion failed: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Topic suggestion failed. Please try again."
+            detail="Topic suggestion failed. Please try again.",
         )
 
 
@@ -218,11 +221,9 @@ async def suggest_topics(
     "/health",
     summary="Check NLU service health",
     description="Health check endpoint for NLU service",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
-async def nlu_health_check(
-    nlu_service: NLUService = Depends(get_nlu_service)
-):
+async def nlu_health_check(nlu_service: NLUService = Depends(get_nlu_service)):
     """
     Health check for NLU service.
 
@@ -235,5 +236,5 @@ async def nlu_health_check(
         "vertex_ai_available": nlu_service.vertex_available,
         "model": nlu_service.model_name,
         "project": nlu_service.project_id,
-        "location": nlu_service.location
+        "location": nlu_service.location,
     }

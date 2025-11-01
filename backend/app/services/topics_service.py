@@ -42,8 +42,7 @@ def list_topics(
     if grade_level:
         # Filter topics that include this grade level (grade_level_min <= grade <= grade_level_max)
         query = query.filter(
-            Topic.grade_level_min <= grade_level,
-            Topic.grade_level_max >= grade_level
+            Topic.grade_level_min <= grade_level, Topic.grade_level_max >= grade_level
         )
 
     # Apply cursor pagination
@@ -114,17 +113,21 @@ def search_topics(db: Session, query_text: str, limit: int = 10) -> Dict:
             relevance_score += 0.2
 
         # Serialize topic to dict
-        results.append({
-            "topic": {
-                "topic_id": topic.topic_id,
-                "name": topic.name,
-                "subject": topic.subject,
-                "category": topic.category,
-                "description": topic.description,
-            },
-            "relevance_score": min(relevance_score, 1.0),
-            "highlights": [topic.name] if query_text.lower() in topic.name.lower() else [],
-        })
+        results.append(
+            {
+                "topic": {
+                    "topic_id": topic.topic_id,
+                    "name": topic.name,
+                    "subject": topic.subject,
+                    "category": topic.category,
+                    "description": topic.description,
+                },
+                "relevance_score": min(relevance_score, 1.0),
+                "highlights": [topic.name]
+                if query_text.lower() in topic.name.lower()
+                else [],
+            }
+        )
 
     # Sort by relevance
     results.sort(key=lambda x: x["relevance_score"], reverse=True)
@@ -136,7 +139,9 @@ def search_topics(db: Session, query_text: str, limit: int = 10) -> Dict:
     }
 
 
-def get_topic_details(db: Session, topic_id: str, student_id: Optional[str] = None) -> Dict:
+def get_topic_details(
+    db: Session, topic_id: str, student_id: Optional[str] = None
+) -> Dict:
     """
     Get detailed topic information including prerequisites and progress.
 
@@ -194,10 +199,12 @@ def get_topic_details(db: Session, topic_id: str, student_id: Optional[str] = No
         for related_id in topic.related_topics:
             related_topic = db.query(Topic).filter(Topic.topic_id == related_id).first()
             if related_topic:
-                related_topics.append({
-                    "topic_id": related_topic.topic_id,
-                    "name": related_topic.name,
-                })
+                related_topics.append(
+                    {
+                        "topic_id": related_topic.topic_id,
+                        "name": related_topic.name,
+                    }
+                )
 
     return {
         "topic": topic,
@@ -206,7 +213,9 @@ def get_topic_details(db: Session, topic_id: str, student_id: Optional[str] = No
     }
 
 
-def get_topic_prerequisites(db: Session, topic_id: str, student_id: Optional[str] = None) -> List[Dict]:
+def get_topic_prerequisites(
+    db: Session, topic_id: str, student_id: Optional[str] = None
+) -> List[Dict]:
     """
     Get topic prerequisites with completion status.
 
@@ -271,7 +280,9 @@ def list_interests(db: Session) -> Dict:
     interests = db.query(Interest).order_by(Interest.category, Interest.name).all()
 
     # Calculate popularity (percentage of students with each interest)
-    total_students = db.query(func.count(func.distinct(StudentInterest.student_id))).scalar() or 1
+    total_students = (
+        db.query(func.count(func.distinct(StudentInterest.student_id))).scalar() or 1
+    )
 
     results = []
     for interest in interests:
@@ -282,18 +293,22 @@ def list_interests(db: Session) -> Dict:
         )
         popularity = student_count / total_students if total_students > 0 else 0
 
-        results.append({
-            "interest_id": interest.interest_id,
-            "name": interest.name,
-            "category": interest.category,
-            "icon_url": None,  # TODO: Add icon_url field to Interest model
-            "description": interest.description,
-            "popularity": round(popularity, 2),
-            "content_count": 0,  # TODO: Count videos using this interest
-        })
+        results.append(
+            {
+                "interest_id": interest.interest_id,
+                "name": interest.name,
+                "category": interest.category,
+                "icon_url": None,  # TODO: Add icon_url field to Interest model
+                "description": interest.description,
+                "popularity": round(popularity, 2),
+                "content_count": 0,  # TODO: Count videos using this interest
+            }
+        )
 
     # Get unique categories
-    categories = list(set(interest.category for interest in interests if interest.category))
+    categories = list(
+        set(interest.category for interest in interests if interest.category)
+    )
 
     return {
         "interests": results,
@@ -327,10 +342,12 @@ def list_interest_categories(db: Session) -> Dict:
                 "interests": [],
             }
 
-        categories_dict[category]["interests"].append({
-            "interest_id": interest.interest_id,
-            "name": interest.name,
-        })
+        categories_dict[category]["interests"].append(
+            {
+                "interest_id": interest.interest_id,
+                "name": interest.name,
+            }
+        )
 
     # Add interest counts
     for category_data in categories_dict.values():

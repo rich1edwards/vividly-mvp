@@ -31,13 +31,19 @@ class TestEmailServiceInitialization:
 
         assert service.sendgrid == mock_client
 
-    @patch.dict('os.environ', {'SENDGRID_FROM_EMAIL': 'custom@example.com', 'SENDGRID_FROM_NAME': 'Custom Name'})
+    @patch.dict(
+        "os.environ",
+        {
+            "SENDGRID_FROM_EMAIL": "custom@example.com",
+            "SENDGRID_FROM_NAME": "Custom Name",
+        },
+    )
     def test_init_with_env_vars(self):
         """Test initialization with environment variables."""
         service = EmailService()
 
-        assert service.sender_email == 'custom@example.com'
-        assert service.sender_name == 'Custom Name'
+        assert service.sender_email == "custom@example.com"
+        assert service.sender_name == "Custom Name"
 
 
 @pytest.mark.unit
@@ -54,8 +60,8 @@ class TestQueueEmail:
             template="welcome_student",
             data={
                 "name": "Test Student",
-                "activation_link": "https://vividly.edu/activate/123"
-            }
+                "activation_link": "https://vividly.edu/activate/123",
+            },
         )
 
         assert notif_id.startswith("notif_")
@@ -71,8 +77,8 @@ class TestQueueEmail:
             template="welcome_teacher",
             data={
                 "name": "Test Teacher",
-                "activation_link": "https://vividly.edu/activate/456"
-            }
+                "activation_link": "https://vividly.edu/activate/456",
+            },
         )
 
         assert notif_id.startswith("notif_")
@@ -88,8 +94,8 @@ class TestQueueEmail:
             template="password_reset",
             data={
                 "name": "Test User",
-                "reset_link": "https://vividly.edu/reset/abc123"
-            }
+                "reset_link": "https://vividly.edu/reset/abc123",
+            },
         )
 
         assert notif_id.startswith("notif_")
@@ -108,8 +114,8 @@ class TestQueueEmail:
                 "topic_name": "Photosynthesis",
                 "interest": "Basketball",
                 "thumbnail_url": "https://example.com/thumb.jpg",
-                "video_url": "https://example.com/video/123"
-            }
+                "video_url": "https://example.com/video/123",
+            },
         )
 
         assert notif_id.startswith("notif_")
@@ -123,7 +129,7 @@ class TestQueueEmail:
             recipient_email="user@test.com",
             recipient_name="User",
             template="nonexistent_template",
-            data={}
+            data={},
         )
 
         assert notif_id.startswith("notif_")
@@ -138,7 +144,7 @@ class TestQueueEmail:
             recipient_name="User",
             template="welcome_student",
             data={"name": "User", "activation_link": "http://example.com"},
-            priority="high"
+            priority="high",
         )
 
         assert status == "queued"
@@ -154,7 +160,7 @@ class TestQueueEmail:
                 recipient_email=email,
                 recipient_name="User",
                 template="welcome_student",
-                data={"name": "User", "activation_link": "http://example.com"}
+                data={"name": "User", "activation_link": "http://example.com"},
             )
             assert status == "queued"
 
@@ -163,7 +169,7 @@ class TestQueueEmail:
             recipient_email=email,
             recipient_name="User",
             template="welcome_student",
-            data={"name": "User", "activation_link": "http://example.com"}
+            data={"name": "User", "activation_link": "http://example.com"},
         )
 
         assert status == "rate_limited"
@@ -181,12 +187,14 @@ class TestBatchSending:
             {
                 "recipient": {"email": f"user{i}@test.com", "name": f"User {i}"},
                 "template": "welcome_student",
-                "data": {"name": f"User {i}", "activation_link": "http://example.com"}
+                "data": {"name": f"User {i}", "activation_link": "http://example.com"},
             }
             for i in range(5)
         ]
 
-        batch_id, queued_count, failed_count, notif_ids = service.send_batch(notifications)
+        batch_id, queued_count, failed_count, notif_ids = service.send_batch(
+            notifications
+        )
 
         assert batch_id.startswith("batch_")
         assert queued_count == 5
@@ -201,21 +209,23 @@ class TestBatchSending:
             {
                 "recipient": {"email": "user1@test.com", "name": "User 1"},
                 "template": "welcome_student",
-                "data": {"name": "User 1", "activation_link": "http://example.com"}
+                "data": {"name": "User 1", "activation_link": "http://example.com"},
             },
             {
                 "recipient": {"email": "user2@test.com", "name": "User 2"},
                 "template": "invalid_template",
-                "data": {}
+                "data": {},
             },
             {
                 "recipient": {"email": "user3@test.com", "name": "User 3"},
                 "template": "welcome_teacher",
-                "data": {"name": "User 3", "activation_link": "http://example.com"}
-            }
+                "data": {"name": "User 3", "activation_link": "http://example.com"},
+            },
         ]
 
-        batch_id, queued_count, failed_count, notif_ids = service.send_batch(notifications)
+        batch_id, queued_count, failed_count, notif_ids = service.send_batch(
+            notifications
+        )
 
         assert queued_count == 2
         assert failed_count == 1
@@ -241,17 +251,19 @@ class TestBatchSending:
                 "recipient": {"email": "urgent@test.com", "name": "Urgent"},
                 "template": "welcome_student",
                 "data": {"name": "Urgent", "activation_link": "http://example.com"},
-                "priority": "high"
+                "priority": "high",
             },
             {
                 "recipient": {"email": "normal@test.com", "name": "Normal"},
                 "template": "welcome_student",
                 "data": {"name": "Normal", "activation_link": "http://example.com"},
-                "priority": "normal"
-            }
+                "priority": "normal",
+            },
         ]
 
-        batch_id, queued_count, failed_count, notif_ids = service.send_batch(notifications)
+        batch_id, queued_count, failed_count, notif_ids = service.send_batch(
+            notifications
+        )
 
         assert queued_count == 2
         assert failed_count == 0
@@ -288,8 +300,8 @@ class TestTemplateRendering:
             "welcome_student",
             {
                 "name": "John Doe",
-                "activation_link": "https://vividly.edu/activate/abc123"
-            }
+                "activation_link": "https://vividly.edu/activate/abc123",
+            },
         )
 
         assert subject == "Welcome to Vividly! 🎓"
@@ -303,10 +315,7 @@ class TestTemplateRendering:
 
         subject, html = service._render_template(
             "password_reset",
-            {
-                "name": "Jane Smith",
-                "reset_link": "https://vividly.edu/reset/xyz789"
-            }
+            {"name": "Jane Smith", "reset_link": "https://vividly.edu/reset/xyz789"},
         )
 
         assert subject == "Reset Your Vividly Password"
@@ -324,8 +333,8 @@ class TestTemplateRendering:
                 "topic_name": "The Water Cycle",
                 "interest": "Surfing",
                 "thumbnail_url": "https://cdn.vividly.edu/thumb.jpg",
-                "video_url": "https://vividly.edu/watch/123"
-            }
+                "video_url": "https://vividly.edu/watch/123",
+            },
         )
 
         assert "Your Personalized Video is Ready!" in subject
@@ -343,8 +352,8 @@ class TestTemplateRendering:
                 "approver_name": "Mr. Smith",
                 "activation_link": "https://vividly.edu/activate/student123",
                 "class_name": "Math 101",
-                "teacher_name": "Mr. Smith"
-            }
+                "teacher_name": "Mr. Smith",
+            },
         )
 
         assert "Account Approved" in subject
@@ -422,7 +431,7 @@ class TestEmailSending:
             recipient_email="test@example.com",
             recipient_name="Test User",
             template="welcome_student",
-            data={"name": "Test User", "activation_link": "http://example.com"}
+            data={"name": "Test User", "activation_link": "http://example.com"},
         )
 
         assert result is True
@@ -437,7 +446,7 @@ class TestEmailSending:
             recipient_email="test@example.com",
             recipient_name="Test User",
             template="welcome_teacher",
-            data={"name": "Test User", "activation_link": "http://example.com"}
+            data={"name": "Test User", "activation_link": "http://example.com"},
         )
 
         assert result is True
@@ -452,7 +461,7 @@ class TestEmailSending:
             recipient_email="test@example.com",
             recipient_name="Test User",
             template="welcome_student",
-            data={}  # Missing 'name' and 'activation_link'
+            data={},  # Missing 'name' and 'activation_link'
         )
 
         # Should still succeed (Jinja2 doesn't fail on missing vars)
@@ -468,7 +477,9 @@ class TestAllTemplates:
         service = EmailService()
 
         for template_name, template_config in service.templates.items():
-            assert "subject" in template_config, f"Template {template_name} missing subject"
+            assert (
+                "subject" in template_config
+            ), f"Template {template_name} missing subject"
             assert "html" in template_config, f"Template {template_name} missing html"
             assert isinstance(template_config["subject"], str)
             assert isinstance(template_config["html"], str)
@@ -507,7 +518,7 @@ class TestEdgeCases:
             recipient_email="test@example.com",
             recipient_name="User",
             template="welcome_student",
-            data={}
+            data={},
         )
 
         assert notif_id.startswith("notif_")
@@ -521,10 +532,7 @@ class TestEdgeCases:
             recipient_email="test@example.com",
             recipient_name="User <script>alert('xss')</script>",
             template="welcome_student",
-            data={
-                "name": "User <b>Bold</b>",
-                "activation_link": "https://example.com"
-            }
+            data={"name": "User <b>Bold</b>", "activation_link": "https://example.com"},
         )
 
         # Should still queue (Jinja2 handles escaping)
@@ -540,7 +548,7 @@ class TestEdgeCases:
                 recipient_email=f"user{i}@test.com",
                 recipient_name=f"User {i}",
                 template="welcome_student",
-                data={"name": f"User {i}", "activation_link": "http://example.com"}
+                data={"name": f"User {i}", "activation_link": "http://example.com"},
             )
             ids.append(notif_id)
 

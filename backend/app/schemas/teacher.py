@@ -13,7 +13,9 @@ class CreateClassRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     subject: Optional[str] = Field(None, max_length=100)
     description: Optional[str] = None
-    grade_levels: Optional[List[int]] = Field(None, description="List of grade levels (9-12)")
+    grade_levels: Optional[List[int]] = Field(
+        None, description="List of grade levels (9-12)"
+    )
 
     @validator("grade_levels")
     def validate_grade_levels(cls, v):
@@ -96,7 +98,9 @@ class StudentAccountRequestCreate(BaseModel):
     student_first_name: str = Field(..., min_length=1, max_length=100)
     student_last_name: str = Field(..., min_length=1, max_length=100)
     grade_level: int = Field(..., ge=9, le=12)
-    class_id: Optional[str] = Field(None, description="Auto-enroll in this class after approval")
+    class_id: Optional[str] = Field(
+        None, description="Auto-enroll in this class after approval"
+    )
     notes: Optional[str] = Field(None, description="Notes for admin")
 
 

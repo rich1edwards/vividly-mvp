@@ -24,7 +24,11 @@ def get_content_by_cache_key(db: Session, cache_key: str) -> ContentMetadata:
     Raises:
         HTTPException: 404 if content not found
     """
-    content = db.query(ContentMetadata).filter(ContentMetadata.content_id == cache_key).first()
+    content = (
+        db.query(ContentMetadata)
+        .filter(ContentMetadata.content_id == cache_key)
+        .first()
+    )
     if not content:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -84,10 +88,12 @@ def check_content_exists(db: Session, topic_id: str, interest: str) -> Dict:
                 and_(
                     ContentMetadata.topic_id == topic_id,
                     ContentMetadata.interest_id == interest_id,
-                    ContentMetadata.status.in_([
-                        GenerationStatus.PENDING.value,
-                        GenerationStatus.GENERATING.value,
-                    ]),
+                    ContentMetadata.status.in_(
+                        [
+                            GenerationStatus.PENDING.value,
+                            GenerationStatus.GENERATING.value,
+                        ]
+                    ),
                 )
             )
             .first()
@@ -147,11 +153,7 @@ def get_recent_content(
         pass
 
     # Get recent content
-    content_list = (
-        query.order_by(desc(ContentMetadata.generated_at))
-        .limit(limit)
-        .all()
-    )
+    content_list = query.order_by(desc(ContentMetadata.generated_at)).limit(limit).all()
 
     return {
         "content": content_list,
@@ -253,7 +255,9 @@ def get_student_content_history(
     content_list = (
         db.query(ContentMetadata)
         .filter(ContentMetadata.student_id == student_id)
-        .order_by(desc(ContentMetadata.created_at))  # Use created_at column, not generated_at property
+        .order_by(
+            desc(ContentMetadata.created_at)
+        )  # Use created_at column, not generated_at property
         .limit(limit)
         .all()
     )

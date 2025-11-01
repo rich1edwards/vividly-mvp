@@ -53,8 +53,9 @@ class VideoService:
                 AudioFileClip,
                 TextClip,
                 CompositeVideoClip,
-                concatenate_videoclips
+                concatenate_videoclips,
             )
+
             self.moviepy_available = True
             logger.info("MoviePy initialized")
         except Exception as e:
@@ -67,7 +68,7 @@ class VideoService:
             "codec": "libx264",
             "audio_codec": "aac",
             "bitrate": "5000k",
-            "preset": "medium"  # Balance between speed and quality
+            "preset": "medium",  # Balance between speed and quality
         }
 
         # Visual styles by subject
@@ -76,26 +77,26 @@ class VideoService:
                 "background_color": "#1a1a2e",
                 "accent_color": "#00d4ff",
                 "font": "Arial-Bold",
-                "theme": "dark_scientific"
+                "theme": "dark_scientific",
             },
             "math": {
                 "background_color": "#2c3e50",
                 "accent_color": "#e74c3c",
                 "font": "Arial-Bold",
-                "theme": "chalkboard"
+                "theme": "chalkboard",
             },
             "chemistry": {
                 "background_color": "#16213e",
                 "accent_color": "#0f3460",
                 "font": "Arial-Bold",
-                "theme": "laboratory"
+                "theme": "laboratory",
             },
             "default": {
                 "background_color": "#1e1e1e",
                 "accent_color": "#4CAF50",
                 "font": "Arial-Bold",
-                "theme": "modern_clean"
-            }
+                "theme": "modern_clean",
+            },
         }
 
     async def generate_video(
@@ -103,7 +104,7 @@ class VideoService:
         script: Dict[str, Any],
         audio_url: str,
         interest: str = "general",
-        subject: str = "default"
+        subject: str = "default",
     ) -> Dict[str, Any]:
         """
         Generate educational video from script and audio.
@@ -138,9 +139,7 @@ class VideoService:
             if not self.moviepy_available:
                 logger.info(f"[{video_id}] Running in mock mode")
                 return self._mock_generate_video(
-                    script=script,
-                    audio_url=audio_url,
-                    video_id=video_id
+                    script=script, audio_url=audio_url, video_id=video_id
                 )
 
             logger.info(f"[{video_id}] Generating video with MoviePy")
@@ -158,10 +157,7 @@ class VideoService:
             # Intro clip (hook)
             if "hook" in script:
                 intro_clip = await self._create_text_clip(
-                    text=script["hook"],
-                    duration=5.0,
-                    style=style,
-                    clip_type="hook"
+                    text=script["hook"], duration=5.0, style=style, clip_type="hook"
                 )
                 video_clips.append(intro_clip)
                 current_time += 5.0
@@ -179,7 +175,7 @@ class VideoService:
                     duration=section_duration,
                     style=style,
                     interest=interest,
-                    start_time=current_time
+                    start_time=current_time,
                 )
                 video_clips.append(section_clip)
                 current_time += section_duration
@@ -187,14 +183,13 @@ class VideoService:
             # Key takeaways clip
             if "key_takeaways" in script:
                 takeaways_clip = await self._create_takeaways_clip(
-                    takeaways=script["key_takeaways"],
-                    duration=15.0,
-                    style=style
+                    takeaways=script["key_takeaways"], duration=15.0, style=style
                 )
                 video_clips.append(takeaways_clip)
 
             # Concatenate all clips
             from moviepy.editor import concatenate_videoclips, AudioFileClip
+
             final_video = concatenate_videoclips(video_clips, method="compose")
 
             # Add audio narration
@@ -210,7 +205,7 @@ class VideoService:
                 audio_codec=self.config["audio_codec"],
                 bitrate=self.config["bitrate"],
                 preset=self.config["preset"],
-                threads=4
+                threads=4,
             )
 
             # Upload to GCS
@@ -230,7 +225,7 @@ class VideoService:
                 "video_url": video_url,
                 "resolution": f"{self.config['resolution'][0]}x{self.config['resolution'][1]}",
                 "format": "mp4",
-                "generated_at": datetime.utcnow().isoformat()
+                "generated_at": datetime.utcnow().isoformat(),
             }
 
         except Exception as e:
@@ -261,11 +256,7 @@ class VideoService:
         return audio_path
 
     async def _create_text_clip(
-        self,
-        text: str,
-        duration: float,
-        style: Dict,
-        clip_type: str = "default"
+        self, text: str, duration: float, style: Dict, clip_type: str = "default"
     ):
         """Create text overlay clip."""
         from moviepy.editor import TextClip, ColorClip, CompositeVideoClip
@@ -274,19 +265,23 @@ class VideoService:
         bg = ColorClip(
             size=self.config["resolution"],
             color=self._hex_to_rgb(style["background_color"]),
-            duration=duration
+            duration=duration,
         )
 
         # Create text overlay
-        txt = TextClip(
-            text,
-            fontsize=60 if clip_type == "hook" else 50,
-            color="white",
-            font=style["font"],
-            size=self.config["resolution"],
-            method='caption',
-            align='center'
-        ).set_duration(duration).set_position("center")
+        txt = (
+            TextClip(
+                text,
+                fontsize=60 if clip_type == "hook" else 50,
+                color="white",
+                font=style["font"],
+                size=self.config["resolution"],
+                method="caption",
+                align="center",
+            )
+            .set_duration(duration)
+            .set_position("center")
+        )
 
         return CompositeVideoClip([bg, txt])
 
@@ -296,7 +291,7 @@ class VideoService:
         duration: float,
         style: Dict,
         interest: str,
-        start_time: float
+        start_time: float,
     ):
         """
         Create section clip with background and overlays.
@@ -313,47 +308,56 @@ class VideoService:
         bg = ColorClip(
             size=self.config["resolution"],
             color=self._hex_to_rgb(style["background_color"]),
-            duration=duration
+            duration=duration,
         )
 
         overlays = [bg]
 
         # Title overlay (top)
         if "title" in section:
-            title = TextClip(
-                section["title"],
-                fontsize=70,
-                color=style["accent_color"],
-                font=style["font"],
-                size=(self.config["resolution"][0] - 200, None),
-                method='caption',
-                align='center'
-            ).set_duration(duration).set_position(("center", 150))
+            title = (
+                TextClip(
+                    section["title"],
+                    fontsize=70,
+                    color=style["accent_color"],
+                    font=style["font"],
+                    size=(self.config["resolution"][0] - 200, None),
+                    method="caption",
+                    align="center",
+                )
+                .set_duration(duration)
+                .set_position(("center", 150))
+            )
             overlays.append(title)
 
         # Content overlay (center)
         if "content" in section:
             # Chunk content for readability
-            content_text = section["content"][:200] + "..." if len(section["content"]) > 200 else section["content"]
+            content_text = (
+                section["content"][:200] + "..."
+                if len(section["content"]) > 200
+                else section["content"]
+            )
 
-            content = TextClip(
-                content_text,
-                fontsize=45,
-                color="white",
-                font=style["font"],
-                size=(self.config["resolution"][0] - 300, None),
-                method='caption',
-                align='center'
-            ).set_duration(duration).set_position("center")
+            content = (
+                TextClip(
+                    content_text,
+                    fontsize=45,
+                    color="white",
+                    font=style["font"],
+                    size=(self.config["resolution"][0] - 300, None),
+                    method="caption",
+                    align="center",
+                )
+                .set_duration(duration)
+                .set_position("center")
+            )
             overlays.append(content)
 
         return CompositeVideoClip(overlays)
 
     async def _create_takeaways_clip(
-        self,
-        takeaways: List[str],
-        duration: float,
-        style: Dict
+        self, takeaways: List[str], duration: float, style: Dict
     ):
         """Create key takeaways summary clip."""
         from moviepy.editor import TextClip, ColorClip, CompositeVideoClip
@@ -362,31 +366,39 @@ class VideoService:
         bg = ColorClip(
             size=self.config["resolution"],
             color=self._hex_to_rgb(style["background_color"]),
-            duration=duration
+            duration=duration,
         )
 
         overlays = [bg]
 
         # Title
-        title = TextClip(
-            "Key Takeaways",
-            fontsize=80,
-            color=style["accent_color"],
-            font=style["font"]
-        ).set_duration(duration).set_position(("center", 100))
+        title = (
+            TextClip(
+                "Key Takeaways",
+                fontsize=80,
+                color=style["accent_color"],
+                font=style["font"],
+            )
+            .set_duration(duration)
+            .set_position(("center", 100))
+        )
         overlays.append(title)
 
         # Takeaways list
         takeaways_text = "\n\n".join([f"• {t}" for t in takeaways])
-        content = TextClip(
-            takeaways_text,
-            fontsize=50,
-            color="white",
-            font=style["font"],
-            size=(self.config["resolution"][0] - 400, None),
-            method='caption',
-            align='center'
-        ).set_duration(duration).set_position(("center", 400))
+        content = (
+            TextClip(
+                takeaways_text,
+                fontsize=50,
+                color="white",
+                font=style["font"],
+                size=(self.config["resolution"][0] - 400, None),
+                method="caption",
+                align="center",
+            )
+            .set_duration(duration)
+            .set_position(("center", 400))
+        )
         overlays.append(content)
 
         return CompositeVideoClip(overlays)
@@ -410,7 +422,7 @@ class VideoService:
         blob.upload_from_filename(
             video_path,
             content_type="video/mp4",
-            timeout=600  # 10 min timeout for large files
+            timeout=600,  # 10 min timeout for large files
         )
 
         # Set metadata
@@ -418,21 +430,18 @@ class VideoService:
             "video_id": video_id,
             "generated_at": datetime.utcnow().isoformat(),
             "format": "mp4",
-            "resolution": f"{self.config['resolution'][0]}x{self.config['resolution'][1]}"
+            "resolution": f"{self.config['resolution'][0]}x{self.config['resolution'][1]}",
         }
         blob.patch()
 
         return f"gs://{bucket_name}/{blob_path}"
 
-    def _mock_generate_video(
-        self,
-        script: Dict,
-        audio_url: str,
-        video_id: str
-    ) -> Dict:
+    def _mock_generate_video(self, script: Dict, audio_url: str, video_id: str) -> Dict:
         """Mock video generation for testing."""
         # Estimate duration from script
-        duration = sum(s.get("duration_seconds", 45) for s in script.get("sections", []))
+        duration = sum(
+            s.get("duration_seconds", 45) for s in script.get("sections", [])
+        )
         duration += 20  # Intro + outro
 
         return {
@@ -442,13 +451,13 @@ class VideoService:
             "video_url": f"gs://mock-bucket/video/{video_id}.mp4",
             "resolution": "1920x1080",
             "format": "mp4",
-            "generated_at": datetime.utcnow().isoformat()
+            "generated_at": datetime.utcnow().isoformat(),
         }
 
     def _hex_to_rgb(self, hex_color: str) -> tuple:
         """Convert hex color to RGB tuple."""
-        hex_color = hex_color.lstrip('#')
-        return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+        hex_color = hex_color.lstrip("#")
+        return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
 
     def _generate_video_id(self, script_id: str) -> str:
         """Generate unique video ID."""

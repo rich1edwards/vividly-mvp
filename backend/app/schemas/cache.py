@@ -20,7 +20,7 @@ class CacheCheckRequest(BaseModel):
             "example": {
                 "topic_id": "topic_phys_mech_newton_3",
                 "interest": "basketball",
-                "style": "standard"
+                "style": "standard",
             }
         }
 
@@ -30,14 +30,26 @@ class CacheCheckResponse(BaseModel):
 
     cache_hit: bool = Field(..., description="True if content exists in cache")
     cache_key: Optional[str] = Field(None, description="Cache key if hit")
-    status: Optional[str] = Field(None, description="Content status (completed, generating, etc.)")
+    status: Optional[str] = Field(
+        None, description="Content status (completed, generating, etc.)"
+    )
     video_url: Optional[str] = Field(None, description="CDN URL for video if available")
     audio_url: Optional[str] = Field(None, description="CDN URL for audio if available")
-    script_url: Optional[str] = Field(None, description="GCS URL for script JSON if available")
-    thumbnail_url: Optional[str] = Field(None, description="CDN URL for thumbnail if available")
-    duration_seconds: Optional[int] = Field(None, description="Video duration in seconds")
-    generated_at: Optional[str] = Field(None, description="ISO timestamp when content was generated")
-    cached_at: Optional[str] = Field(None, description="ISO timestamp when content was cached")
+    script_url: Optional[str] = Field(
+        None, description="GCS URL for script JSON if available"
+    )
+    thumbnail_url: Optional[str] = Field(
+        None, description="CDN URL for thumbnail if available"
+    )
+    duration_seconds: Optional[int] = Field(
+        None, description="Video duration in seconds"
+    )
+    generated_at: Optional[str] = Field(
+        None, description="ISO timestamp when content was generated"
+    )
+    cached_at: Optional[str] = Field(
+        None, description="ISO timestamp when content was cached"
+    )
 
     class Config:
         json_schema_extra = {
@@ -51,7 +63,7 @@ class CacheCheckResponse(BaseModel):
                 "thumbnail_url": "https://cdn.vividly.edu/thumbnails/a7f3e2b1.jpg",
                 "duration_seconds": 180,
                 "generated_at": "2025-10-25T10:00:00Z",
-                "cached_at": "2025-10-25T10:05:00Z"
+                "cached_at": "2025-10-25T10:05:00Z",
             }
         }
 
@@ -67,7 +79,9 @@ class CacheStoreRequest(BaseModel):
     duration_seconds: int = Field(..., description="Video duration in seconds", gt=0)
     topic_id: str = Field(..., description="Topic ID", min_length=1)
     interest_id: str = Field(..., description="Interest ID", min_length=1)
-    generated_at: str = Field(..., description="ISO timestamp when content was generated")
+    generated_at: str = Field(
+        ..., description="ISO timestamp when content was generated"
+    )
 
     class Config:
         json_schema_extra = {
@@ -80,7 +94,7 @@ class CacheStoreRequest(BaseModel):
                 "duration_seconds": 180,
                 "topic_id": "topic_phys_mech_newton_3",
                 "interest_id": "int_basketball",
-                "generated_at": "2025-10-25T10:00:00Z"
+                "generated_at": "2025-10-25T10:00:00Z",
             }
         }
 
@@ -101,7 +115,7 @@ class CacheStoreResponse(BaseModel):
                 "cache_key": "a7f3e2b1c9d8f6e4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0",
                 "message": "Content cached successfully",
                 "redis_stored": True,
-                "gcs_stored": True
+                "gcs_stored": True,
             }
         }
 
@@ -124,6 +138,6 @@ class CacheStatsResponse(BaseModel):
                 "hit_rate": 0.75,
                 "redis_hits": 120,
                 "gcs_hits": 30,
-                "total_requests": 200
+                "total_requests": 200,
             }
         }

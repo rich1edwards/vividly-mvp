@@ -12,6 +12,7 @@ from app.core.database import Base
 
 class ProgressStatus(str, enum.Enum):
     """Progress status enumeration."""
+
     NOT_STARTED = "not_started"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -19,6 +20,7 @@ class ProgressStatus(str, enum.Enum):
 
 class ActivityType(str, enum.Enum):
     """Activity type enumeration."""
+
     VIDEO_WATCHED = "video_watched"
     VIDEO_STARTED = "video_started"
     VIDEO_COMPLETED = "video_completed"
@@ -44,7 +46,9 @@ class Topic(Base):
     topic_id = Column(String(100), primary_key=True, index=True)
 
     # Topic details
-    subject = Column(String(100), nullable=False, index=True)  # Physics, Chemistry, Biology
+    subject = Column(
+        String(100), nullable=False, index=True
+    )  # Physics, Chemistry, Biology
     unit = Column(String(255), nullable=True)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
@@ -56,7 +60,9 @@ class Topic(Base):
     grade_level_max = Column(Integer, default=12)
 
     # Curriculum metadata (Sprint 2)
-    standards = Column(JSON, default=[])  # Common Core, NGSS, etc. (list of standard IDs or dicts)
+    standards = Column(
+        JSON, default=[]
+    )  # Common Core, NGSS, etc. (list of standard IDs or dicts)
     prerequisites = Column(JSON, default=[])  # Array of prerequisite topic_ids
 
     # Metadata
@@ -64,11 +70,15 @@ class Topic(Base):
 
     # Timestamps
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
-    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False)
+    updated_at = Column(
+        TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False
+    )
     active = Column(String(10), default="true")
 
     # Relationships
-    student_progress = relationship("StudentProgress", back_populates="topic", cascade="all, delete-orphan")
+    student_progress = relationship(
+        "StudentProgress", back_populates="topic", cascade="all, delete-orphan"
+    )
 
     # Helper properties for API compatibility
     @property
@@ -135,12 +145,23 @@ class StudentProgress(Base):
     progress_id = Column(String(100), primary_key=True, index=True)
 
     # References
-    student_id = Column(String(100), ForeignKey('users.user_id'), nullable=False, index=True)
-    topic_id = Column(String(100), ForeignKey('topics.topic_id'), nullable=False, index=True)
-    class_id = Column(String(100), ForeignKey('classes.class_id'), nullable=True, index=True)
+    student_id = Column(
+        String(100), ForeignKey("users.user_id"), nullable=False, index=True
+    )
+    topic_id = Column(
+        String(100), ForeignKey("topics.topic_id"), nullable=False, index=True
+    )
+    class_id = Column(
+        String(100), ForeignKey("classes.class_id"), nullable=True, index=True
+    )
 
     # Progress tracking
-    status = Column(Enum(ProgressStatus), nullable=False, default=ProgressStatus.NOT_STARTED, index=True)
+    status = Column(
+        Enum(ProgressStatus),
+        nullable=False,
+        default=ProgressStatus.NOT_STARTED,
+        index=True,
+    )
     progress_percentage = Column(Integer, default=0)
 
     # Video watching
@@ -156,7 +177,9 @@ class StudentProgress(Base):
 
     # Timestamps
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
-    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False)
+    updated_at = Column(
+        TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False
+    )
 
     # Relationships
     user = relationship("User", back_populates="student_progress")
@@ -179,21 +202,29 @@ class StudentActivity(Base):
     activity_id = Column(String(100), primary_key=True, index=True)
 
     # References
-    student_id = Column(String(100), ForeignKey('users.user_id'), nullable=False, index=True)
+    student_id = Column(
+        String(100), ForeignKey("users.user_id"), nullable=False, index=True
+    )
     activity_type = Column(Enum(ActivityType), nullable=False, index=True)
 
     # Context
-    topic_id = Column(String(100), ForeignKey('topics.topic_id'), nullable=True, index=True)
+    topic_id = Column(
+        String(100), ForeignKey("topics.topic_id"), nullable=True, index=True
+    )
     content_id = Column(String(100), nullable=True)
-    class_id = Column(String(100), ForeignKey('classes.class_id'), nullable=True)
-    interest_id = Column(String(100), ForeignKey('interests.interest_id'), nullable=True)
+    class_id = Column(String(100), ForeignKey("classes.class_id"), nullable=True)
+    interest_id = Column(
+        String(100), ForeignKey("interests.interest_id"), nullable=True
+    )
 
     # Details
     duration_seconds = Column(Integer, nullable=True)
     meta_data = Column(JSON, nullable=True, default={})
 
     # Timestamp
-    created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False, index=True)
+    created_at = Column(
+        TIMESTAMP, server_default=func.now(), nullable=False, index=True
+    )
 
     def __repr__(self) -> str:
         return f"<StudentActivity student={self.student_id} type={self.activity_type}>"

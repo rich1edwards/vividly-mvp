@@ -21,20 +21,15 @@ class TestContentCacheLookup:
             interest_id="int_basketball",
             title="Test Content",
             status=GenerationStatus.COMPLETED.value,
-            video_url="https://cdn.test.com/video.mp4"
+            video_url="https://cdn.test.com/video.mp4",
         )
         db_session.add(content)
         db_session.commit()
 
-        check_data = {
-            "topic_id": "topic_newton_1",
-            "interest": "basketball"
-        }
+        check_data = {"topic_id": "topic_newton_1", "interest": "basketball"}
 
         response = client.post(
-            "/api/v1/content/check",
-            json=check_data,
-            headers=student_headers
+            "/api/v1/content/check", json=check_data, headers=student_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -47,13 +42,11 @@ class TestContentCacheLookup:
         """Test checking for non-existent content."""
         check_data = {
             "topic_id": "nonexistent_topic",
-            "interest": "nonexistent_interest"
+            "interest": "nonexistent_interest",
         }
 
         response = client.post(
-            "/api/v1/content/check",
-            json=check_data,
-            headers=student_headers
+            "/api/v1/content/check", json=check_data, headers=student_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -61,7 +54,9 @@ class TestContentCacheLookup:
         assert data["cache_hit"] is False
         assert data["cache_key"] is None
 
-    def test_get_content_by_cache_key_success(self, client, student_headers, db_session):
+    def test_get_content_by_cache_key_success(
+        self, client, student_headers, db_session
+    ):
         """Test getting content metadata by cache key."""
         from app.models.content_metadata import ContentMetadata, GenerationStatus
 
@@ -74,14 +69,13 @@ class TestContentCacheLookup:
             status=GenerationStatus.COMPLETED.value,
             video_url="https://cdn.test.com/video2.mp4",
             duration_seconds=180,
-            view_count=5
+            view_count=5,
         )
         db_session.add(content)
         db_session.commit()
 
         response = client.get(
-            f"/api/v1/content/{content.content_id}",
-            headers=student_headers
+            f"/api/v1/content/{content.content_id}", headers=student_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -94,8 +88,7 @@ class TestContentCacheLookup:
     def test_get_content_not_found(self, client, student_headers):
         """Test getting non-existent content."""
         response = client.get(
-            "/api/v1/content/nonexistent_cache_key",
-            headers=student_headers
+            "/api/v1/content/nonexistent_cache_key", headers=student_headers
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -104,7 +97,9 @@ class TestContentCacheLookup:
 class TestContentFeedback:
     """Test content feedback submission endpoints."""
 
-    def test_submit_feedback_success(self, client, student_headers, db_session, sample_student):
+    def test_submit_feedback_success(
+        self, client, student_headers, db_session, sample_student
+    ):
         """Test submitting content feedback."""
         from app.models.content_metadata import ContentMetadata, GenerationStatus
 
@@ -115,7 +110,7 @@ class TestContentFeedback:
             interest_id="int_basketball",
             title="Test Content Feedback",
             status=GenerationStatus.COMPLETED.value,
-            video_url="https://cdn.test.com/video.mp4"
+            video_url="https://cdn.test.com/video.mp4",
         )
         db_session.add(content)
         db_session.commit()
@@ -123,13 +118,13 @@ class TestContentFeedback:
         feedback_data = {
             "rating": 5,
             "feedback_type": "helpful",
-            "comments": "Great explanation!"
+            "comments": "Great explanation!",
         }
 
         response = client.post(
             f"/api/v1/content/{content.content_id}/feedback",
             json=feedback_data,
-            headers=student_headers
+            headers=student_headers,
         )
 
         assert response.status_code == status.HTTP_201_CREATED
@@ -147,20 +142,20 @@ class TestContentFeedback:
             topic_id="topic_newton_1",
             interest_id="int_basketball",
             title="Test Content",
-            status=GenerationStatus.COMPLETED.value
+            status=GenerationStatus.COMPLETED.value,
         )
         db_session.add(content)
         db_session.commit()
 
         feedback_data = {
             "rating": 6,  # Invalid (must be 1-5)
-            "feedback_type": "helpful"
+            "feedback_type": "helpful",
         }
 
         response = client.post(
             f"/api/v1/content/{content.content_id}/feedback",
             json=feedback_data,
-            headers=student_headers
+            headers=student_headers,
         )
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -177,14 +172,13 @@ class TestContentFeedback:
             title="Test Content Summary",
             status=GenerationStatus.COMPLETED.value,
             average_rating=4.5,
-            view_count=10
+            view_count=10,
         )
         db_session.add(content)
         db_session.commit()
 
         response = client.get(
-            f"/api/v1/content/{content.content_id}/feedback",
-            headers=student_headers
+            f"/api/v1/content/{content.content_id}/feedback", headers=student_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -197,7 +191,9 @@ class TestContentFeedback:
 class TestContentHistory:
     """Test content history endpoints."""
 
-    def test_get_student_content_history(self, client, student_headers, db_session, sample_student):
+    def test_get_student_content_history(
+        self, client, student_headers, db_session, sample_student
+    ):
         """Test getting student's content history."""
         from app.models.content_metadata import ContentMetadata, GenerationStatus
 
@@ -210,14 +206,14 @@ class TestContentHistory:
                 interest_id="int_basketball",
                 title=f"History Content {i}",
                 status=GenerationStatus.COMPLETED.value,
-                view_count=i + 1
+                view_count=i + 1,
             )
             db_session.add(content)
         db_session.commit()
 
         response = client.get(
             f"/api/v1/content/student/{sample_student.user_id}/history",
-            headers=student_headers
+            headers=student_headers,
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -225,18 +221,17 @@ class TestContentHistory:
         assert "content" in data
         assert len(data["content"]) >= 3
 
-    def test_cannot_access_other_student_history(self, client, student_headers, sample_teacher):
+    def test_cannot_access_other_student_history(
+        self, client, student_headers, sample_teacher
+    ):
         """Test that students cannot access other students' history."""
         response = client.get(
             f"/api/v1/content/student/{sample_teacher.user_id}/history",
-            headers=student_headers
+            headers=student_headers,
         )
 
         # Should either be forbidden or return empty
-        assert response.status_code in [
-            status.HTTP_403_FORBIDDEN,
-            status.HTTP_200_OK
-        ]
+        assert response.status_code in [status.HTTP_403_FORBIDDEN, status.HTTP_200_OK]
 
         if response.status_code == status.HTTP_200_OK:
             data = response.json()

@@ -12,7 +12,7 @@ from app.core.security import get_current_user
 from app.schemas.interest import (
     InterestResponse,
     StudentInterestCreate,
-    StudentInterestsListResponse
+    StudentInterestsListResponse,
 )
 from app.services import interest_service
 from app.models.user import User, UserRole
@@ -46,14 +46,11 @@ def get_my_interests(
     if current_user.role != UserRole.STUDENT:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only students can have interests"
+            detail="Only students can have interests",
         )
 
     interests = interest_service.get_student_interests(db, current_user.user_id)
-    return StudentInterestsListResponse(
-        interests=interests,
-        count=len(interests)
-    )
+    return StudentInterestsListResponse(interests=interests, count=len(interests))
 
 
 @router.post("/me", response_model=StudentInterestsListResponse)
@@ -71,19 +68,14 @@ def set_my_interests(
     if current_user.role != UserRole.STUDENT:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only students can set interests"
+            detail="Only students can set interests",
         )
 
     interests = interest_service.set_student_interests(
-        db,
-        current_user.user_id,
-        interest_data
+        db, current_user.user_id, interest_data
     )
 
-    return StudentInterestsListResponse(
-        interests=interests,
-        count=len(interests)
-    )
+    return StudentInterestsListResponse(interests=interests, count=len(interests))
 
 
 @router.get("/me/has-selected", response_model=dict)

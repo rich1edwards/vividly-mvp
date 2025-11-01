@@ -79,9 +79,7 @@ class TestUserAuthentication:
     def test_authenticate_success(self, db_session, sample_student):
         """Test successful authentication."""
         user = auth_service.authenticate_user(
-            db_session,
-            sample_student.email,
-            "Password123"
+            db_session, sample_student.email, "Password123"
         )
 
         assert user.user_id == sample_student.user_id
@@ -92,9 +90,7 @@ class TestUserAuthentication:
         """Test authentication with wrong password fails."""
         with pytest.raises(HTTPException) as exc:
             auth_service.authenticate_user(
-                db_session,
-                sample_student.email,
-                "WrongPassword123"
+                db_session, sample_student.email, "WrongPassword123"
             )
 
         assert exc.value.status_code == 401
@@ -104,9 +100,7 @@ class TestUserAuthentication:
         """Test authentication with nonexistent user fails."""
         with pytest.raises(HTTPException) as exc:
             auth_service.authenticate_user(
-                db_session,
-                "nonexistent@test.com",
-                "Password123"
+                db_session, "nonexistent@test.com", "Password123"
             )
 
         assert exc.value.status_code == 401
@@ -129,9 +123,7 @@ class TestUserAuthentication:
 
         with pytest.raises(HTTPException) as exc:
             auth_service.authenticate_user(
-                db_session,
-                "suspended@test.com",
-                "Password123"
+                db_session, "suspended@test.com", "Password123"
             )
 
         assert exc.value.status_code == 403
@@ -146,10 +138,7 @@ class TestTokenManagement:
     def test_create_tokens_success(self, db_session, sample_student):
         """Test successful token creation."""
         tokens = auth_service.create_user_tokens(
-            db_session,
-            sample_student,
-            ip_address="127.0.0.1",
-            user_agent="TestClient"
+            db_session, sample_student, ip_address="127.0.0.1", user_agent="TestClient"
         )
 
         assert tokens.access_token is not None
@@ -160,16 +149,16 @@ class TestTokenManagement:
     def test_session_created_on_login(self, db_session, sample_student):
         """Test that session is created in database."""
         auth_service.create_user_tokens(
-            db_session,
-            sample_student,
-            ip_address="127.0.0.1",
-            user_agent="TestClient"
+            db_session, sample_student, ip_address="127.0.0.1", user_agent="TestClient"
         )
 
         from app.models.session import Session as SessionModel
-        session = db_session.query(SessionModel).filter(
-            SessionModel.user_id == sample_student.user_id
-        ).first()
+
+        session = (
+            db_session.query(SessionModel)
+            .filter(SessionModel.user_id == sample_student.user_id)
+            .first()
+        )
 
         assert session is not None
         assert session.ip_address == "127.0.0.1"
@@ -189,16 +178,19 @@ class TestLogout:
 
         # Revoke it
         auth_service.revoke_user_sessions(
-            db_session,
-            sample_student.user_id,
-            all_sessions=False
+            db_session, sample_student.user_id, all_sessions=False
         )
 
         from app.models.session import Session as SessionModel
-        sessions = db_session.query(SessionModel).filter(
-            SessionModel.user_id == sample_student.user_id,
-            SessionModel.revoked == True
-        ).all()
+
+        sessions = (
+            db_session.query(SessionModel)
+            .filter(
+                SessionModel.user_id == sample_student.user_id,
+                SessionModel.revoked == True,
+            )
+            .all()
+        )
 
         assert len(sessions) >= 1
 
@@ -210,16 +202,19 @@ class TestLogout:
 
         # Revoke all
         auth_service.revoke_user_sessions(
-            db_session,
-            sample_student.user_id,
-            all_sessions=True
+            db_session, sample_student.user_id, all_sessions=True
         )
 
         from app.models.session import Session as SessionModel
-        active_sessions = db_session.query(SessionModel).filter(
-            SessionModel.user_id == sample_student.user_id,
-            SessionModel.revoked == False
-        ).count()
+
+        active_sessions = (
+            db_session.query(SessionModel)
+            .filter(
+                SessionModel.user_id == sample_student.user_id,
+                SessionModel.revoked == False,
+            )
+            .count()
+        )
 
         assert active_sessions == 0
 
@@ -228,16 +223,17 @@ class TestLogout:
         # Don't create any sessions
         # This should not raise an error
         auth_service.revoke_user_sessions(
-            db_session,
-            sample_student.user_id,
-            all_sessions=False
+            db_session, sample_student.user_id, all_sessions=False
         )
 
         # Should complete without error
         from app.models.session import Session as SessionModel
-        sessions = db_session.query(SessionModel).filter(
-            SessionModel.user_id == sample_student.user_id
-        ).count()
+
+        sessions = (
+            db_session.query(SessionModel)
+            .filter(SessionModel.user_id == sample_student.user_id)
+            .count()
+        )
 
         assert sessions == 0
 
@@ -289,11 +285,7 @@ class TestEdgeCases:
     def test_authenticate_empty_password(self, db_session, sample_student):
         """Test authentication with empty password."""
         with pytest.raises(HTTPException) as exc:
-            auth_service.authenticate_user(
-                db_session,
-                sample_student.email,
-                ""
-            )
+            auth_service.authenticate_user(db_session, sample_student.email, "")
 
         assert exc.value.status_code == 401
 
@@ -306,9 +298,13 @@ class TestEdgeCases:
 
         # Verify session was created with None values
         from app.models.session import Session as SessionModel
-        session = db_session.query(SessionModel).filter(
-            SessionModel.user_id == sample_student.user_id
-        ).order_by(SessionModel.created_at.desc()).first()
+
+        session = (
+            db_session.query(SessionModel)
+            .filter(SessionModel.user_id == sample_student.user_id)
+            .order_by(SessionModel.created_at.desc())
+            .first()
+        )
 
         assert session is not None
         assert session.ip_address is None

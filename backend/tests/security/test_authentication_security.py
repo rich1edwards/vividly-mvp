@@ -33,8 +33,8 @@ class TestBruteForceProtection:
                 "/api/v1/auth/login",
                 json={
                     "email": f"attacker{i}@test.com",
-                    "password": "WrongPassword123!"
-                }
+                    "password": "WrongPassword123!",
+                },
             )
 
             if response.status_code == 429:  # Too Many Requests
@@ -59,13 +59,13 @@ class TestBruteForceProtection:
         for i in range(6):
             response = client.post(
                 "/api/v1/auth/login",
-                json={"email": test_email, "password": "WrongPassword"}
+                json={"email": test_email, "password": "WrongPassword"},
             )
 
         # Next attempt should indicate account is locked
         response = client.post(
             "/api/v1/auth/login",
-            json={"email": test_email, "password": "CorrectPassword123!"}
+            json={"email": test_email, "password": "CorrectPassword123!"},
         )
 
         # Should either be rate limited or show account locked error
@@ -85,8 +85,8 @@ class TestPasswordSecurity:
                 "first_name": "Test",
                 "last_name": "User",
                 "role": "student",
-                "grade_level": 10
-            }
+                "grade_level": 10,
+            },
         )
 
         assert response.status_code == 422, "Should reject short passwords"
@@ -94,11 +94,11 @@ class TestPasswordSecurity:
     def test_password_complexity_requirements(self):
         """Test that passwords must contain uppercase, lowercase, and numbers."""
         weak_passwords = [
-            "alllowercase",      # No uppercase or numbers
-            "ALLUPPERCASE",      # No lowercase or numbers
-            "NoNumbers",         # No numbers
-            "12345678",          # No letters
-            "lowernumber1",      # No uppercase
+            "alllowercase",  # No uppercase or numbers
+            "ALLUPPERCASE",  # No lowercase or numbers
+            "NoNumbers",  # No numbers
+            "12345678",  # No letters
+            "lowernumber1",  # No uppercase
         ]
 
         for password in weak_passwords:
@@ -110,11 +110,13 @@ class TestPasswordSecurity:
                     "first_name": "Test",
                     "last_name": "User",
                     "role": "student",
-                    "grade_level": 10
-                }
+                    "grade_level": 10,
+                },
             )
 
-            assert response.status_code == 422, f"Should reject weak password: {password}"
+            assert (
+                response.status_code == 422
+            ), f"Should reject weak password: {password}"
 
     def test_common_passwords_rejected(self):
         """Test that common/compromised passwords are rejected."""
@@ -133,8 +135,8 @@ class TestPasswordSecurity:
                     "first_name": "Test",
                     "last_name": "User",
                     "role": "student",
-                    "grade_level": 10
-                }
+                    "grade_level": 10,
+                },
             )
 
             # Implementation may vary - either reject or warn
@@ -150,13 +152,12 @@ class TestJWTSecurity:
         # Create an expired token
         expired_token = create_access_token(
             data={"sub": "user_test123"},
-            expires_delta=timedelta(seconds=-10)  # Already expired
+            expires_delta=timedelta(seconds=-10),  # Already expired
         )
 
         # Try to use expired token
         response = client.get(
-            "/api/v1/auth/me",
-            headers={"Authorization": f"Bearer {expired_token}"}
+            "/api/v1/auth/me", headers={"Authorization": f"Bearer {expired_token}"}
         )
 
         assert response.status_code == 401, "Expired tokens should be rejected"
@@ -167,12 +168,11 @@ class TestJWTSecurity:
         valid_token = create_access_token(data={"sub": "user_test123"})
 
         # Tamper with token (change last character)
-        tampered_token = valid_token[:-1] + ('a' if valid_token[-1] != 'a' else 'b')
+        tampered_token = valid_token[:-1] + ("a" if valid_token[-1] != "a" else "b")
 
         # Try to use tampered token
         response = client.get(
-            "/api/v1/auth/me",
-            headers={"Authorization": f"Bearer {tampered_token}"}
+            "/api/v1/auth/me", headers={"Authorization": f"Bearer {tampered_token}"}
         )
 
         assert response.status_code == 401, "Tampered tokens should be rejected"
@@ -192,10 +192,7 @@ class TestSessionManagement:
         # Login to get token
         response = client.post(
             "/api/v1/auth/login",
-            json={
-                "email": "student@test.com",
-                "password": "TestPassword123!"
-            }
+            json={"email": "student@test.com", "password": "TestPassword123!"},
         )
 
         assert response.status_code == 200
@@ -203,16 +200,14 @@ class TestSessionManagement:
 
         # Logout
         logout_response = client.post(
-            "/api/v1/auth/logout",
-            headers={"Authorization": f"Bearer {token}"}
+            "/api/v1/auth/logout", headers={"Authorization": f"Bearer {token}"}
         )
 
         assert logout_response.status_code == 200
 
         # Try to use token after logout
         me_response = client.get(
-            "/api/v1/auth/me",
-            headers={"Authorization": f"Bearer {token}"}
+            "/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"}
         )
 
         # Token should be invalid after logout
@@ -238,10 +233,7 @@ class TestAuthorizationSecurity:
         # Login as student
         response = client.post(
             "/api/v1/auth/login",
-            json={
-                "email": "student@test.com",
-                "password": "TestPassword123!"
-            }
+            json={"email": "student@test.com", "password": "TestPassword123!"},
         )
 
         student_token = response.json()["access_token"]
@@ -249,28 +241,26 @@ class TestAuthorizationSecurity:
         # Try to access teacher endpoint
         response = client.get(
             "/api/v1/teacher/classes",
-            headers={"Authorization": f"Bearer {student_token}"}
+            headers={"Authorization": f"Bearer {student_token}"},
         )
 
-        assert response.status_code == 403, "Students should not access teacher endpoints"
+        assert (
+            response.status_code == 403
+        ), "Students should not access teacher endpoints"
 
     def test_teacher_cannot_access_admin_endpoints(self):
         """Test that teachers cannot access admin-only endpoints."""
         # Login as teacher
         response = client.post(
             "/api/v1/auth/login",
-            json={
-                "email": "teacher@test.com",
-                "password": "TeacherPassword123!"
-            }
+            json={"email": "teacher@test.com", "password": "TeacherPassword123!"},
         )
 
         teacher_token = response.json()["access_token"]
 
         # Try to access admin endpoint
         response = client.get(
-            "/api/v1/admin/users",
-            headers={"Authorization": f"Bearer {teacher_token}"}
+            "/api/v1/admin/users", headers={"Authorization": f"Bearer {teacher_token}"}
         )
 
         assert response.status_code == 403, "Teachers should not access admin endpoints"
@@ -280,10 +270,7 @@ class TestAuthorizationSecurity:
         # Login as student 1
         response1 = client.post(
             "/api/v1/auth/login",
-            json={
-                "email": "student1@test.com",
-                "password": "Password123!"
-            }
+            json={"email": "student1@test.com", "password": "Password123!"},
         )
 
         student1_token = response1.json()["access_token"]
@@ -292,7 +279,7 @@ class TestAuthorizationSecurity:
         # Try to access student 2's data
         response = client.get(
             f"/api/v1/students/student2_id/profile",
-            headers={"Authorization": f"Bearer {student1_token}"}
+            headers={"Authorization": f"Bearer {student1_token}"},
         )
 
         # Should be forbidden
@@ -313,15 +300,13 @@ class TestInputValidationSecurity:
 
         for payload in sql_injection_payloads:
             response = client.post(
-                "/api/v1/auth/login",
-                json={
-                    "email": payload,
-                    "password": "anything"
-                }
+                "/api/v1/auth/login", json={"email": payload, "password": "anything"}
             )
 
             # Should not return 200 (successful login)
-            assert response.status_code != 200, f"SQL injection payload succeeded: {payload}"
+            assert (
+                response.status_code != 200
+            ), f"SQL injection payload succeeded: {payload}"
 
     def test_xss_prevention_in_user_input(self):
         """Test that XSS payloads are sanitized."""
@@ -340,8 +325,8 @@ class TestInputValidationSecurity:
                     "first_name": payload,
                     "last_name": "User",
                     "role": "student",
-                    "grade_level": 10
-                }
+                    "grade_level": 10,
+                },
             )
 
             # Should either reject or sanitize
@@ -375,7 +360,9 @@ class TestCORSSecurity:
         response = client.options("/api/v1/auth/login")
 
         # Should have CORS headers
-        assert "access-control-allow-origin" in [h.lower() for h in response.headers.keys()]
+        assert "access-control-allow-origin" in [
+            h.lower() for h in response.headers.keys()
+        ]
 
     def test_cors_credentials_properly_configured(self):
         """Test that credentials are properly handled in CORS."""
@@ -395,11 +382,12 @@ class TestCSRFProtection:
         """Test that POST/PUT/DELETE require authentication."""
         # Try POST without authentication
         response = client.post(
-            "/api/v1/classes",
-            json={"name": "Test Class", "subject": "Test"}
+            "/api/v1/classes", json={"name": "Test Class", "subject": "Test"}
         )
 
-        assert response.status_code == 401, "State-changing requests should require auth"
+        assert (
+            response.status_code == 401
+        ), "State-changing requests should require auth"
 
     def test_csrf_token_validation(self):
         """Test CSRF token validation if implemented."""
@@ -428,13 +416,16 @@ class TestSecurityHeaders:
 
             if expected_value is None:
                 # Just check it exists
-                assert header in [h.lower() for h in response.headers.keys()], \
-                    f"Missing security header: {header}"
+                assert header in [
+                    h.lower() for h in response.headers.keys()
+                ], f"Missing security header: {header}"
             elif isinstance(expected_value, list):
                 # Check if value is one of the expected
-                assert any(ev.lower() in header_value for ev in expected_value), \
-                    f"Header {header} has unexpected value: {header_value}"
+                assert any(
+                    ev.lower() in header_value for ev in expected_value
+                ), f"Header {header} has unexpected value: {header_value}"
             else:
                 # Check exact value
-                assert expected_value.lower() in header_value, \
-                    f"Header {header} has unexpected value: {header_value}"
+                assert (
+                    expected_value.lower() in header_value
+                ), f"Header {header} has unexpected value: {header_value}"

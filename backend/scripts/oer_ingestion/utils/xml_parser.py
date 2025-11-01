@@ -28,9 +28,9 @@ class CNXMLParser:
     def __init__(self):
         """Initialize parser with CNXML namespace."""
         self.ns = {
-            'cnxml': 'http://cnx.rice.edu/cnxml',
-            'md': 'http://cnx.rice.edu/mdml',
-            'm': 'http://www.w3.org/1998/Math/MathML'
+            "cnxml": "http://cnx.rice.edu/cnxml",
+            "md": "http://cnx.rice.edu/mdml",
+            "m": "http://www.w3.org/1998/Math/MathML",
         }
 
     def parse_book(self, book_dir: str, subject: str) -> Dict:
@@ -47,7 +47,7 @@ class CNXMLParser:
         book_dir = Path(book_dir)
 
         # Find collection.xml (table of contents)
-        collection_file = book_dir / 'collection.xml'
+        collection_file = book_dir / "collection.xml"
         if not collection_file.exists():
             raise FileNotFoundError(f"collection.xml not found in {book_dir}")
 
@@ -62,12 +62,12 @@ class CNXMLParser:
         chapters = self._extract_chapters(root, book_dir, subject)
 
         return {
-            'title': metadata.get('title', 'Unknown'),
-            'author': metadata.get('author', 'OpenStax'),
-            'license': 'CC BY 4.0',
-            'subject': subject,
-            'metadata': metadata,
-            'chapters': chapters
+            "title": metadata.get("title", "Unknown"),
+            "author": metadata.get("author", "OpenStax"),
+            "license": "CC BY 4.0",
+            "subject": subject,
+            "metadata": metadata,
+            "chapters": chapters,
         }
 
     def _extract_metadata(self, root: etree.Element) -> Dict:
@@ -75,38 +75,41 @@ class CNXMLParser:
         metadata = {}
 
         # Title
-        title_elem = root.find('.//md:title', self.ns)
+        title_elem = root.find(".//md:title", self.ns)
         if title_elem is not None:
-            metadata['title'] = title_elem.text
+            metadata["title"] = title_elem.text
 
         # Authors
         authors = []
-        for person in root.findall('.//md:person', self.ns):
-            name_elem = person.find('.//md:fullname', self.ns)
+        for person in root.findall(".//md:person", self.ns):
+            name_elem = person.find(".//md:fullname", self.ns)
             if name_elem is not None:
                 authors.append(name_elem.text)
-        metadata['authors'] = authors
+        metadata["authors"] = authors
 
         # License
-        license_elem = root.find('.//md:license', self.ns)
+        license_elem = root.find(".//md:license", self.ns)
         if license_elem is not None:
-            metadata['license_url'] = license_elem.get('url')
+            metadata["license_url"] = license_elem.get("url")
 
         return metadata
 
-    def _extract_chapters(self, root: etree.Element, book_dir: Path, subject: str) -> List[Dict]:
+    def _extract_chapters(
+        self, root: etree.Element, book_dir: Path, subject: str
+    ) -> List[Dict]:
         """Extract all chapters from collection.xml."""
         chapters = []
 
         # Find all modules (chapters/sections)
-        for i, module in enumerate(root.findall('.//col:module',
-                                                 {'col': 'http://cnx.rice.edu/collxml'})):
-            document = module.get('document')
+        for i, module in enumerate(
+            root.findall(".//col:module", {"col": "http://cnx.rice.edu/collxml"})
+        ):
+            document = module.get("document")
             if not document:
                 continue
 
             # Find corresponding CNXML file
-            module_file = book_dir / f'{document}.cnxml'
+            module_file = book_dir / f"{document}.cnxml"
             if not module_file.exists():
                 # Try alternate locations
                 module_file = self._find_module_file(book_dir, document)
@@ -122,20 +125,26 @@ class CNXMLParser:
 
     def _find_module_file(self, book_dir: Path, document: str) -> Optional[Path]:
         """Find module file in subdirectories."""
-        for cnxml_file in book_dir.rglob('*.cnxml'):
+        for cnxml_file in book_dir.rglob("*.cnxml"):
             if document in cnxml_file.stem:
                 return cnxml_file
         return None
 
-    def _parse_module(self, module_file: Path, subject: str, chapter_num: int) -> Optional[Dict]:
+    def _parse_module(
+        self, module_file: Path, subject: str, chapter_num: int
+    ) -> Optional[Dict]:
         """Parse individual module (chapter/section)."""
         try:
             tree = etree.parse(str(module_file))
             root = tree.getroot()
 
             # Extract title
-            title_elem = root.find('.//cnxml:title', self.ns)
-            title = title_elem.text if title_elem is not None else f"Chapter {chapter_num + 1}"
+            title_elem = root.find(".//cnxml:title", self.ns)
+            title = (
+                title_elem.text
+                if title_elem is not None
+                else f"Chapter {chapter_num + 1}"
+            )
 
             # Extract content blocks
             content_blocks = self._extract_content_blocks(root)
@@ -144,10 +153,10 @@ class CNXMLParser:
                 return None
 
             return {
-                'id': f'chapter-{chapter_num + 1:02d}',
-                'title': title,
-                'subject': subject,
-                'content_blocks': content_blocks
+                "id": f"chapter-{chapter_num + 1:02d}",
+                "title": title,
+                "subject": subject,
+                "content_blocks": content_blocks,
             }
 
         except Exception as e:
@@ -159,53 +168,42 @@ class CNXMLParser:
         blocks = []
 
         # Find content section
-        content = root.find('.//cnxml:content', self.ns)
+        content = root.find(".//cnxml:content", self.ns)
         if content is None:
             return blocks
 
         # Extract paragraphs
-        for para in content.findall('.//cnxml:para', self.ns):
+        for para in content.findall(".//cnxml:para", self.ns):
             text = self._extract_text(para)
             if text and len(text.strip()) > 50:  # Minimum length
-                blocks.append({
-                    'type': 'paragraph',
-                    'text': text
-                })
+                blocks.append({"type": "paragraph", "text": text})
 
         # Extract examples
-        for example in content.findall('.//cnxml:example', self.ns):
-            title_elem = example.find('.//cnxml:title', self.ns)
+        for example in content.findall(".//cnxml:example", self.ns):
+            title_elem = example.find(".//cnxml:title", self.ns)
             title = title_elem.text if title_elem is not None else "Example"
 
             text = self._extract_text(example)
             if text:
-                blocks.append({
-                    'type': 'example',
-                    'title': title,
-                    'text': text
-                })
+                blocks.append({"type": "example", "title": title, "text": text})
 
         # Extract figures
-        for figure in content.findall('.//cnxml:figure', self.ns):
-            caption_elem = figure.find('.//cnxml:caption', self.ns)
-            caption = self._extract_text(caption_elem) if caption_elem is not None else ""
+        for figure in content.findall(".//cnxml:figure", self.ns):
+            caption_elem = figure.find(".//cnxml:caption", self.ns)
+            caption = (
+                self._extract_text(caption_elem) if caption_elem is not None else ""
+            )
 
             if caption:
-                blocks.append({
-                    'type': 'figure',
-                    'caption': caption
-                })
+                blocks.append({"type": "figure", "caption": caption})
 
         # Extract learning objectives (notes with class="learning-objectives")
-        for note in content.findall('.//cnxml:note', self.ns):
-            note_class = note.get('class', '')
-            if 'learning-objective' in note_class.lower():
+        for note in content.findall(".//cnxml:note", self.ns):
+            note_class = note.get("class", "")
+            if "learning-objective" in note_class.lower():
                 text = self._extract_text(note)
                 if text:
-                    blocks.append({
-                        'type': 'learning_objective',
-                        'text': text
-                    })
+                    blocks.append({"type": "learning_objective", "text": text})
 
         return blocks
 
@@ -222,23 +220,23 @@ class CNXMLParser:
             return ""
 
         # Convert to string and parse with BeautifulSoup for easier text extraction
-        xml_string = etree.tostring(element, encoding='unicode')
-        soup = BeautifulSoup(xml_string, 'lxml')
+        xml_string = etree.tostring(element, encoding="unicode")
+        soup = BeautifulSoup(xml_string, "lxml")
 
         # Remove script and style elements
-        for script in soup(['script', 'style']):
+        for script in soup(["script", "style"]):
             script.decompose()
 
         # Handle math elements
-        for math in soup.find_all(['math', 'm:math']):
+        for math in soup.find_all(["math", "m:math"]):
             # Convert to placeholder text
-            math.string = ' [MATH] '
+            math.string = " [MATH] "
 
         # Get text
-        text = soup.get_text(separator=' ', strip=True)
+        text = soup.get_text(separator=" ", strip=True)
 
         # Clean up whitespace
-        text = re.sub(r'\s+', ' ', text)
+        text = re.sub(r"\s+", " ", text)
         text = text.strip()
 
         return text
@@ -262,9 +260,9 @@ def main():
     print(f"Subject: {book_data['subject']}")
     print(f"Chapters: {len(book_data['chapters'])}")
 
-    total_blocks = sum(len(ch['content_blocks']) for ch in book_data['chapters'])
+    total_blocks = sum(len(ch["content_blocks"]) for ch in book_data["chapters"])
     print(f"Total content blocks: {total_blocks}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

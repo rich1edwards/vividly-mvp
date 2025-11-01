@@ -26,9 +26,10 @@ logger = logging.getLogger(__name__)
 
 class CircuitState(Enum):
     """Circuit breaker states."""
-    CLOSED = "closed"          # Normal operation
-    OPEN = "open"              # Failing fast
-    HALF_OPEN = "half_open"    # Testing recovery
+
+    CLOSED = "closed"  # Normal operation
+    OPEN = "open"  # Failing fast
+    HALF_OPEN = "half_open"  # Testing recovery
 
 
 @dataclass
@@ -36,18 +37,18 @@ class CircuitBreakerConfig:
     """Configuration for circuit breaker behavior."""
 
     # Failure threshold
-    failure_threshold: int = 5            # Failures before opening circuit
-    failure_timeout: int = 60             # Window for counting failures (seconds)
+    failure_threshold: int = 5  # Failures before opening circuit
+    failure_timeout: int = 60  # Window for counting failures (seconds)
 
     # Recovery
-    recovery_timeout: int = 60            # Time to wait before trying again (seconds)
-    success_threshold: int = 2            # Successes needed to close circuit
+    recovery_timeout: int = 60  # Time to wait before trying again (seconds)
+    success_threshold: int = 2  # Successes needed to close circuit
 
     # Timeouts
     call_timeout: Optional[float] = 10.0  # Max time for single call (seconds)
 
     # Monitoring
-    name: str = "default"                 # Circuit breaker name for logging
+    name: str = "default"  # Circuit breaker name for logging
 
 
 @dataclass
@@ -69,7 +70,9 @@ class CircuitBreakerStats:
             "state": self.state.value,
             "failure_count": self.failure_count,
             "success_count": self.success_count,
-            "last_failure_time": self.last_failure_time.isoformat() if self.last_failure_time else None,
+            "last_failure_time": self.last_failure_time.isoformat()
+            if self.last_failure_time
+            else None,
             "last_state_change": self.last_state_change.isoformat(),
             "total_calls": self.total_calls,
             "total_failures": self.total_failures,
@@ -79,6 +82,7 @@ class CircuitBreakerStats:
 
 class CircuitBreakerError(Exception):
     """Raised when circuit breaker is open."""
+
     pass
 
 
@@ -180,7 +184,9 @@ class CircuitBreaker:
         if not self.stats.last_failure_time:
             return False
 
-        time_since_failure = (datetime.utcnow() - self.stats.last_failure_time).total_seconds()
+        time_since_failure = (
+            datetime.utcnow() - self.stats.last_failure_time
+        ).total_seconds()
         return time_since_failure >= self.config.recovery_timeout
 
     def _reset_failure_window(self):
@@ -188,7 +194,9 @@ class CircuitBreaker:
         if not self.stats.last_failure_time:
             return
 
-        time_since_failure = (datetime.utcnow() - self.stats.last_failure_time).total_seconds()
+        time_since_failure = (
+            datetime.utcnow() - self.stats.last_failure_time
+        ).total_seconds()
         if time_since_failure >= self.config.failure_timeout:
             self.stats.failure_count = 0
 
@@ -235,7 +243,7 @@ class CircuitBreaker:
             self._record_failure()
             logger.error(
                 f"Circuit breaker '{self.config.name}' call failed: {str(e)}",
-                exc_info=True
+                exc_info=True,
             )
             raise
 
@@ -248,6 +256,7 @@ class CircuitBreaker:
             def my_api_call():
                 return requests.get(...)
         """
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             return self.call(func, *args, **kwargs)
@@ -291,7 +300,9 @@ def get_circuit_breaker(name: str, **config_overrides) -> CircuitBreaker:
 def get_all_circuit_breaker_stats() -> Dict[str, Dict]:
     """Get statistics for all circuit breakers."""
     with _breakers_lock:
-        return {name: breaker.get_stats() for name, breaker in _circuit_breakers.items()}
+        return {
+            name: breaker.get_stats() for name, breaker in _circuit_breakers.items()
+        }
 
 
 # Pre-configured circuit breakers for Vividly services
@@ -299,14 +310,14 @@ nano_banana_breaker = get_circuit_breaker(
     name="nano_banana_api",
     failure_threshold=5,
     recovery_timeout=120,  # 2 minutes - API may need time to recover
-    call_timeout=300.0,    # 5 minutes - video generation is slow
+    call_timeout=300.0,  # 5 minutes - video generation is slow
 )
 
 vertex_ai_breaker = get_circuit_breaker(
     name="vertex_ai",
     failure_threshold=3,
-    recovery_timeout=60,   # 1 minute
-    call_timeout=30.0,     # 30 seconds
+    recovery_timeout=60,  # 1 minute
+    call_timeout=30.0,  # 30 seconds
 )
 
 gemini_breaker = get_circuit_breaker(

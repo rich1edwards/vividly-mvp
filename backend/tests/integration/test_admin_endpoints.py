@@ -11,7 +11,9 @@ from fastapi import status
 class TestAdminUserManagement:
     """Test admin user management endpoints."""
 
-    def test_list_users_success(self, client, admin_headers, sample_student, sample_teacher):
+    def test_list_users_success(
+        self, client, admin_headers, sample_student, sample_teacher
+    ):
         """Test listing users with admin access."""
         response = client.get("/api/v1/admin/users", headers=admin_headers)
 
@@ -23,10 +25,7 @@ class TestAdminUserManagement:
 
     def test_list_users_filter_by_role(self, client, admin_headers, sample_student):
         """Test filtering users by role."""
-        response = client.get(
-            "/api/v1/admin/users?role=student",
-            headers=admin_headers
-        )
+        response = client.get("/api/v1/admin/users?role=student", headers=admin_headers)
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -46,13 +45,11 @@ class TestAdminUserManagement:
             "last_name": "User",
             "role": "student",
             "grade_level": 10,
-            "send_invitation": False
+            "send_invitation": False,
         }
 
         response = client.post(
-            "/api/v1/admin/users",
-            json=user_data,
-            headers=admin_headers
+            "/api/v1/admin/users", json=user_data, headers=admin_headers
         )
 
         assert response.status_code == status.HTTP_201_CREATED
@@ -68,13 +65,11 @@ class TestAdminUserManagement:
             "email": sample_student.email,
             "first_name": "Duplicate",
             "last_name": "User",
-            "role": "student"
+            "role": "student",
         }
 
         response = client.post(
-            "/api/v1/admin/users",
-            json=user_data,
-            headers=admin_headers
+            "/api/v1/admin/users", json=user_data, headers=admin_headers
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -82,15 +77,12 @@ class TestAdminUserManagement:
 
     def test_update_user_success(self, client, admin_headers, sample_student):
         """Test updating user profile."""
-        update_data = {
-            "grade_level": 11,
-            "first_name": "Updated"
-        }
+        update_data = {"grade_level": 11, "first_name": "Updated"}
 
         response = client.put(
             f"/api/v1/admin/users/{sample_student.user_id}",
             json=update_data,
-            headers=admin_headers
+            headers=admin_headers,
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -101,16 +93,14 @@ class TestAdminUserManagement:
     def test_delete_user_success(self, client, admin_headers, sample_student):
         """Test soft deleting a user."""
         response = client.delete(
-            f"/api/v1/admin/users/{sample_student.user_id}",
-            headers=admin_headers
+            f"/api/v1/admin/users/{sample_student.user_id}", headers=admin_headers
         )
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
         # Verify user is deactivated
         response = client.get(
-            f"/api/v1/students/{sample_student.user_id}",
-            headers=admin_headers
+            f"/api/v1/students/{sample_student.user_id}", headers=admin_headers
         )
         # Should either return 404 or show is_active=False
         assert response.status_code in [status.HTTP_404_NOT_FOUND, status.HTTP_200_OK]
@@ -118,8 +108,7 @@ class TestAdminUserManagement:
     def test_delete_own_account_forbidden(self, client, admin_headers, sample_admin):
         """Test that admin cannot delete their own account."""
         response = client.delete(
-            f"/api/v1/admin/users/{sample_admin.user_id}",
-            headers=admin_headers
+            f"/api/v1/admin/users/{sample_admin.user_id}", headers=admin_headers
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -137,13 +126,13 @@ class TestBulkUserUpload:
         csv_content += "Jane,Smith,jane.bulk@test.com,student,11\n"
         csv_content += "Bob,Jones,invalid-email,student,10\n"  # Invalid
 
-        csv_file = io.BytesIO(csv_content.encode('utf-8'))
+        csv_file = io.BytesIO(csv_content.encode("utf-8"))
 
         response = client.post(
             "/api/v1/admin/users/bulk-upload",
             files={"file": ("users.csv", csv_file, "text/csv")},
             data={"transaction_mode": "partial"},
-            headers=admin_headers
+            headers=admin_headers,
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -158,15 +147,17 @@ class TestBulkUserUpload:
         # Create CSV with one duplicate email (should rollback all)
         csv_content = "first_name,last_name,email,role,grade_level\n"
         csv_content += "New,User1,new1@test.com,student,10\n"
-        csv_content += f"Duplicate,User,{sample_student.email},student,10\n"  # Duplicate
+        csv_content += (
+            f"Duplicate,User,{sample_student.email},student,10\n"  # Duplicate
+        )
 
-        csv_file = io.BytesIO(csv_content.encode('utf-8'))
+        csv_file = io.BytesIO(csv_content.encode("utf-8"))
 
         response = client.post(
             "/api/v1/admin/users/bulk-upload",
             files={"file": ("users.csv", csv_file, "text/csv")},
             data={"transaction_mode": "atomic"},
-            headers=admin_headers
+            headers=admin_headers,
         )
 
         # Should fail completely
@@ -188,7 +179,7 @@ class TestAccountRequests:
             student_last_name="Student",
             grade_level=10,
             status=RequestStatus.PENDING,
-            requested_by="user_teacher_test_001"
+            requested_by="user_teacher_test_001",
         )
         db_session.add(request)
         db_session.commit()
@@ -211,14 +202,13 @@ class TestAccountRequests:
             student_last_name="Test",
             grade_level=10,
             status=RequestStatus.PENDING,
-            requested_by="user_teacher_test_001"
+            requested_by="user_teacher_test_001",
         )
         db_session.add(request)
         db_session.commit()
 
         response = client.get(
-            f"/api/v1/admin/requests/{request.request_id}",
-            headers=admin_headers
+            f"/api/v1/admin/requests/{request.request_id}", headers=admin_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -226,7 +216,9 @@ class TestAccountRequests:
         assert data["request_id"] == "req_test_002"
         assert data["student_email"] == "details@test.com"
 
-    def test_approve_request_success(self, client, admin_headers, db_session, sample_admin):
+    def test_approve_request_success(
+        self, client, admin_headers, db_session, sample_admin
+    ):
         """Test approving an account request."""
         from app.models.student_request import StudentRequest, RequestStatus
 
@@ -237,14 +229,14 @@ class TestAccountRequests:
             student_last_name="Test",
             grade_level=10,
             status=RequestStatus.PENDING,
-            requested_by="user_teacher_test_001"
+            requested_by="user_teacher_test_001",
         )
         db_session.add(request)
         db_session.commit()
 
         response = client.post(
             f"/api/v1/admin/requests/{request.request_id}/approve",
-            headers=admin_headers
+            headers=admin_headers,
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -253,7 +245,9 @@ class TestAccountRequests:
         assert "user_created" in data
         assert data["approved_by"] == sample_admin.user_id
 
-    def test_deny_request_success(self, client, admin_headers, db_session, sample_admin):
+    def test_deny_request_success(
+        self, client, admin_headers, db_session, sample_admin
+    ):
         """Test denying an account request."""
         from app.models.student_request import StudentRequest, RequestStatus
 
@@ -264,7 +258,7 @@ class TestAccountRequests:
             student_last_name="Test",
             grade_level=10,
             status=RequestStatus.PENDING,
-            requested_by="user_teacher_test_001"
+            requested_by="user_teacher_test_001",
         )
         db_session.add(request)
         db_session.commit()
@@ -274,7 +268,7 @@ class TestAccountRequests:
         response = client.post(
             f"/api/v1/admin/requests/{request.request_id}/deny",
             json=denial_data,
-            headers=admin_headers
+            headers=admin_headers,
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -286,7 +280,9 @@ class TestAccountRequests:
 class TestAdminDashboard:
     """Test admin dashboard statistics."""
 
-    def test_get_admin_stats(self, client, admin_headers, sample_student, sample_teacher):
+    def test_get_admin_stats(
+        self, client, admin_headers, sample_student, sample_teacher
+    ):
         """Test getting admin dashboard statistics."""
         response = client.get("/api/v1/admin/stats", headers=admin_headers)
 

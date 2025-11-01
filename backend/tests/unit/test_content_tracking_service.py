@@ -31,7 +31,7 @@ class TestTrackView:
             student_id="student_123",
             quality="1080p",
             device_type="desktop",
-            browser="Chrome"
+            browser="Chrome",
         )
 
         assert result is True
@@ -50,7 +50,7 @@ class TestTrackView:
             cache_key="nonexistent",
             student_id="student_123",
             quality="1080p",
-            device_type="desktop"
+            device_type="desktop",
         )
 
         assert result is False
@@ -71,7 +71,7 @@ class TestTrackView:
             cache_key="test_key",
             student_id="student_123",
             quality="1080p",
-            device_type="mobile"
+            device_type="mobile",
         )
 
         assert result is True
@@ -89,7 +89,7 @@ class TestTrackView:
             cache_key="test_key",
             student_id="student_123",
             quality="1080p",
-            device_type="desktop"
+            device_type="desktop",
         )
 
         assert result is False
@@ -127,7 +127,7 @@ class TestTrackProgress:
             current_time_seconds=150,
             duration_seconds=300,
             playback_speed=1.0,
-            paused=False
+            paused=False,
         )
 
         assert result is True
@@ -152,7 +152,7 @@ class TestTrackProgress:
             cache_key="test_key",
             student_id="student_123",
             current_time_seconds=50,
-            duration_seconds=300
+            duration_seconds=300,
         )
 
         assert result is True
@@ -171,7 +171,7 @@ class TestTrackProgress:
             cache_key="nonexistent",
             student_id="student_123",
             current_time_seconds=50,
-            duration_seconds=300
+            duration_seconds=300,
         )
 
         assert result is False
@@ -205,7 +205,7 @@ class TestTrackCompletion:
             student_id="student_123",
             watch_duration_seconds=300,
             completion_percentage=95.0,
-            skipped_segments=[]
+            skipped_segments=[],
         )
 
         assert isinstance(result, dict)
@@ -226,7 +226,7 @@ class TestTrackCompletion:
             student_id="student_123",
             watch_duration_seconds=300,
             completion_percentage=95.0,
-            skipped_segments=[]
+            skipped_segments=[],
         )
 
         assert isinstance(result, dict)
@@ -246,7 +246,9 @@ class TestTrackCompletion:
             mock_content,  # First: content query
             None,  # Second: no existing progress
         ]
-        mock_db.query.return_value.filter.return_value.scalar.return_value = 1  # Achievement count
+        mock_db.query.return_value.filter.return_value.scalar.return_value = (
+            1  # Achievement count
+        )
 
         result = service.track_completion(
             db=mock_db,
@@ -254,7 +256,7 @@ class TestTrackCompletion:
             student_id="student_123",
             watch_duration_seconds=300,
             completion_percentage=100.0,
-            skipped_segments=[]
+            skipped_segments=[],
         )
 
         assert isinstance(result, dict)
@@ -291,10 +293,7 @@ class TestGetContentAnalytics:
         # Use side_effect to return different query objects
         mock_db.query.side_effect = [mock_content_query, mock_stats_query]
 
-        result = service.get_content_analytics(
-            db=mock_db,
-            cache_key="test_key"
-        )
+        result = service.get_content_analytics(db=mock_db, cache_key="test_key")
 
         assert result is not None
         assert result["cache_key"] == "test_key"
@@ -310,10 +309,7 @@ class TestGetContentAnalytics:
         mock_db = Mock()
         mock_db.query.return_value.filter.return_value.first.return_value = None
 
-        result = service.get_content_analytics(
-            db=mock_db,
-            cache_key="nonexistent"
-        )
+        result = service.get_content_analytics(db=mock_db, cache_key="nonexistent")
 
         assert result is None
 
@@ -340,10 +336,7 @@ class TestGetContentAnalytics:
 
         mock_db.query.side_effect = [mock_content_query, mock_stats_query]
 
-        result = service.get_content_analytics(
-            db=mock_db,
-            cache_key="test_key"
-        )
+        result = service.get_content_analytics(db=mock_db, cache_key="test_key")
 
         assert result is not None
         assert result["total_views"] == 0
@@ -391,7 +384,9 @@ class TestCalculateStreak:
         service = ContentTrackingService()
 
         mock_db = Mock()
-        mock_db.query.return_value.filter.return_value.order_by.return_value.all.return_value = []
+        mock_db.query.return_value.filter.return_value.order_by.return_value.all.return_value = (
+            []
+        )
 
         streak = service._calculate_streak(mock_db, "student_123")
 
@@ -426,7 +421,11 @@ class TestCalculateStreak:
 
         today = datetime.utcnow().date()
         mock_progress1 = Mock(completed_at=datetime.combine(today, datetime.min.time()))
-        mock_progress2 = Mock(completed_at=datetime.combine(today - timedelta(days=3), datetime.min.time()))
+        mock_progress2 = Mock(
+            completed_at=datetime.combine(
+                today - timedelta(days=3), datetime.min.time()
+            )
+        )
 
         mock_db.query.return_value.filter.return_value.order_by.return_value.all.return_value = [
             mock_progress1,
@@ -452,7 +451,7 @@ class TestEdgeCases:
             current_position_seconds=0,
             total_watch_time_seconds=0,
             completion_percentage=0.0,
-            status=ProgressStatus.IN_PROGRESS
+            status=ProgressStatus.IN_PROGRESS,
         )
 
         mock_db.query.return_value.filter.return_value.first.side_effect = [
@@ -467,7 +466,7 @@ class TestEdgeCases:
             student_id="student_123",
             current_time_seconds=100,
             duration_seconds=300,
-            playback_speed=2.0
+            playback_speed=2.0,
         )
 
         assert result is True
@@ -481,7 +480,7 @@ class TestEdgeCases:
         mock_progress = Mock(
             current_position_seconds=0,
             completion_percentage=0.0,
-            status=ProgressStatus.IN_PROGRESS
+            status=ProgressStatus.IN_PROGRESS,
         )
 
         mock_db.query.return_value.filter.return_value.first.side_effect = [
@@ -495,7 +494,7 @@ class TestEdgeCases:
             cache_key="test_key",
             student_id="student_123",
             current_time_seconds=285,
-            duration_seconds=300
+            duration_seconds=300,
         )
 
         assert result is True
@@ -520,7 +519,7 @@ class TestEdgeCases:
             student_id="student_123",
             watch_duration_seconds=300,
             completion_percentage=60.0,  # Low completion
-            skipped_segments=[{"start": 100, "end": 150}]
+            skipped_segments=[{"start": 100, "end": 150}],
         )
 
         assert isinstance(result, dict)
@@ -533,7 +532,9 @@ class TestEdgeCases:
 
         mock_db = Mock()
         mock_content = Mock(topic_id="topic_123", completions=1)
-        mock_progress = Mock(status=ProgressStatus.COMPLETED, completed_at=datetime.utcnow())
+        mock_progress = Mock(
+            status=ProgressStatus.COMPLETED, completed_at=datetime.utcnow()
+        )
 
         mock_db.query.return_value.filter.return_value.first.side_effect = [
             mock_content,
@@ -548,7 +549,7 @@ class TestEdgeCases:
             student_id="student_123",
             watch_duration_seconds=300,
             completion_percentage=100.0,
-            skipped_segments=[]
+            skipped_segments=[],
         )
 
         assert isinstance(result, dict)

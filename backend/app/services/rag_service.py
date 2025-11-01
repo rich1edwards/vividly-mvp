@@ -39,13 +39,16 @@ class RAGService:
 
         try:
             from google.cloud import aiplatform
+
             aiplatform.init(project=self.project_id, location="us-central1")
 
             # Get index endpoint from environment
             index_endpoint_id = os.getenv("VERTEX_MATCHING_ENGINE_ENDPOINT")
 
             if index_endpoint_id:
-                self.index_endpoint = aiplatform.MatchingEngineIndexEndpoint(index_endpoint_id)
+                self.index_endpoint = aiplatform.MatchingEngineIndexEndpoint(
+                    index_endpoint_id
+                )
                 self.matching_engine_available = True
                 logger.info("Vertex AI Matching Engine initialized")
             else:
@@ -57,11 +60,7 @@ class RAGService:
             self.vertex_available = False
 
     async def retrieve_content(
-        self,
-        topic_id: str,
-        interest: str,
-        grade_level: int,
-        limit: int = 5
+        self, topic_id: str, interest: str, grade_level: int, limit: int = 5
     ) -> List[Dict[str, Any]]:
         """
         Retrieve relevant OER content for topic and interest.
@@ -97,11 +96,7 @@ class RAGService:
             return self._mock_retrieve_content(topic_id, interest, grade_level, limit)
 
     async def _retrieve_with_matching_engine(
-        self,
-        topic_id: str,
-        interest: str,
-        grade_level: int,
-        limit: int
+        self, topic_id: str, interest: str, grade_level: int, limit: int
     ) -> List[Dict]:
         """
         Retrieve content using Vertex AI Matching Engine.
@@ -118,14 +113,16 @@ class RAGService:
             query_text = f"{topic_id} {interest}"
 
             # Generate query embedding
-            query_embedding = await self.embeddings_service.generate_query_embedding(query_text)
+            query_embedding = await self.embeddings_service.generate_query_embedding(
+                query_text
+            )
 
             # Search vector index
             # Note: Requires deployed index endpoint
             matches = self.index_endpoint.find_neighbors(
                 deployed_index_id=os.getenv("VERTEX_DEPLOYED_INDEX_ID"),
                 queries=[query_embedding],
-                num_neighbors=limit * 2  # Get extra for filtering
+                num_neighbors=limit * 2,  # Get extra for filtering
             )
 
             # Process results
@@ -140,13 +137,15 @@ class RAGService:
                 # For now, create mock result
                 relevance_score = 1.0 - distance  # Convert distance to similarity
 
-                content_results.append({
-                    "content_id": chunk_id,
-                    "title": f"Content for {topic_id}",
-                    "text": "Educational content retrieved from vector database...",
-                    "source": "OpenStax",
-                    "relevance_score": relevance_score
-                })
+                content_results.append(
+                    {
+                        "content_id": chunk_id,
+                        "title": f"Content for {topic_id}",
+                        "text": "Educational content retrieved from vector database...",
+                        "source": "OpenStax",
+                        "relevance_score": relevance_score,
+                    }
+                )
 
             # Sort by relevance
             content_results.sort(key=lambda x: x["relevance_score"], reverse=True)
@@ -159,11 +158,7 @@ class RAGService:
             return self._mock_retrieve_content(topic_id, interest, grade_level, limit)
 
     def _mock_retrieve_content(
-        self,
-        topic_id: str,
-        interest: str,
-        grade_level: int,
-        limit: int
+        self, topic_id: str, interest: str, grade_level: int, limit: int
     ) -> List[Dict]:
         """
         Mock content retrieval for testing.
@@ -180,7 +175,7 @@ class RAGService:
                     "source": "OpenStax Physics",
                     "relevance_score": 0.95,
                     "grade_level": [9, 10, 11, 12],
-                    "keywords": ["action", "reaction", "force pairs", "Newton"]
+                    "keywords": ["action", "reaction", "force pairs", "Newton"],
                 },
                 {
                     "content_id": "oer_newton3_002",
@@ -189,7 +184,7 @@ class RAGService:
                     "source": "Khan Academy",
                     "relevance_score": 0.88,
                     "grade_level": [9, 10, 11, 12],
-                    "keywords": ["examples", "applications", "sports"]
+                    "keywords": ["examples", "applications", "sports"],
                 },
                 {
                     "content_id": "oer_newton3_003",
@@ -198,8 +193,8 @@ class RAGService:
                     "source": "Sports Physics",
                     "relevance_score": 0.92,
                     "grade_level": [10, 11, 12],
-                    "keywords": ["basketball", "sports", "jumping", "force"]
-                }
+                    "keywords": ["basketball", "sports", "jumping", "force"],
+                },
             ],
             "topic_phys_mech_newton_2": [
                 {
@@ -209,9 +204,9 @@ class RAGService:
                     "source": "OpenStax Physics",
                     "relevance_score": 0.95,
                     "grade_level": [9, 10, 11, 12],
-                    "keywords": ["F=ma", "force", "mass", "acceleration"]
+                    "keywords": ["F=ma", "force", "mass", "acceleration"],
                 }
-            ]
+            ],
         }
 
         # Get content for topic
@@ -222,13 +217,13 @@ class RAGService:
             # Boost relevance for basketball-related content
             for content in content_list:
                 if "basketball" in content.get("keywords", []):
-                    content["relevance_score"] = min(1.0, content["relevance_score"] + 0.1)
+                    content["relevance_score"] = min(
+                        1.0, content["relevance_score"] + 0.1
+                    )
 
         # Sort by relevance and limit
         content_list = sorted(
-            content_list,
-            key=lambda x: x["relevance_score"],
-            reverse=True
+            content_list, key=lambda x: x["relevance_score"], reverse=True
         )[:limit]
 
         return content_list
@@ -246,6 +241,7 @@ class RAGService:
         if not self.vertex_available:
             # Return mock embedding
             import hashlib
+
             hash_val = int(hashlib.md5(text.encode()).hexdigest(), 16)
             # Generate deterministic pseudo-random embedding
             return [(hash_val >> i) % 100 / 100.0 for i in range(768)]

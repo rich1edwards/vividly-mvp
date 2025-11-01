@@ -25,7 +25,7 @@ class ContentTrackingService:
         student_id: str,
         quality: str,
         device_type: str,
-        browser: Optional[str] = None
+        browser: Optional[str] = None,
     ) -> bool:
         """
         Track content view event.
@@ -43,9 +43,11 @@ class ContentTrackingService:
         """
         try:
             # Get content metadata
-            content = db.query(ContentMetadata).filter(
-                ContentMetadata.cache_key == cache_key
-            ).first()
+            content = (
+                db.query(ContentMetadata)
+                .filter(ContentMetadata.cache_key == cache_key)
+                .first()
+            )
 
             if not content:
                 logger.warning(f"Content not found for cache_key: {cache_key}")
@@ -74,7 +76,7 @@ class ContentTrackingService:
         current_time_seconds: int,
         duration_seconds: int,
         playback_speed: float = 1.0,
-        paused: bool = False
+        paused: bool = False,
     ) -> bool:
         """
         Track content playback progress.
@@ -95,19 +97,25 @@ class ContentTrackingService:
         """
         try:
             # Get content metadata
-            content = db.query(ContentMetadata).filter(
-                ContentMetadata.cache_key == cache_key
-            ).first()
+            content = (
+                db.query(ContentMetadata)
+                .filter(ContentMetadata.cache_key == cache_key)
+                .first()
+            )
 
             if not content:
                 logger.warning(f"Content not found for cache_key: {cache_key}")
                 return False
 
             # Get or create progress record
-            progress = db.query(StudentProgress).filter(
-                StudentProgress.student_id == student_id,
-                StudentProgress.topic_id == content.topic_id
-            ).first()
+            progress = (
+                db.query(StudentProgress)
+                .filter(
+                    StudentProgress.student_id == student_id,
+                    StudentProgress.topic_id == content.topic_id,
+                )
+                .first()
+            )
 
             if not progress:
                 # Create new progress record
@@ -118,7 +126,7 @@ class ContentTrackingService:
                     current_position_seconds=current_time_seconds,
                     total_watch_time_seconds=current_time_seconds,
                     last_accessed_at=datetime.utcnow(),
-                    started_at=datetime.utcnow()
+                    started_at=datetime.utcnow(),
                 )
                 db.add(progress)
             else:
@@ -133,11 +141,16 @@ class ContentTrackingService:
 
             # Calculate completion percentage
             completion_pct = (current_time_seconds / duration_seconds) * 100
-            if progress.completion_percentage is None or completion_pct > progress.completion_percentage:
+            if (
+                progress.completion_percentage is None
+                or completion_pct > progress.completion_percentage
+            ):
                 progress.completion_percentage = completion_pct
 
             db.commit()
-            logger.debug(f"Tracked progress for {cache_key}: {current_time_seconds}/{duration_seconds}s")
+            logger.debug(
+                f"Tracked progress for {cache_key}: {current_time_seconds}/{duration_seconds}s"
+            )
             return True
 
         except Exception as e:
@@ -152,7 +165,7 @@ class ContentTrackingService:
         student_id: str,
         watch_duration_seconds: int,
         completion_percentage: float,
-        skipped_segments: list
+        skipped_segments: list,
     ) -> Dict:
         """
         Mark content as completed.
@@ -175,23 +188,29 @@ class ContentTrackingService:
         """
         try:
             # Get content metadata
-            content = db.query(ContentMetadata).filter(
-                ContentMetadata.cache_key == cache_key
-            ).first()
+            content = (
+                db.query(ContentMetadata)
+                .filter(ContentMetadata.cache_key == cache_key)
+                .first()
+            )
 
             if not content:
                 logger.warning(f"Content not found for cache_key: {cache_key}")
                 return {
                     "achievement_unlocked": None,
                     "progress_updated": False,
-                    "streak_days": 0
+                    "streak_days": 0,
                 }
 
             # Get or create progress record
-            progress = db.query(StudentProgress).filter(
-                StudentProgress.student_id == student_id,
-                StudentProgress.topic_id == content.topic_id
-            ).first()
+            progress = (
+                db.query(StudentProgress)
+                .filter(
+                    StudentProgress.student_id == student_id,
+                    StudentProgress.topic_id == content.topic_id,
+                )
+                .first()
+            )
 
             if not progress:
                 progress = StudentProgress(
@@ -202,7 +221,7 @@ class ContentTrackingService:
                     total_watch_time_seconds=watch_duration_seconds,
                     completed_at=datetime.utcnow(),
                     started_at=datetime.utcnow(),
-                    last_accessed_at=datetime.utcnow()
+                    last_accessed_at=datetime.utcnow(),
                 )
                 db.add(progress)
             else:
@@ -220,12 +239,14 @@ class ContentTrackingService:
             streak_days = self._calculate_streak(db, student_id)
 
             db.commit()
-            logger.info(f"Marked content {cache_key} as completed for student {student_id}")
+            logger.info(
+                f"Marked content {cache_key} as completed for student {student_id}"
+            )
 
             return {
                 "achievement_unlocked": achievement,
                 "progress_updated": True,
-                "streak_days": streak_days
+                "streak_days": streak_days,
             }
 
         except Exception as e:
@@ -234,14 +255,10 @@ class ContentTrackingService:
             return {
                 "achievement_unlocked": None,
                 "progress_updated": False,
-                "streak_days": 0
+                "streak_days": 0,
             }
 
-    def get_content_analytics(
-        self,
-        db: Session,
-        cache_key: str
-    ) -> Optional[Dict]:
+    def get_content_analytics(self, db: Session, cache_key: str) -> Optional[Dict]:
         """
         Get analytics for content.
 
@@ -254,9 +271,11 @@ class ContentTrackingService:
         """
         try:
             # Get content metadata
-            content = db.query(ContentMetadata).filter(
-                ContentMetadata.cache_key == cache_key
-            ).first()
+            content = (
+                db.query(ContentMetadata)
+                .filter(ContentMetadata.cache_key == cache_key)
+                .first()
+            )
 
             if not content:
                 return None
@@ -267,13 +286,21 @@ class ContentTrackingService:
             unique_viewers = 0  # TODO: Count unique viewers from ContentView table
 
             # Get average completion rate from progress
-            progress_stats = db.query(
-                func.avg(StudentProgress.completion_percentage).label('avg_completion'),
-                func.avg(StudentProgress.total_watch_time_seconds).label('avg_duration')
-            ).filter(
-                StudentProgress.topic_id == content.topic_id,
-                StudentProgress.status == ProgressStatus.COMPLETED
-            ).first()
+            progress_stats = (
+                db.query(
+                    func.avg(StudentProgress.completion_percentage).label(
+                        "avg_completion"
+                    ),
+                    func.avg(StudentProgress.total_watch_time_seconds).label(
+                        "avg_duration"
+                    ),
+                )
+                .filter(
+                    StudentProgress.topic_id == content.topic_id,
+                    StudentProgress.status == ProgressStatus.COMPLETED,
+                )
+                .first()
+            )
 
             avg_completion_rate = progress_stats.avg_completion or 0.0
             avg_watch_duration = progress_stats.avg_duration or 0.0
@@ -288,7 +315,7 @@ class ContentTrackingService:
                 "unique_viewers": unique_viewers,
                 "avg_watch_duration": float(avg_watch_duration),
                 "avg_completion_rate": float(avg_completion_rate),
-                "popular_quality": popular_quality
+                "popular_quality": popular_quality,
             }
 
         except Exception as e:
@@ -296,10 +323,7 @@ class ContentTrackingService:
             return None
 
     def _check_achievements(
-        self,
-        db: Session,
-        student_id: str,
-        progress: StudentProgress
+        self, db: Session, student_id: str, progress: StudentProgress
     ) -> Optional[str]:
         """
         Check if student unlocked any achievements.
@@ -313,10 +337,15 @@ class ContentTrackingService:
             Achievement name if unlocked, None otherwise
         """
         # Count completed topics
-        completed_count = db.query(func.count(StudentProgress.topic_id)).filter(
-            StudentProgress.student_id == student_id,
-            StudentProgress.status == ProgressStatus.COMPLETED
-        ).scalar() or 0
+        completed_count = (
+            db.query(func.count(StudentProgress.topic_id))
+            .filter(
+                StudentProgress.student_id == student_id,
+                StudentProgress.status == ProgressStatus.COMPLETED,
+            )
+            .scalar()
+            or 0
+        )
 
         # First completion achievement
         if completed_count == 1:
@@ -332,11 +361,7 @@ class ContentTrackingService:
 
         return None
 
-    def _calculate_streak(
-        self,
-        db: Session,
-        student_id: str
-    ) -> int:
+    def _calculate_streak(self, db: Session, student_id: str) -> int:
         """
         Calculate student's learning streak in days.
 
@@ -349,15 +374,19 @@ class ContentTrackingService:
         """
         try:
             # Get completions ordered by date
-            completions = db.query(
-                func.date(StudentProgress.completed_at).label('completion_date')
-            ).filter(
-                StudentProgress.student_id == student_id,
-                StudentProgress.status == ProgressStatus.COMPLETED,
-                StudentProgress.completed_at.isnot(None)
-            ).distinct().order_by(
-                func.date(StudentProgress.completed_at).desc()
-            ).all()
+            completions = (
+                db.query(
+                    func.date(StudentProgress.completed_at).label("completion_date")
+                )
+                .filter(
+                    StudentProgress.student_id == student_id,
+                    StudentProgress.status == ProgressStatus.COMPLETED,
+                    StudentProgress.completed_at.isnot(None),
+                )
+                .distinct()
+                .order_by(func.date(StudentProgress.completed_at).desc())
+                .all()
+            )
 
             if not completions:
                 return 0

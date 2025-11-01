@@ -8,14 +8,17 @@ from datetime import datetime
 
 # Content Metadata Schemas
 
+
 class ContentCheckRequest(BaseModel):
     """Request to check if content exists."""
+
     topic_id: str
     interest: str
 
 
 class ContentCheckResponse(BaseModel):
     """Response for content existence check."""
+
     cache_hit: bool
     cache_key: Optional[str]
     status: Optional[str]
@@ -26,6 +29,7 @@ class ContentCheckResponse(BaseModel):
 
 class ContentMetadataResponse(BaseModel):
     """Content metadata response."""
+
     cache_key: str
     topic_id: str
     topic_name: str
@@ -55,6 +59,7 @@ class ContentMetadataResponse(BaseModel):
 
 class ContentSummary(BaseModel):
     """Summary of content for lists."""
+
     cache_key: str
     topic_name: str
     interest: str
@@ -68,14 +73,17 @@ class ContentSummary(BaseModel):
 
 class ContentListResponse(BaseModel):
     """Content list response."""
+
     content: List[dict]
     pagination: dict
 
 
 # Content Feedback Schemas
 
+
 class ContentFeedbackSubmit(BaseModel):
     """Submit content feedback."""
+
     rating: int = Field(..., ge=1, le=5, description="Rating from 1 to 5 stars")
     feedback_type: Optional[str] = Field(
         None,
@@ -86,6 +94,7 @@ class ContentFeedbackSubmit(BaseModel):
 
 class ContentFeedbackResponse(BaseModel):
     """Feedback submission response."""
+
     cache_key: str
     feedback_recorded: bool
     rating: int
@@ -95,6 +104,7 @@ class ContentFeedbackResponse(BaseModel):
 
 class ContentFeedbackSummary(BaseModel):
     """Feedback summary for content."""
+
     cache_key: str
     total_ratings: int
     average_rating: float

@@ -30,7 +30,10 @@ class TestContentDeliveryServiceInitialization:
 
         assert service.gcs == mock_gcs
 
-    @patch.dict('os.environ', {'CDN_DOMAIN': 'custom-cdn.com', 'GCS_CONTENT_BUCKET': 'custom-bucket'})
+    @patch.dict(
+        "os.environ",
+        {"CDN_DOMAIN": "custom-cdn.com", "GCS_CONTENT_BUCKET": "custom-bucket"},
+    )
     def test_init_with_env_vars(self):
         """Test initialization with environment variables."""
         service = ContentDeliveryService()
@@ -52,7 +55,7 @@ class TestGenerateSignedURL:
             cache_key="test_cache_key_123",
             asset_type="video",
             quality="1080p",
-            ttl_minutes=15
+            ttl_minutes=15,
         )
 
         assert result["cache_key"] == "test_cache_key_123"
@@ -70,9 +73,7 @@ class TestGenerateSignedURL:
         service = ContentDeliveryService()
 
         result = await service.generate_signed_url(
-            cache_key="audio_key_456",
-            asset_type="audio",
-            ttl_minutes=10
+            cache_key="audio_key_456", asset_type="audio", ttl_minutes=10
         )
 
         assert result["asset_type"] == "audio"
@@ -86,8 +87,7 @@ class TestGenerateSignedURL:
         service = ContentDeliveryService()
 
         result = await service.generate_signed_url(
-            cache_key="script_789",
-            asset_type="script"
+            cache_key="script_789", asset_type="script"
         )
 
         assert result["asset_type"] == "script"
@@ -99,8 +99,7 @@ class TestGenerateSignedURL:
         service = ContentDeliveryService()
 
         result = await service.generate_signed_url(
-            cache_key="thumb_abc",
-            asset_type="thumbnail"
+            cache_key="thumb_abc", asset_type="thumbnail"
         )
 
         assert result["asset_type"] == "thumbnail"
@@ -112,8 +111,7 @@ class TestGenerateSignedURL:
 
         with pytest.raises(ValueError, match="Invalid asset_type"):
             await service.generate_signed_url(
-                cache_key="test",
-                asset_type="invalid_type"
+                cache_key="test", asset_type="invalid_type"
             )
 
     @pytest.mark.asyncio
@@ -122,9 +120,7 @@ class TestGenerateSignedURL:
         service = ContentDeliveryService()
 
         result = await service.generate_signed_url(
-            cache_key="test",
-            asset_type="video",
-            ttl_minutes=30
+            cache_key="test", asset_type="video", ttl_minutes=30
         )
 
         assert result["expires_in_seconds"] == 1800  # 30 minutes
@@ -155,7 +151,7 @@ class TestBatchURLGeneration:
         requests = [
             {"cache_key": "test1", "type": "video", "quality": "1080p"},
             {"cache_key": "test2", "type": "audio"},
-            {"cache_key": "test3", "type": "script"}
+            {"cache_key": "test3", "type": "script"},
         ]
 
         result = await service.generate_batch_urls(requests)
@@ -183,7 +179,7 @@ class TestBatchURLGeneration:
         requests = [
             {"cache_key": "test1", "type": "video", "quality": "1080p"},
             {"cache_key": "test2", "type": "invalid_type"},  # This will fail
-            {"cache_key": "test3", "type": "audio"}
+            {"cache_key": "test3", "type": "audio"},
         ]
 
         result = await service.generate_batch_urls(requests)
@@ -202,7 +198,7 @@ class TestBatchURLGeneration:
         # All URLs will have same TTL (default 15 min)
         requests = [
             {"cache_key": "test1", "type": "video"},
-            {"cache_key": "test2", "type": "audio"}
+            {"cache_key": "test2", "type": "audio"},
         ]
 
         result = await service.generate_batch_urls(requests)
@@ -276,9 +272,7 @@ class TestGenerateGCSSignedURL:
         service = ContentDeliveryService()
 
         url = await service._generate_gcs_signed_url(
-            bucket_name="test-bucket",
-            blob_path="videos/test/1080p.mp4",
-            ttl_minutes=15
+            bucket_name="test-bucket", blob_path="videos/test/1080p.mp4", ttl_minutes=15
         )
 
         assert url.startswith("https://storage.googleapis.com/")
@@ -295,14 +289,14 @@ class TestGenerateGCSSignedURL:
         mock_gcs.bucket.return_value = mock_bucket
         mock_bucket.blob.return_value = mock_blob
         mock_blob.exists.return_value = True
-        mock_blob.generate_signed_url.return_value = "https://signed-url.com/test?signature=real"
+        mock_blob.generate_signed_url.return_value = (
+            "https://signed-url.com/test?signature=real"
+        )
 
         service = ContentDeliveryService(gcs_client=mock_gcs)
 
         url = await service._generate_gcs_signed_url(
-            bucket_name="test-bucket",
-            blob_path="videos/test/1080p.mp4",
-            ttl_minutes=15
+            bucket_name="test-bucket", blob_path="videos/test/1080p.mp4", ttl_minutes=15
         )
 
         assert url == "https://signed-url.com/test?signature=real"
@@ -324,8 +318,7 @@ class TestGenerateGCSSignedURL:
 
         with pytest.raises(FileNotFoundError, match="Content not found"):
             await service._generate_gcs_signed_url(
-                bucket_name="test-bucket",
-                blob_path="videos/nonexistent/1080p.mp4"
+                bucket_name="test-bucket", blob_path="videos/nonexistent/1080p.mp4"
             )
 
 

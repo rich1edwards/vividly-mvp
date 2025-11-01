@@ -26,27 +26,27 @@ Base = declarative_base()
 
 # Enums
 REQUEST_STATUS_ENUM = ENUM(
-    'pending',
-    'validating',
-    'retrieving',
-    'generating_script',
-    'generating_video',
-    'processing_video',
-    'notifying',
-    'completed',
-    'failed',
-    'cancelled',
-    name='request_status',
+    "pending",
+    "validating",
+    "retrieving",
+    "generating_script",
+    "generating_video",
+    "processing_video",
+    "notifying",
+    "completed",
+    "failed",
+    "cancelled",
+    name="request_status",
     create_type=False,  # Created in migration
 )
 
 STAGE_STATUS_ENUM = ENUM(
-    'pending',
-    'in_progress',
-    'completed',
-    'failed',
-    'skipped',
-    name='stage_status',
+    "pending",
+    "in_progress",
+    "completed",
+    "failed",
+    "skipped",
+    name="stage_status",
     create_type=False,
 )
 
@@ -58,20 +58,27 @@ class ContentRequest(Base):
 
     __tablename__ = "content_requests"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    id = Column(
+        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+    )
 
     # Correlation ID for distributed tracing
     correlation_id = Column(String(64), nullable=False, unique=True, index=True)
 
     # Request details
-    student_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    student_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     topic = Column(String(500), nullable=False)
     learning_objective = Column(Text)
     grade_level = Column(String(50))
     duration_minutes = Column(Integer)
 
     # Current state
-    status = Column(REQUEST_STATUS_ENUM, default='pending', nullable=False, index=True)
+    status = Column(REQUEST_STATUS_ENUM, default="pending", nullable=False, index=True)
     current_stage = Column(String(100))
     progress_percentage = Column(Integer, default=0, nullable=False)
 
@@ -99,21 +106,32 @@ class ContentRequest(Base):
     total_duration_seconds = Column(Integer)
 
     # Organization context
-    organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id"), index=True)
+    organization_id = Column(
+        UUID(as_uuid=True), ForeignKey("organizations.id"), index=True
+    )
 
     # Relationships
     student = relationship("User", foreign_keys=[student_id])
     organization = relationship("Organization")
-    stages = relationship("RequestStage", back_populates="request", cascade="all, delete-orphan")
-    events = relationship("RequestEvent", back_populates="request", cascade="all, delete-orphan")
+    stages = relationship(
+        "RequestStage", back_populates="request", cascade="all, delete-orphan"
+    )
+    events = relationship(
+        "RequestEvent", back_populates="request", cascade="all, delete-orphan"
+    )
 
     # Constraints
     __table_args__ = (
-        CheckConstraint('progress_percentage >= 0 AND progress_percentage <= 100', name='valid_progress'),
+        CheckConstraint(
+            "progress_percentage >= 0 AND progress_percentage <= 100",
+            name="valid_progress",
+        ),
     )
 
     def __repr__(self):
-        return f"<ContentRequest(id={self.id}, status={self.status}, topic={self.topic})>"
+        return (
+            f"<ContentRequest(id={self.id}, status={self.status}, topic={self.topic})>"
+        )
 
     def to_dict(self):
         """Convert to dictionary for API responses."""
@@ -128,7 +146,9 @@ class ContentRequest(Base):
             "progress_percentage": self.progress_percentage,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "completed_at": self.completed_at.isoformat()
+            if self.completed_at
+            else None,
             "total_duration_seconds": self.total_duration_seconds,
             "video_url": self.video_url,
             "error_message": self.error_message,
@@ -143,15 +163,21 @@ class RequestStage(Base):
 
     __tablename__ = "request_stages"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
-    request_id = Column(UUID(as_uuid=True), ForeignKey("content_requests.id", ondelete="CASCADE"), nullable=False)
+    id = Column(
+        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+    )
+    request_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("content_requests.id", ondelete="CASCADE"),
+        nullable=False,
+    )
 
     # Stage identification
     stage_name = Column(String(100), nullable=False)
     stage_order = Column(Integer, nullable=False)
 
     # Status
-    status = Column(STAGE_STATUS_ENUM, default='pending', nullable=False)
+    status = Column(STAGE_STATUS_ENUM, default="pending", nullable=False)
 
     # Timestamps
     started_at = Column(TIMESTAMP)
@@ -188,8 +214,12 @@ class RequestStage(Base):
             "stage_order": self.stage_order,
             "status": self.status,
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
-            "duration_seconds": float(self.duration_seconds) if self.duration_seconds else None,
+            "completed_at": self.completed_at.isoformat()
+            if self.completed_at
+            else None,
+            "duration_seconds": float(self.duration_seconds)
+            if self.duration_seconds
+            else None,
             "error_message": self.error_message,
             "retry_count": self.retry_count,
         }
@@ -202,8 +232,14 @@ class RequestEvent(Base):
 
     __tablename__ = "request_events"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
-    request_id = Column(UUID(as_uuid=True), ForeignKey("content_requests.id", ondelete="CASCADE"), nullable=False)
+    id = Column(
+        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+    )
+    request_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("content_requests.id", ondelete="CASCADE"),
+        nullable=False,
+    )
 
     # Event details
     event_type = Column(String(100), nullable=False, index=True)
@@ -250,13 +286,17 @@ class RequestMetrics(Base):
 
     __tablename__ = "request_metrics"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    id = Column(
+        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+    )
 
     # Time bucket (hourly)
     time_bucket = Column(TIMESTAMP, nullable=False, index=True)
 
     # Aggregation scope
-    organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id"), index=True)
+    organization_id = Column(
+        UUID(as_uuid=True), ForeignKey("organizations.id"), index=True
+    )
 
     # Metrics
     total_requests = Column(Integer, default=0)
@@ -297,7 +337,9 @@ class RequestMetrics(Base):
             "total_requests": self.total_requests,
             "successful_requests": self.successful_requests,
             "failed_requests": self.failed_requests,
-            "avg_total_duration": float(self.avg_total_duration) if self.avg_total_duration else None,
+            "avg_total_duration": float(self.avg_total_duration)
+            if self.avg_total_duration
+            else None,
             "validation_errors": self.validation_errors,
             "rag_errors": self.rag_errors,
             "script_errors": self.script_errors,
@@ -312,7 +354,9 @@ class PipelineStageDefinition(Base):
 
     __tablename__ = "pipeline_stage_definitions"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    id = Column(
+        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+    )
     stage_name = Column(String(100), nullable=False, unique=True)
     display_name = Column(String(200), nullable=False)
     stage_order = Column(Integer, nullable=False)

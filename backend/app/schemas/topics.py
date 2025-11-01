@@ -8,8 +8,10 @@ from datetime import datetime
 
 # Topic Schemas
 
+
 class TopicSummary(BaseModel):
     """Basic topic information."""
+
     topic_id: str
     name: str
     subject: str
@@ -29,12 +31,14 @@ class TopicSummary(BaseModel):
 
 class TopicListResponse(BaseModel):
     """Paginated topic list response."""
+
     topics: List[TopicSummary]
     pagination: dict
 
 
 class PrerequisiteInfo(BaseModel):
     """Prerequisite topic information."""
+
     topic_id: str
     name: str
     completed: bool
@@ -43,12 +47,14 @@ class PrerequisiteInfo(BaseModel):
 
 class RelatedTopicInfo(BaseModel):
     """Related topic information."""
+
     topic_id: str
     name: str
 
 
 class StandardInfo(BaseModel):
     """Educational standard information."""
+
     standard_id: str
     description: str
     source: str
@@ -56,6 +62,7 @@ class StandardInfo(BaseModel):
 
 class TopicDetailResponse(BaseModel):
     """Detailed topic information."""
+
     topic_id: str
     name: str
     subject: str
@@ -79,6 +86,7 @@ class TopicDetailResponse(BaseModel):
 
 class TopicSearchResult(BaseModel):
     """Search result for a topic."""
+
     topic_id: str
     name: str
     relevance_score: float
@@ -89,6 +97,7 @@ class TopicSearchResult(BaseModel):
 
 class TopicSearchResponse(BaseModel):
     """Topic search response."""
+
     query: str
     results: List[dict]
     total_results: int
@@ -96,8 +105,10 @@ class TopicSearchResponse(BaseModel):
 
 # Interest Schemas
 
+
 class InterestInfo(BaseModel):
     """Interest information."""
+
     interest_id: str
     name: str
     category: str
@@ -109,6 +120,7 @@ class InterestInfo(BaseModel):
 
 class InterestListResponse(BaseModel):
     """Interest list response."""
+
     interests: List[dict]
     total_count: int
     categories: List[str]
@@ -116,6 +128,7 @@ class InterestListResponse(BaseModel):
 
 class InterestCategoryInfo(BaseModel):
     """Interest category information."""
+
     category_id: str
     name: str
     description: str
@@ -126,4 +139,5 @@ class InterestCategoryInfo(BaseModel):
 
 class InterestCategoryListResponse(BaseModel):
     """Interest category list response."""
+
     categories: List[dict]

@@ -16,6 +16,7 @@ class ContentChunk(Base):
     Each chunk is a semantically meaningful section of content
     that can be retrieved and used for RAG-based generation.
     """
+
     __tablename__ = "content_chunks"
 
     # Primary key
@@ -28,7 +29,9 @@ class ContentChunk(Base):
     source_license = Column(String(50), nullable=False)  # "CC BY 4.0"
 
     # Content hierarchy
-    subject = Column(String(50), nullable=False, index=True)  # physics, chemistry, biology
+    subject = Column(
+        String(50), nullable=False, index=True
+    )  # physics, chemistry, biology
     chapter = Column(String(255), nullable=False)  # "Chapter 4: Dynamics"
     section = Column(String(255), nullable=False)  # "4.3 Newton's Third Law"
     subsection = Column(String(255), nullable=True)
@@ -54,7 +57,9 @@ class ContentChunk(Base):
 
     # Quality metrics
     quality_score = Column(Float, nullable=True)  # 0.0-1.0, content quality
-    relevance_threshold = Column(Float, nullable=True)  # Minimum relevance for retrieval
+    relevance_threshold = Column(
+        Float, nullable=True
+    )  # Minimum relevance for retrieval
 
     # Embedding (stored separately in vector database)
     embedding_id = Column(String(64), nullable=True)  # Reference to vector DB entry
@@ -62,13 +67,15 @@ class ContentChunk(Base):
 
     # Timestamps
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     # Indexes for efficient querying
     # Note: JSON columns (topic_ids, keywords) use GIN indexes for better performance
     __table_args__ = (
-        Index('idx_content_subject', 'subject'),
-        Index('idx_content_quality', 'quality_score'),
+        Index("idx_content_subject", "subject"),
+        Index("idx_content_quality", "quality_score"),
         # GIN indexes for JSON columns - created via migration or raw SQL
         # Index('idx_content_topic_ids', 'topic_ids', postgresql_using='gin'),
         # Index('idx_content_keywords', 'keywords', postgresql_using='gin'),
@@ -82,6 +89,7 @@ class ContentSource(Base):
     """
     Tracks OER content sources and ingestion status.
     """
+
     __tablename__ = "content_sources"
 
     source_id = Column(String(64), primary_key=True)
@@ -94,7 +102,9 @@ class ContentSource(Base):
     license = Column(String(50), nullable=False)  # "CC BY 4.0"
 
     # Ingestion metadata
-    ingestion_status = Column(String(50), nullable=False)  # pending, processing, completed, failed
+    ingestion_status = Column(
+        String(50), nullable=False
+    )  # pending, processing, completed, failed
     chunks_count = Column(Integer, nullable=False, default=0)
     last_ingested_at = Column(DateTime, nullable=True)
 
@@ -109,7 +119,9 @@ class ContentSource(Base):
 
     # Timestamps
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     def __repr__(self):
         return f"<ContentSource(source_id='{self.source_id}', title='{self.title}', status='{self.ingestion_status}')>"
@@ -119,6 +131,7 @@ class VectorIndex(Base):
     """
     Tracks vector index deployments for Vertex AI Matching Engine.
     """
+
     __tablename__ = "vector_indexes"
 
     index_id = Column(String(64), primary_key=True)
@@ -141,7 +154,9 @@ class VectorIndex(Base):
 
     # Timestamps
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     def __repr__(self):
         return f"<VectorIndex(index_id='{self.index_id}', status='{self.status}', vectors={self.total_vectors})>"

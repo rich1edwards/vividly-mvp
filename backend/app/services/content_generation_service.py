@@ -44,7 +44,7 @@ class ContentGenerationService:
         student_query: str,
         student_id: str,
         grade_level: int,
-        interest: Optional[str] = None
+        interest: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Generate complete educational content from natural language query.
@@ -78,7 +78,7 @@ class ContentGenerationService:
             topic_extraction = await self.nlu_service.extract_topic(
                 student_query=student_query,
                 grade_level=grade_level,
-                student_id=student_id
+                student_id=student_id,
             )
 
             # Handle clarification needed
@@ -87,7 +87,7 @@ class ContentGenerationService:
                     "status": "clarification_needed",
                     "generation_id": generation_id,
                     "message": "Need clarification to proceed",
-                    "clarifying_questions": topic_extraction["clarifying_questions"]
+                    "clarifying_questions": topic_extraction["clarifying_questions"],
                 }
 
             # Handle out of scope
@@ -96,7 +96,7 @@ class ContentGenerationService:
                     "status": "out_of_scope",
                     "generation_id": generation_id,
                     "message": "Query is not related to academic content",
-                    "reasoning": topic_extraction["reasoning"]
+                    "reasoning": topic_extraction["reasoning"],
                 }
 
             topic_id = topic_extraction["topic_id"]
@@ -106,7 +106,7 @@ class ContentGenerationService:
                 return {
                     "status": "extraction_failed",
                     "generation_id": generation_id,
-                    "message": "Could not extract topic from query"
+                    "message": "Could not extract topic from query",
                 }
 
             # Use provided interest or default
@@ -115,9 +115,7 @@ class ContentGenerationService:
             # Step 2: Check cache
             logger.info(f"[{generation_id}] Step 2: Cache check")
             cache_hit, cached_content = await self.cache_service.check_content_cache(
-                topic_id=topic_id,
-                interest=interest_value,
-                style="standard"
+                topic_id=topic_id, interest=interest_value, style="standard"
             )
 
             if cache_hit and cached_content:
@@ -128,7 +126,7 @@ class ContentGenerationService:
                     "cache_hit": True,
                     "topic_id": topic_id,
                     "topic_name": topic_name,
-                    "content": cached_content
+                    "content": cached_content,
                 }
 
             # Step 3: RAG - Retrieve educational content
@@ -137,7 +135,7 @@ class ContentGenerationService:
                 topic_id=topic_id,
                 interest=interest_value,
                 grade_level=grade_level,
-                limit=5
+                limit=5,
             )
 
             # Step 4: Generate script
@@ -148,15 +146,13 @@ class ContentGenerationService:
                 interest=interest_value,
                 grade_level=grade_level,
                 rag_content=rag_content,
-                duration_seconds=180
+                duration_seconds=180,
             )
 
             # Step 5: Generate audio (TTS)
             logger.info(f"[{generation_id}] Step 5: Audio generation")
             audio = await self.tts_service.generate_audio(
-                script=script,
-                voice_type="female_professional",
-                output_format="mp3"
+                script=script, voice_type="female_professional", output_format="mp3"
             )
 
             # Step 6: Generate video
@@ -165,21 +161,17 @@ class ContentGenerationService:
                 script=script,
                 audio_url=audio["audio_url"],
                 interest=interest_value,
-                subject=self._infer_subject(topic_id)
+                subject=self._infer_subject(topic_id),
             )
 
             # Step 7: Cache the complete content
             logger.info(f"[{generation_id}] Step 7: Caching content")
-            content = {
-                "script": script,
-                "audio": audio,
-                "video": video
-            }
+            content = {"script": script, "audio": audio, "video": video}
             await self.cache_service.cache_content(
                 topic_id=topic_id,
                 interest=interest_value,
                 style="standard",
-                content=content
+                content=content,
             )
 
             # Return complete content
@@ -190,23 +182,22 @@ class ContentGenerationService:
                 "topic_id": topic_id,
                 "topic_name": topic_name,
                 "content": content,
-                "message": "Content generation complete!"
+                "message": "Content generation complete!",
             }
 
         except Exception as e:
-            logger.error(f"[{generation_id}] Content generation failed: {e}", exc_info=True)
+            logger.error(
+                f"[{generation_id}] Content generation failed: {e}", exc_info=True
+            )
             return {
                 "status": "failed",
                 "generation_id": generation_id,
                 "error": str(e),
-                "message": "Content generation failed. Please try again."
+                "message": "Content generation failed. Please try again.",
             }
 
     async def generate_content_from_topic(
-        self,
-        topic_id: str,
-        interest: str,
-        grade_level: int
+        self, topic_id: str, interest: str, grade_level: int
     ) -> Dict[str, Any]:
         """
         Generate content from known topic ID (skip NLU).
@@ -224,9 +215,7 @@ class ContentGenerationService:
         try:
             # Check cache first
             cache_hit, cached_content = await self.cache_service.check_content_cache(
-                topic_id=topic_id,
-                interest=interest,
-                style="standard"
+                topic_id=topic_id, interest=interest, style="standard"
             )
 
             if cache_hit:
@@ -234,14 +223,12 @@ class ContentGenerationService:
                     "status": "completed",
                     "generation_id": generation_id,
                     "cache_hit": True,
-                    "content": cached_content
+                    "content": cached_content,
                 }
 
             # RAG retrieval
             rag_content = await self.rag_service.retrieve_content(
-                topic_id=topic_id,
-                interest=interest,
-                grade_level=grade_level
+                topic_id=topic_id, interest=interest, grade_level=grade_level
             )
 
             # Generate script
@@ -250,27 +237,24 @@ class ContentGenerationService:
                 topic_name=topic_id,  # Would lookup from DB in production
                 interest=interest,
                 grade_level=grade_level,
-                rag_content=rag_content
+                rag_content=rag_content,
             )
 
             return {
                 "status": "generating",
                 "generation_id": generation_id,
                 "script": script,
-                "message": "Content generation in progress"
+                "message": "Content generation in progress",
             }
 
         except Exception as e:
             logger.error(f"Generation failed: {e}", exc_info=True)
-            return {
-                "status": "failed",
-                "generation_id": generation_id,
-                "error": str(e)
-            }
+            return {"status": "failed", "generation_id": generation_id, "error": str(e)}
 
     def _generate_id(self) -> str:
         """Generate unique generation ID."""
         import hashlib
+
         timestamp = datetime.utcnow().isoformat()
         hash_val = hashlib.sha256(timestamp.encode()).hexdigest()[:16]
         return f"gen_{hash_val}"
@@ -281,7 +265,11 @@ class ContentGenerationService:
 
         if "phys" in topic_id_lower:
             return "physics"
-        elif "math" in topic_id_lower or "calc" in topic_id_lower or "algebra" in topic_id_lower:
+        elif (
+            "math" in topic_id_lower
+            or "calc" in topic_id_lower
+            or "algebra" in topic_id_lower
+        ):
             return "math"
         elif "chem" in topic_id_lower:
             return "chemistry"

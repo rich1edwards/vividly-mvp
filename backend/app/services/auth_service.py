@@ -9,7 +9,12 @@ import secrets
 from app.models.user import User, UserRole, UserStatus
 from app.models.session import Session as SessionModel
 from app.schemas.auth import UserRegister, Token
-from app.utils.security import get_password_hash, verify_password, create_access_token, create_refresh_token
+from app.utils.security import (
+    get_password_hash,
+    verify_password,
+    create_access_token,
+    create_refresh_token,
+)
 
 
 def generate_user_id() -> str:
@@ -89,7 +94,9 @@ def authenticate_user(db: Session, email: str, password: str) -> User:
             detail="Incorrect email or password",
         )
 
-    print(f"[AuthService] User found: user_id={user.user_id}, email={user.email}, role={user.role}, status={user.status}")
+    print(
+        f"[AuthService] User found: user_id={user.user_id}, email={user.email}, role={user.role}, status={user.status}"
+    )
     print(f"[AuthService] Verifying password...")
 
     password_valid = verify_password(password, user.password_hash)
@@ -103,14 +110,18 @@ def authenticate_user(db: Session, email: str, password: str) -> User:
         )
 
     if user.status != UserStatus.ACTIVE:
-        print(f"[AuthService] User account not active: {user.email}, status={user.status}")
+        print(
+            f"[AuthService] User account not active: {user.email}, status={user.status}"
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Account is {user.status.value}",
         )
 
     # Update last login
-    print(f"[AuthService] Authentication successful for user: {user.email}, updating last_login_at")
+    print(
+        f"[AuthService] Authentication successful for user: {user.email}, updating last_login_at"
+    )
     user.last_login_at = datetime.utcnow()
     db.commit()
 
@@ -118,10 +129,7 @@ def authenticate_user(db: Session, email: str, password: str) -> User:
 
 
 def create_user_tokens(
-    db: Session,
-    user: User,
-    ip_address: str = None,
-    user_agent: str = None
+    db: Session, user: User, ip_address: str = None, user_agent: str = None
 ) -> Token:
     """
     Create access and refresh tokens for user.
@@ -174,20 +182,23 @@ def revoke_user_sessions(db: Session, user_id: str, all_sessions: bool = False) 
     """
     if all_sessions:
         # Revoke all sessions
-        sessions = db.query(SessionModel).filter(
-            SessionModel.user_id == user_id,
-            SessionModel.revoked == False
-        ).all()
+        sessions = (
+            db.query(SessionModel)
+            .filter(SessionModel.user_id == user_id, SessionModel.revoked == False)
+            .all()
+        )
 
         for session in sessions:
             session.revoked = True
             session.revoked_at = datetime.utcnow()
     else:
         # Revoke latest session
-        session = db.query(SessionModel).filter(
-            SessionModel.user_id == user_id,
-            SessionModel.revoked == False
-        ).order_by(SessionModel.created_at.desc()).first()
+        session = (
+            db.query(SessionModel)
+            .filter(SessionModel.user_id == user_id, SessionModel.revoked == False)
+            .order_by(SessionModel.created_at.desc())
+            .first()
+        )
 
         if session:
             session.revoked = True

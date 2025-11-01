@@ -76,7 +76,9 @@ def list_users(
     # Get total count (expensive, only if no filters)
     total_count = None
     if not role and not school_id and not search:
-        total_count = db.query(func.count(User.user_id)).filter(User.archived == False).scalar()
+        total_count = (
+            db.query(func.count(User.user_id)).filter(User.archived == False).scalar()
+        )
 
     return {
         "users": users,
@@ -267,10 +269,10 @@ def bulk_upload_users(
     """
     # Read CSV file
     contents = file.file.read()
-    csv_reader = csv.DictReader(io.StringIO(contents.decode('utf-8')))
+    csv_reader = csv.DictReader(io.StringIO(contents.decode("utf-8")))
 
     # Validate CSV headers
-    required_headers = {'first_name', 'last_name', 'email', 'role'}
+    required_headers = {"first_name", "last_name", "email", "role"}
     if not required_headers.issubset(set(csv_reader.fieldnames or [])):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -287,38 +289,42 @@ def bulk_upload_users(
 
     # Collect all emails to check for duplicates in batch
     rows = list(csv_reader)
-    emails = [row.get('email') for row in rows if row.get('email')]
+    emails = [row.get("email") for row in rows if row.get("email")]
     existing_emails = db.query(User.email).filter(User.email.in_(emails)).all()
     existing_emails_set = {email[0] for email in existing_emails}
 
     for idx, row in enumerate(rows, start=2):  # Start at 2 (after header row)
         try:
-            email = row.get('email', '').strip()
-            first_name = row.get('first_name', '').strip()
-            last_name = row.get('last_name', '').strip()
-            role = row.get('role', '').strip()
-            grade_level = row.get('grade_level')
-            school_id = row.get('school_id')
+            email = row.get("email", "").strip()
+            first_name = row.get("first_name", "").strip()
+            last_name = row.get("last_name", "").strip()
+            role = row.get("role", "").strip()
+            grade_level = row.get("grade_level")
+            school_id = row.get("school_id")
 
             # Validate required fields
             if not all([email, first_name, last_name, role]):
-                results["failed_rows"].append({
-                    "row_number": idx,
-                    "email": email,
-                    "error": "Missing required fields",
-                    "error_code": "MISSING_FIELDS",
-                })
+                results["failed_rows"].append(
+                    {
+                        "row_number": idx,
+                        "email": email,
+                        "error": "Missing required fields",
+                        "error_code": "MISSING_FIELDS",
+                    }
+                )
                 continue
 
             # Check for duplicate email
             if email in existing_emails_set:
                 error_msg = "Email already exists"
-                results["failed_rows"].append({
-                    "row_number": idx,
-                    "email": email,
-                    "error": error_msg,
-                    "error_code": "DUPLICATE_EMAIL",
-                })
+                results["failed_rows"].append(
+                    {
+                        "row_number": idx,
+                        "email": email,
+                        "error": error_msg,
+                        "error_code": "DUPLICATE_EMAIL",
+                    }
+                )
 
                 # If atomic mode, rollback and fail immediately
                 if transaction_mode == "atomic":
@@ -330,13 +336,15 @@ def bulk_upload_users(
                 continue
 
             # Validate email format
-            if '@' not in email or '.' not in email:
-                results["failed_rows"].append({
-                    "row_number": idx,
-                    "email": email,
-                    "error": "Invalid email format",
-                    "error_code": "INVALID_EMAIL",
-                })
+            if "@" not in email or "." not in email:
+                results["failed_rows"].append(
+                    {
+                        "row_number": idx,
+                        "email": email,
+                        "error": "Invalid email format",
+                        "error_code": "INVALID_EMAIL",
+                    }
+                )
                 continue
 
             # Create user
@@ -355,12 +363,14 @@ def bulk_upload_users(
             existing_emails_set.add(email)  # Prevent duplicates within CSV
 
         except Exception as e:
-            results["failed_rows"].append({
-                "row_number": idx,
-                "email": row.get('email', ''),
-                "error": str(e),
-                "error_code": "PROCESSING_ERROR",
-            })
+            results["failed_rows"].append(
+                {
+                    "row_number": idx,
+                    "email": row.get("email", ""),
+                    "error": str(e),
+                    "error_code": "PROCESSING_ERROR",
+                }
+            )
 
             # If atomic mode and any failure, rollback
             if transaction_mode == "atomic":
@@ -401,7 +411,9 @@ def list_pending_requests(
     Returns:
         Dict with requests list
     """
-    query = db.query(StudentRequest).filter(StudentRequest.status == RequestStatus.PENDING)
+    query = db.query(StudentRequest).filter(
+        StudentRequest.status == RequestStatus.PENDING
+    )
 
     if school_id:
         query = query.filter(StudentRequest.school_id == school_id)
@@ -414,17 +426,21 @@ def list_pending_requests(
     results = []
     for request in requests:
         teacher = db.query(User).filter(User.user_id == request.requested_by).first()
-        results.append({
-            "request_id": request.request_id,
-            "student_email": request.student_email,
-            "student_first_name": request.student_first_name,
-            "student_last_name": request.student_last_name,
-            "grade_level": request.grade_level,
-            "status": request.status.value,
-            "requested_by": request.requested_by,
-            "teacher_name": f"{teacher.first_name} {teacher.last_name}" if teacher else "Unknown",
-            "requested_at": request.requested_at,
-        })
+        results.append(
+            {
+                "request_id": request.request_id,
+                "student_email": request.student_email,
+                "student_first_name": request.student_first_name,
+                "student_last_name": request.student_last_name,
+                "grade_level": request.grade_level,
+                "status": request.status.value,
+                "requested_by": request.requested_by,
+                "teacher_name": f"{teacher.first_name} {teacher.last_name}"
+                if teacher
+                else "Unknown",
+                "requested_at": request.requested_at,
+            }
+        )
 
     return {
         "requests": results,
@@ -448,7 +464,9 @@ def get_request_details(db: Session, request_id: str) -> Dict:
     Raises:
         HTTPException: 404 if request not found
     """
-    request = db.query(StudentRequest).filter(StudentRequest.request_id == request_id).first()
+    request = (
+        db.query(StudentRequest).filter(StudentRequest.request_id == request_id).first()
+    )
     if not request:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -466,7 +484,9 @@ def get_request_details(db: Session, request_id: str) -> Dict:
         "grade_level": request.grade_level,
         "status": request.status.value,
         "requested_by": request.requested_by,
-        "teacher_name": f"{teacher.first_name} {teacher.last_name}" if teacher else "Unknown",
+        "teacher_name": f"{teacher.first_name} {teacher.last_name}"
+        if teacher
+        else "Unknown",
         "requested_at": request.requested_at,
         "school_id": request.school_id,
         "class_id": request.class_id,
@@ -489,7 +509,9 @@ def approve_request(db: Session, request_id: str, admin_id: str) -> Dict:
     Raises:
         HTTPException: 404 if request not found, 400 if already processed
     """
-    request = db.query(StudentRequest).filter(StudentRequest.request_id == request_id).first()
+    request = (
+        db.query(StudentRequest).filter(StudentRequest.request_id == request_id).first()
+    )
     if not request:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -573,7 +595,9 @@ def deny_request(db: Session, request_id: str, admin_id: str, reason: str) -> Di
     Raises:
         HTTPException: 404 if request not found, 400 if already processed
     """
-    request = db.query(StudentRequest).filter(StudentRequest.request_id == request_id).first()
+    request = (
+        db.query(StudentRequest).filter(StudentRequest.request_id == request_id).first()
+    )
     if not request:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -590,7 +614,11 @@ def deny_request(db: Session, request_id: str, admin_id: str, reason: str) -> Di
     request.status = RequestStatus.REJECTED
     request.approved_by = admin_id  # Reusing field for "processed_by"
     request.approved_at = datetime.utcnow()  # Reusing field for "processed_at"
-    request.notes = f"{request.notes}\n\nDenial reason: {reason}" if request.notes else f"Denial reason: {reason}"
+    request.notes = (
+        f"{request.notes}\n\nDenial reason: {reason}"
+        if request.notes
+        else f"Denial reason: {reason}"
+    )
 
     db.commit()
 
@@ -621,29 +649,39 @@ def get_dashboard_stats(db: Session) -> Dict:
     from datetime import timedelta
 
     # Get user counts
-    total_users = db.query(func.count(User.user_id)).filter(User.archived == False).scalar()
-    total_students = db.query(func.count(User.user_id)).filter(
-        User.role == "student",
-        User.archived == False
-    ).scalar()
-    total_teachers = db.query(func.count(User.user_id)).filter(
-        User.role == "teacher",
-        User.archived == False
-    ).scalar()
-    total_admins = db.query(func.count(User.user_id)).filter(
-        User.role == "admin",
-        User.archived == False
-    ).scalar()
+    total_users = (
+        db.query(func.count(User.user_id)).filter(User.archived == False).scalar()
+    )
+    total_students = (
+        db.query(func.count(User.user_id))
+        .filter(User.role == "student", User.archived == False)
+        .scalar()
+    )
+    total_teachers = (
+        db.query(func.count(User.user_id))
+        .filter(User.role == "teacher", User.archived == False)
+        .scalar()
+    )
+    total_admins = (
+        db.query(func.count(User.user_id))
+        .filter(User.role == "admin", User.archived == False)
+        .scalar()
+    )
 
     # Get active users in last 24 hours
     yesterday = datetime.utcnow() - timedelta(days=1)
-    active_users_today = db.query(func.count(func.distinct(UserSession.user_id))).filter(
-        UserSession.created_at >= yesterday,
-        UserSession.revoked_at.is_(None)
-    ).scalar() or 0
+    active_users_today = (
+        db.query(func.count(func.distinct(UserSession.user_id)))
+        .filter(UserSession.created_at >= yesterday, UserSession.revoked_at.is_(None))
+        .scalar()
+        or 0
+    )
 
     # Get class count
-    total_classes = db.query(func.count(Class.class_id)).filter(Class.archived == False).scalar() or 0
+    total_classes = (
+        db.query(func.count(Class.class_id)).filter(Class.archived == False).scalar()
+        or 0
+    )
 
     # Get content count
     total_content = db.query(func.count(ContentMetadata.content_id)).scalar() or 0

@@ -18,8 +18,12 @@ class ClassStudent(Base):
     __tablename__ = "class_student"
 
     # Primary key (composite)
-    class_id = Column(String(100), ForeignKey('classes.class_id'), primary_key=True, index=True)
-    student_id = Column(String(100), ForeignKey('users.user_id'), primary_key=True, index=True)
+    class_id = Column(
+        String(100), ForeignKey("classes.class_id"), primary_key=True, index=True
+    )
+    student_id = Column(
+        String(100), ForeignKey("users.user_id"), primary_key=True, index=True
+    )
 
     # Timestamps
     enrolled_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)

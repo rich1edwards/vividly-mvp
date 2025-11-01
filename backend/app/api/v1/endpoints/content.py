@@ -43,7 +43,10 @@ from app.services.content_delivery_service import ContentDeliveryService
 from app.services.content_tracking_service import ContentTrackingService
 from app.services.content_generation_service import ContentGenerationService
 from app.services import interest_service
-from app.services.request_monitoring_service import get_monitoring_service, RequestMonitoringService
+from app.services.request_monitoring_service import (
+    get_monitoring_service,
+    RequestMonitoringService,
+)
 from app.utils.dependencies import get_current_user
 from app.models.user import User
 
@@ -84,30 +87,34 @@ async def get_content_metadata(
     }
 
     if content.status == "completed":
-        response.update({
-            "script_url": content.script_url,
-            "audio_url": content.audio_url,
-            "video_url": content.video_url,
-            "captions_url": content.captions_url,
-            "thumbnail_url": content.thumbnail_url,
-            "quality_levels": content.quality_levels or ["1080p", "720p", "480p"],
-            "generated_at": content.generated_at,
-            "avg_completion_rate": 0.73,  # TODO: Calculate from analytics
-        })
+        response.update(
+            {
+                "script_url": content.script_url,
+                "audio_url": content.audio_url,
+                "video_url": content.video_url,
+                "captions_url": content.captions_url,
+                "thumbnail_url": content.thumbnail_url,
+                "quality_levels": content.quality_levels or ["1080p", "720p", "480p"],
+                "generated_at": content.generated_at,
+                "avg_completion_rate": 0.73,  # TODO: Calculate from analytics
+            }
+        )
     elif content.status in ["pending", "generating"]:
-        response.update({
-            "progress_percentage": 45,  # TODO: Get from request tracking
-            "current_stage": "video_generation",
-            "stages": {
-                "nlu": {"status": "completed"},
-                "script": {"status": "completed"},
-                "audio": {"status": "completed"},
-                "video": {"status": "in_progress", "progress": 45},
-            },
-            "estimated_completion_seconds": 120,
-            "audio_url": content.audio_url,  # Fast Path available
-            "script_url": content.script_url,
-        })
+        response.update(
+            {
+                "progress_percentage": 45,  # TODO: Get from request tracking
+                "current_stage": "video_generation",
+                "stages": {
+                    "nlu": {"status": "completed"},
+                    "script": {"status": "completed"},
+                    "audio": {"status": "completed"},
+                    "video": {"status": "in_progress", "progress": 45},
+                },
+                "estimated_completion_seconds": 120,
+                "audio_url": content.audio_url,  # Fast Path available
+                "script_url": content.script_url,
+            }
+        )
 
     return response
 
@@ -177,14 +184,16 @@ async def get_recent_content(
     # Format content list
     formatted_content = []
     for content in result["content"]:
-        formatted_content.append({
-            "cache_key": content.cache_key,
-            "topic_name": content.topic.name if content.topic else content.topic_id,
-            "interest": content.interest,
-            "thumbnail_url": content.thumbnail_url,
-            "duration_seconds": content.duration_seconds,
-            "generated_at": content.generated_at,
-        })
+        formatted_content.append(
+            {
+                "cache_key": content.cache_key,
+                "topic_name": content.topic.name if content.topic else content.topic_id,
+                "interest": content.interest,
+                "thumbnail_url": content.thumbnail_url,
+                "duration_seconds": content.duration_seconds,
+                "generated_at": content.generated_at,
+            }
+        )
 
     return {
         "content": formatted_content,
@@ -192,7 +201,11 @@ async def get_recent_content(
     }
 
 
-@router.post("/{cache_key}/feedback", response_model=ContentFeedbackResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{cache_key}/feedback",
+    response_model=ContentFeedbackResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def submit_content_feedback(
     cache_key: str,
     feedback_data: ContentFeedbackSubmit,
@@ -252,6 +265,7 @@ async def get_content_feedback_summary(
 # Story 3.2.1: Signed URL Generation for Content Delivery
 # ============================================================================
 
+
 def get_content_delivery_service() -> ContentDeliveryService:
     """
     Dependency to get content delivery service instance.
@@ -288,14 +302,14 @@ def get_content_delivery_service() -> ContentDeliveryService:
     - 720p: HD
     - 480p: SD
     """,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def get_content_url(
     cache_key: str,
     asset_type: str = "video",
     quality: str = "1080p",
     current_user: User = Depends(get_current_user),
-    delivery_service: ContentDeliveryService = Depends(get_content_delivery_service)
+    delivery_service: ContentDeliveryService = Depends(get_content_delivery_service),
 ):
     """
     Generate signed URL for content asset.
@@ -312,30 +326,24 @@ async def get_content_url(
     """
     try:
         result = await delivery_service.generate_signed_url(
-            cache_key=cache_key,
-            asset_type=asset_type,
-            quality=quality
+            cache_key=cache_key, asset_type=asset_type, quality=quality
         )
 
         return SignedURLResponse(**result)
 
     except ValueError as e:
         logger.error(f"Invalid request: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except FileNotFoundError as e:
         logger.error(f"Content not found: {e}")
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Content asset not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Content asset not found"
         )
     except Exception as e:
         logger.error(f"Failed to generate signed URL: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to generate signed URL"
+            detail="Failed to generate signed URL",
         )
 
 
@@ -352,12 +360,12 @@ async def get_content_url(
     - Maximum 10 URLs per batch
     - All URLs expire after 15 minutes
     """,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def get_batch_urls(
     request: BatchURLRequest,
     current_user: User = Depends(get_current_user),
-    delivery_service: ContentDeliveryService = Depends(get_content_delivery_service)
+    delivery_service: ContentDeliveryService = Depends(get_content_delivery_service),
 ):
     """
     Generate multiple signed URLs in batch.
@@ -381,7 +389,7 @@ async def get_batch_urls(
         logger.error(f"Failed to generate batch URLs: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to generate batch URLs"
+            detail="Failed to generate batch URLs",
         )
 
 
@@ -394,11 +402,11 @@ async def get_batch_urls(
 
     Useful for monitoring and analytics.
     """,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def get_delivery_stats(
     current_user: User = Depends(get_current_user),
-    delivery_service: ContentDeliveryService = Depends(get_content_delivery_service)
+    delivery_service: ContentDeliveryService = Depends(get_content_delivery_service),
 ):
     """
     Get content delivery statistics.
@@ -418,13 +426,14 @@ async def get_delivery_stats(
         logger.error(f"Failed to get delivery stats: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve delivery statistics"
+            detail="Failed to retrieve delivery statistics",
         )
 
 
 # ============================================================================
 # Story 3.2.2: Content Access Tracking
 # ============================================================================
+
 
 def get_tracking_service() -> ContentTrackingService:
     """Dependency to get content tracking service instance."""
@@ -440,14 +449,14 @@ def get_tracking_service() -> ContentTrackingService:
 
     Called by frontend when video playback begins.
     Logs view event for analytics and increments view count.
-    """
+    """,
 )
 async def track_view(
     cache_key: str,
     request: ViewTrackingRequest,
     current_user: User = Depends(get_current_user),
     tracking_service: ContentTrackingService = Depends(get_tracking_service),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Track content view event.
@@ -468,13 +477,12 @@ async def track_view(
         student_id=current_user.user_id,
         quality=request.quality,
         device_type=request.device_type,
-        browser=request.browser
+        browser=request.browser,
     )
 
     if not success:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Content not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Content not found"
         )
 
     return None
@@ -489,14 +497,14 @@ async def track_view(
 
     Called periodically by frontend (e.g., every 10 seconds) during playback.
     Updates student progress record with current position.
-    """
+    """,
 )
 async def track_progress(
     cache_key: str,
     request: ProgressTrackingRequest,
     current_user: User = Depends(get_current_user),
     tracking_service: ContentTrackingService = Depends(get_tracking_service),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Track playback progress.
@@ -518,13 +526,12 @@ async def track_progress(
         current_time_seconds=request.current_time_seconds,
         duration_seconds=request.duration_seconds,
         playback_speed=request.playback_speed,
-        paused=request.paused
+        paused=request.paused,
     )
 
     if not success:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Content not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Content not found"
         )
 
     return None
@@ -539,14 +546,14 @@ async def track_progress(
 
     Called by frontend when student finishes watching content (>=80% completion).
     Updates progress to COMPLETED status and checks for achievements.
-    """
+    """,
 )
 async def track_completion(
     cache_key: str,
     request: CompletionTrackingRequest,
     current_user: User = Depends(get_current_user),
     tracking_service: ContentTrackingService = Depends(get_tracking_service),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Mark content as completed.
@@ -567,7 +574,7 @@ async def track_completion(
         student_id=current_user.user_id,
         watch_duration_seconds=request.watch_duration_seconds,
         completion_percentage=request.completion_percentage,
-        skipped_segments=request.skipped_segments
+        skipped_segments=request.skipped_segments,
     )
 
     return CompletionResponse(**result)
@@ -582,13 +589,13 @@ async def track_completion(
 
     Returns view counts, completion rates, and engagement metrics.
     Useful for teachers and admins to understand content performance.
-    """
+    """,
 )
 async def get_content_analytics(
     cache_key: str,
     current_user: User = Depends(get_current_user),
     tracking_service: ContentTrackingService = Depends(get_tracking_service),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get content analytics.
@@ -602,15 +609,11 @@ async def get_content_analytics(
     Returns:
         ContentAnalytics with view and engagement metrics
     """
-    analytics = tracking_service.get_content_analytics(
-        db=db,
-        cache_key=cache_key
-    )
+    analytics = tracking_service.get_content_analytics(db=db, cache_key=cache_key)
 
     if not analytics:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Content not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Content not found"
         )
 
     return ContentAnalytics(**analytics)
@@ -626,13 +629,13 @@ async def get_content_analytics(
     Returns list of content the student has viewed or generated.
     Students can only access their own history.
     """,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def get_student_history(
     student_id: str,
     limit: int = 20,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get student content history.
@@ -658,30 +661,33 @@ async def get_student_history(
         limit = 50
 
     result = content_service.get_student_content_history(
-        db=db,
-        student_id=student_id,
-        limit=limit
+        db=db, student_id=student_id, limit=limit
     )
 
     # Format content list
     formatted_content = []
     for content in result["content"]:
         # Extract interest name from interest_id (remove "int_" prefix)
-        interest_name = content.interest_id.replace("int_", "") if content.interest_id else None
+        interest_name = (
+            content.interest_id.replace("int_", "") if content.interest_id else None
+        )
 
-        formatted_content.append({
-            "content_id": content.content_id,
-            "topic_id": content.topic_id,
-            "topic_name": content.topic_id,  # Use topic_id as fallback for topic_name
-            "interest": interest_name,
-            "title": content.title,
-            "status": content.status,
-            "video_url": content.video_url,
-            "thumbnail_url": content.thumbnail_url,
-            "duration_seconds": content.duration_seconds,
-            "generated_at": content.created_at,  # Use created_at column, not generated_at property
-            "views": content.view_count or 0,  # Use view_count column, not views property
-        })
+        formatted_content.append(
+            {
+                "content_id": content.content_id,
+                "topic_id": content.topic_id,
+                "topic_name": content.topic_id,  # Use topic_id as fallback for topic_name
+                "interest": interest_name,
+                "title": content.title,
+                "status": content.status,
+                "video_url": content.video_url,
+                "thumbnail_url": content.thumbnail_url,
+                "duration_seconds": content.duration_seconds,
+                "generated_at": content.created_at,  # Use created_at column, not generated_at property
+                "views": content.view_count
+                or 0,  # Use view_count column, not views property
+            }
+        )
 
     return {
         "content": formatted_content,
@@ -689,7 +695,11 @@ async def get_student_history(
     }
 
 
-@router.post("/generate", response_model=ContentGenerationResponse, status_code=status.HTTP_202_ACCEPTED)
+@router.post(
+    "/generate",
+    response_model=ContentGenerationResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
 async def generate_content(
     request: ContentGenerationRequest,
     current_user: User = Depends(get_current_user),
@@ -734,8 +744,8 @@ async def generate_content(
             status="completed",
             metadata={
                 "student_query": request.student_query[:100],  # First 100 chars
-                "grade_level": request.grade_level
-            }
+                "grade_level": request.grade_level,
+            },
         )
 
         # Initialize content generation service
@@ -751,13 +761,13 @@ async def generate_content(
                 request_id=request_id,
                 student_id=request.student_id,
                 stage=RequestMonitoringService.STAGE_INTEREST_MATCH,
-                status="in_progress"
+                status="in_progress",
             )
 
             interest_match = await interest_service.match_interest_to_request(
                 db=db,
                 student_id=current_user.user_id,
-                student_query=request.student_query
+                student_query=request.student_query,
             )
             if interest_match and interest_match.get("interest_name"):
                 interest_to_use = interest_match["interest_name"]
@@ -772,8 +782,8 @@ async def generate_content(
                     metadata={
                         "interest_name": interest_to_use,
                         "reasoning": interest_match.get("reasoning"),
-                        "fallback_used": interest_match.get("fallback_used")
-                    }
+                        "fallback_used": interest_match.get("fallback_used"),
+                    },
                 )
 
                 logger.info(
@@ -782,7 +792,9 @@ async def generate_content(
                     f"reasoning: {interest_match.get('reasoning', 'N/A')})"
                 )
             else:
-                logger.warning(f"No interest match found for student {current_user.user_id}")
+                logger.warning(
+                    f"No interest match found for student {current_user.user_id}"
+                )
 
                 # Track: Interest Matching Failed
                 monitoring_service.track_event(
@@ -791,7 +803,7 @@ async def generate_content(
                     stage=RequestMonitoringService.STAGE_INTEREST_MATCH,
                     status="completed",
                     confidence_score=0.0,
-                    metadata={"no_match": True}
+                    metadata={"no_match": True},
                 )
 
         # Generate content asynchronously
@@ -799,7 +811,7 @@ async def generate_content(
             student_query=request.student_query,
             student_id=request.student_id,
             grade_level=request.grade_level,
-            interest=interest_to_use
+            interest=interest_to_use,
         )
 
         # Return response based on result status
@@ -810,7 +822,7 @@ async def generate_content(
                 cache_key=result.get("cache_key"),
                 message="Content generation completed successfully",
                 content_url=result.get("video_url"),
-                estimated_completion_seconds=0
+                estimated_completion_seconds=0,
             )
         elif result.get("status") == "cached":
             return ContentGenerationResponse(
@@ -818,7 +830,7 @@ async def generate_content(
                 cache_key=result.get("cache_key"),
                 message="Content retrieved from cache",
                 content_url=result.get("video_url"),
-                estimated_completion_seconds=0
+                estimated_completion_seconds=0,
             )
         else:
             # Generation started or in progress
@@ -827,12 +839,12 @@ async def generate_content(
                 request_id=result.get("request_id"),
                 cache_key=result.get("cache_key"),
                 message=f"Content generation {result.get('status', 'pending')}",
-                estimated_completion_seconds=result.get("estimated_seconds", 180)
+                estimated_completion_seconds=result.get("estimated_seconds", 180),
             )
 
     except Exception as e:
         logger.error(f"Content generation failed: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Content generation failed: {str(e)}"
+            detail=f"Content generation failed: {str(e)}",
         )

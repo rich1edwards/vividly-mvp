@@ -41,7 +41,9 @@ class FeatureFlag(Base):
 
     __tablename__ = "feature_flags"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    id = Column(
+        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+    )
     key = Column(String(255), nullable=False)
     name = Column(String(255), nullable=False)
     description = Column(Text)
@@ -52,27 +54,40 @@ class FeatureFlag(Base):
         Integer,
         default=0,
         nullable=False,
-        info={"check_constraint": "rollout_percentage >= 0 AND rollout_percentage <= 100"},
+        info={
+            "check_constraint": "rollout_percentage >= 0 AND rollout_percentage <= 100"
+        },
     )
 
     # Organization-specific (NULL = global)
-    organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"))
+    organization_id = Column(
+        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE")
+    )
 
     # Metadata
     created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False)
-    updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    updated_at = Column(
+        TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
 
     # Relationships
     organization = relationship("Organization", back_populates="feature_flags")
     creator = relationship("User", foreign_keys=[created_by])
-    overrides = relationship("FeatureFlagOverride", back_populates="flag", cascade="all, delete-orphan")
-    audit_logs = relationship("FeatureFlagAudit", back_populates="flag", cascade="all, delete-orphan")
+    overrides = relationship(
+        "FeatureFlagOverride", back_populates="flag", cascade="all, delete-orphan"
+    )
+    audit_logs = relationship(
+        "FeatureFlagAudit", back_populates="flag", cascade="all, delete-orphan"
+    )
 
     # Constraints
     __table_args__ = (
         UniqueConstraint("key", "organization_id", name="unique_flag_per_org"),
-        CheckConstraint("rollout_percentage >= 0 AND rollout_percentage <= 100", name="valid_rollout_percentage"),
+        CheckConstraint(
+            "rollout_percentage >= 0 AND rollout_percentage <= 100",
+            name="valid_rollout_percentage",
+        ),
     )
 
     def __repr__(self):
@@ -87,7 +102,9 @@ class FeatureFlag(Base):
             "description": self.description,
             "enabled": self.enabled,
             "rollout_percentage": self.rollout_percentage,
-            "organization_id": str(self.organization_id) if self.organization_id else None,
+            "organization_id": str(self.organization_id)
+            if self.organization_id
+            else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -102,9 +119,17 @@ class FeatureFlagOverride(Base):
 
     __tablename__ = "feature_flag_overrides"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
-    flag_id = Column(UUID(as_uuid=True), ForeignKey("feature_flags.id", ondelete="CASCADE"), nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id = Column(
+        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+    )
+    flag_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("feature_flags.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    user_id = Column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
 
     # Override state
     enabled = Column(Boolean, nullable=False)
@@ -120,7 +145,9 @@ class FeatureFlagOverride(Base):
     creator = relationship("User", foreign_keys=[created_by])
 
     # Constraints
-    __table_args__ = (UniqueConstraint("flag_id", "user_id", name="unique_override_per_user"),)
+    __table_args__ = (
+        UniqueConstraint("flag_id", "user_id", name="unique_override_per_user"),
+    )
 
     def __repr__(self):
         return f"<FeatureFlagOverride(flag_id={self.flag_id}, user_id={self.user_id}, enabled={self.enabled})>"
@@ -146,8 +173,14 @@ class FeatureFlagAudit(Base):
 
     __tablename__ = "feature_flag_audit"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
-    flag_id = Column(UUID(as_uuid=True), ForeignKey("feature_flags.id", ondelete="CASCADE"), nullable=False)
+    id = Column(
+        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+    )
+    flag_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("feature_flags.id", ondelete="CASCADE"),
+        nullable=False,
+    )
 
     # Change details
     action = Column(

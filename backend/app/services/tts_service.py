@@ -31,11 +31,7 @@ class TTSService:
     - Cost tracking and optimization
     """
 
-    def __init__(
-        self,
-        project_id: str = None,
-        elevenlabs_api_key: str = None
-    ):
+    def __init__(self, project_id: str = None, elevenlabs_api_key: str = None):
         """
         Initialize TTS service.
 
@@ -62,6 +58,7 @@ class TTSService:
         self.google_tts_available = False
         try:
             from google.cloud import texttospeech
+
             self.tts_client = texttospeech.TextToSpeechClient()
             self.google_tts_available = True
             logger.info("Google Cloud TTS initialized")
@@ -76,32 +73,32 @@ class TTSService:
                 "google_voice": {
                     "language_code": "en-US",
                     "name": "en-US-Neural2-D",
-                    "ssml_gender": "MALE"
-                }
+                    "ssml_gender": "MALE",
+                },
             },
             "female_professional": {
                 "elevenlabs_voice_id": "EXAVITQu4vr4xnSDxMaL",  # Bella
                 "google_voice": {
                     "language_code": "en-US",
                     "name": "en-US-Neural2-F",
-                    "ssml_gender": "FEMALE"
-                }
+                    "ssml_gender": "FEMALE",
+                },
             },
             "male_energetic": {
                 "elevenlabs_voice_id": "pNInz6obpgDQGcFmaJgB",  # Adam
                 "google_voice": {
                     "language_code": "en-US",
                     "name": "en-US-Neural2-A",
-                    "ssml_gender": "MALE"
-                }
-            }
+                    "ssml_gender": "MALE",
+                },
+            },
         }
 
     async def generate_audio(
         self,
         script: Dict[str, Any],
         voice_type: str = "female_professional",
-        output_format: str = "mp3"
+        output_format: str = "mp3",
     ) -> Dict[str, Any]:
         """
         Generate audio from educational script.
@@ -147,7 +144,7 @@ class TTSService:
                     ssml_text=ssml_text,
                     voice_type=voice_type,
                     audio_id=audio_id,
-                    output_format=output_format
+                    output_format=output_format,
                 )
                 result["provider"] = "elevenlabs"
                 return result
@@ -159,7 +156,7 @@ class TTSService:
                     ssml_text=ssml_text,
                     voice_type=voice_type,
                     audio_id=audio_id,
-                    output_format=output_format
+                    output_format=output_format,
                 )
                 result["provider"] = "google"
                 return result
@@ -167,9 +164,7 @@ class TTSService:
             # Mock mode (testing)
             logger.info(f"[{audio_id}] Running in mock mode")
             return self._mock_generate_audio(
-                script=script,
-                voice_type=voice_type,
-                audio_id=audio_id
+                script=script, voice_type=voice_type, audio_id=audio_id
             )
 
         except Exception as e:
@@ -205,17 +200,21 @@ class TTSService:
 
         Adds pauses, emphasis, and natural speech patterns.
         """
-        ssml_parts = ['<speak>']
+        ssml_parts = ["<speak>"]
 
         # Add hook with emphasis
         if "hook" in script:
-            ssml_parts.append(f'<prosody rate="medium" pitch="+2st">{script["hook"]}</prosody>')
+            ssml_parts.append(
+                f'<prosody rate="medium" pitch="+2st">{script["hook"]}</prosody>'
+            )
             ssml_parts.append('<break time="800ms"/>')
 
         # Add sections with pauses
         for section in script.get("sections", []):
             if "title" in section:
-                ssml_parts.append(f'<emphasis level="moderate">{section["title"]}</emphasis>')
+                ssml_parts.append(
+                    f'<emphasis level="moderate">{section["title"]}</emphasis>'
+                )
                 ssml_parts.append('<break time="500ms"/>')
 
             if "content" in section:
@@ -226,22 +225,22 @@ class TTSService:
 
         # Add key takeaways with slower rate
         if "key_takeaways" in script:
-            ssml_parts.append('<prosody rate="slow">Let\'s review the key points.</prosody>')
+            ssml_parts.append(
+                '<prosody rate="slow">Let\'s review the key points.</prosody>'
+            )
             ssml_parts.append('<break time="600ms"/>')
 
             for i, takeaway in enumerate(script["key_takeaways"], 1):
-                ssml_parts.append(f'<prosody rate="medium">Number {i}. {takeaway}</prosody>')
+                ssml_parts.append(
+                    f'<prosody rate="medium">Number {i}. {takeaway}</prosody>'
+                )
                 ssml_parts.append('<break time="500ms"/>')
 
-        ssml_parts.append('</speak>')
-        return ''.join(ssml_parts)
+        ssml_parts.append("</speak>")
+        return "".join(ssml_parts)
 
     async def _generate_with_elevenlabs(
-        self,
-        ssml_text: str,
-        voice_type: str,
-        audio_id: str,
-        output_format: str
+        self, ssml_text: str, voice_type: str, audio_id: str, output_format: str
     ) -> Dict:
         """
         Generate audio with ElevenLabs API.
@@ -278,11 +277,7 @@ class TTSService:
         raise NotImplementedError("ElevenLabs integration pending")
 
     async def _generate_with_google_tts(
-        self,
-        ssml_text: str,
-        voice_type: str,
-        audio_id: str,
-        output_format: str
+        self, ssml_text: str, voice_type: str, audio_id: str, output_format: str
     ) -> Dict:
         """Generate audio with Google Cloud TTS."""
         from google.cloud import texttospeech
@@ -293,9 +288,8 @@ class TTSService:
             language_code=voice_config["language_code"],
             name=voice_config["name"],
             ssml_gender=getattr(
-                texttospeech.SsmlVoiceGender,
-                voice_config["ssml_gender"]
-            )
+                texttospeech.SsmlVoiceGender, voice_config["ssml_gender"]
+            ),
         )
 
         # Configure audio
@@ -303,15 +297,13 @@ class TTSService:
             audio_encoding=texttospeech.AudioEncoding.MP3,
             speaking_rate=1.0,
             pitch=0.0,
-            sample_rate_hertz=24000
+            sample_rate_hertz=24000,
         )
 
         # Generate speech
         synthesis_input = texttospeech.SynthesisInput(ssml=ssml_text)
         response = self.tts_client.synthesize_speech(
-            input=synthesis_input,
-            voice=voice,
-            audio_config=audio_config
+            input=synthesis_input, voice=voice, audio_config=audio_config
         )
 
         audio_bytes = response.audio_content
@@ -328,14 +320,11 @@ class TTSService:
             "file_size_bytes": len(audio_bytes),
             "audio_url": gcs_url,
             "voice_type": voice_type,
-            "generated_at": datetime.utcnow().isoformat()
+            "generated_at": datetime.utcnow().isoformat(),
         }
 
     async def _upload_to_gcs(
-        self,
-        audio_bytes: bytes,
-        audio_id: str,
-        output_format: str
+        self, audio_bytes: bytes, audio_id: str, output_format: str
     ) -> str:
         """Upload audio file to Google Cloud Storage."""
         from google.cloud import storage
@@ -353,16 +342,14 @@ class TTSService:
 
         # Upload with metadata
         blob.upload_from_string(
-            audio_bytes,
-            content_type=f"audio/{output_format}",
-            timeout=300
+            audio_bytes, content_type=f"audio/{output_format}", timeout=300
         )
 
         # Set metadata
         blob.metadata = {
             "audio_id": audio_id,
             "generated_at": datetime.utcnow().isoformat(),
-            "format": output_format
+            "format": output_format,
         }
         blob.patch()
 
@@ -370,10 +357,7 @@ class TTSService:
         return f"gs://{bucket_name}/{blob_path}"
 
     def _mock_generate_audio(
-        self,
-        script: Dict,
-        voice_type: str,
-        audio_id: str
+        self, script: Dict, voice_type: str, audio_id: str
     ) -> Dict:
         """Mock audio generation for testing."""
         narration_text = self._build_narration_text(script)
@@ -387,7 +371,7 @@ class TTSService:
             "audio_url": f"gs://mock-bucket/audio/{audio_id}.mp3",
             "provider": "mock",
             "voice_type": voice_type,
-            "generated_at": datetime.utcnow().isoformat()
+            "generated_at": datetime.utcnow().isoformat(),
         }
 
     def _generate_audio_id(self, script_id: str) -> str:

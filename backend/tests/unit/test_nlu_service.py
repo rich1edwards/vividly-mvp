@@ -30,7 +30,7 @@ class TestNLUServiceInitialization:
         assert service.project_id == "custom-project"
         assert service.location == "us-west1"
 
-    @patch.dict('os.environ', {'GCP_PROJECT_ID': 'env-project'})
+    @patch.dict("os.environ", {"GCP_PROJECT_ID": "env-project"})
     def test_init_with_env_project(self):
         """Test initialization uses env var for project ID."""
         service = NLUService()
@@ -70,8 +70,7 @@ class TestExtractTopic:
         service = NLUService()
 
         result = await service.extract_topic(
-            "Explain Newton's Third Law with basketball",
-            grade_level=10
+            "Explain Newton's Third Law with basketball", grade_level=10
         )
 
         assert result["topic_id"] == "topic_phys_mech_newton_3"
@@ -86,8 +85,7 @@ class TestExtractTopic:
         service = NLUService()
 
         result = await service.extract_topic(
-            "What is Newton's Second Law?",
-            grade_level=11
+            "What is Newton's Second Law?", grade_level=11
         )
 
         assert result["topic_id"] == "topic_phys_mech_newton_2"
@@ -99,10 +97,7 @@ class TestExtractTopic:
         """Test extraction with ambiguous Newton query."""
         service = NLUService()
 
-        result = await service.extract_topic(
-            "Tell me about Newton",
-            grade_level=10
-        )
+        result = await service.extract_topic("Tell me about Newton", grade_level=10)
 
         assert result["topic_id"] is None
         assert result["clarification_needed"] is True
@@ -116,8 +111,7 @@ class TestExtractTopic:
         service = NLUService()
 
         result = await service.extract_topic(
-            "What's the best pizza place?",
-            grade_level=10
+            "What's the best pizza place?", grade_level=10
         )
 
         assert result["topic_id"] is None
@@ -131,8 +125,7 @@ class TestExtractTopic:
         service = NLUService()
 
         result = await service.extract_topic(
-            "Help me understand things",
-            grade_level=10
+            "Help me understand things", grade_level=10
         )
 
         assert result["topic_id"] is None
@@ -150,7 +143,7 @@ class TestExtractTopic:
             grade_level=10,
             student_id="student_123",
             recent_topics=["topic_phys_mech_newton_1"],
-            subject_context="Physics"
+            subject_context="Physics",
         )
 
         # Should still work in mock mode
@@ -170,7 +163,7 @@ class TestPromptBuilding:
                 "topic_id": "topic_phys_mech_newton_3",
                 "name": "Newton's Third Law",
                 "subject": "Physics",
-                "grade_levels": [9, 10, 11, 12]
+                "grade_levels": [9, 10, 11, 12],
             }
         ]
 
@@ -179,7 +172,7 @@ class TestPromptBuilding:
             topics=topics,
             grade_level=10,
             recent_topics=[],
-            subject_context=None
+            subject_context=None,
         )
 
         assert "Newton's Third Law" in prompt
@@ -198,7 +191,7 @@ class TestPromptBuilding:
             topics=topics,
             grade_level=11,
             recent_topics=["topic_1", "topic_2"],
-            subject_context="Physics"
+            subject_context="Physics",
         )
 
         assert "Physics" in prompt
@@ -214,13 +207,15 @@ class TestGeminiResponseParsing:
         """Test parsing valid JSON response."""
         service = NLUService()
 
-        response = json.dumps({
-            "confidence": 0.95,
-            "topic_id": "topic_phys_mech_newton_3",
-            "clarification_needed": False,
-            "out_of_scope": False,
-            "reasoning": "Clear match"
-        })
+        response = json.dumps(
+            {
+                "confidence": 0.95,
+                "topic_id": "topic_phys_mech_newton_3",
+                "clarification_needed": False,
+                "out_of_scope": False,
+                "reasoning": "Clear match",
+            }
+        )
 
         result = service._parse_gemini_response(response)
 
@@ -267,11 +262,13 @@ Additional notes."""
         """Test parsing JSON missing required field."""
         service = NLUService()
 
-        response = json.dumps({
-            "confidence": 0.95,
-            "topic_id": "test"
-            # Missing required fields
-        })
+        response = json.dumps(
+            {
+                "confidence": 0.95,
+                "topic_id": "test"
+                # Missing required fields
+            }
+        )
 
         with pytest.raises(ValueError, match="Missing required field"):
             service._parse_gemini_response(response)
@@ -526,15 +523,15 @@ class TestEdgeCases:
         """Test parsing response with nested JSON objects."""
         service = NLUService()
 
-        response = json.dumps({
-            "confidence": 0.95,
-            "topic_id": "test",
-            "clarification_needed": False,
-            "out_of_scope": False,
-            "extra_data": {
-                "nested": "value"
+        response = json.dumps(
+            {
+                "confidence": 0.95,
+                "topic_id": "test",
+                "clarification_needed": False,
+                "out_of_scope": False,
+                "extra_data": {"nested": "value"},
             }
-        })
+        )
 
         result = service._parse_gemini_response(response)
 

@@ -19,8 +19,8 @@ class TestCreateClass:
                 "name": "New Physics Class",
                 "subject": "Physics",
                 "description": "A new physics class",
-                "grade_levels": [9, 10, 11]
-            }
+                "grade_levels": [9, 10, 11],
+            },
         )
 
         assert response.status_code == status.HTTP_201_CREATED
@@ -36,10 +36,7 @@ class TestCreateClass:
         response = client.post(
             "/api/v1/teachers/classes",
             headers=student_headers,
-            json={
-                "name": "Test Class",
-                "subject": "Math"
-            }
+            json={"name": "Test Class", "subject": "Math"},
         )
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -52,8 +49,8 @@ class TestCreateClass:
             json={
                 "name": "Test Class",
                 "subject": "Math",
-                "grade_levels": [8, 13]  # Invalid
-            }
+                "grade_levels": [8, 13],  # Invalid
+            },
         )
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -64,11 +61,13 @@ class TestCreateClass:
 class TestGetTeacherClasses:
     """Test GET /api/v1/teachers/{teacher_id}/classes endpoint."""
 
-    def test_get_own_classes_success(self, client, sample_teacher, teacher_headers, sample_class):
+    def test_get_own_classes_success(
+        self, client, sample_teacher, teacher_headers, sample_class
+    ):
         """Test teacher getting their own classes."""
         response = client.get(
             f"/api/v1/teachers/{sample_teacher.user_id}/classes",
-            headers=teacher_headers
+            headers=teacher_headers,
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -76,24 +75,27 @@ class TestGetTeacherClasses:
         assert isinstance(data, list)
         assert len(data) >= 1
 
-    def test_get_classes_include_archived(self, client, sample_teacher, teacher_headers, db_session):
+    def test_get_classes_include_archived(
+        self, client, sample_teacher, teacher_headers, db_session
+    ):
         """Test getting classes including archived ones."""
         # Create archived class
         from app.models.class_model import Class
+
         archived_class = Class(
             class_id="class_archived_test",
             teacher_id=sample_teacher.user_id,
             name="Archived Class",
             subject="Test",
             class_code="TEST-888-888",
-            archived=True
+            archived=True,
         )
         db_session.add(archived_class)
         db_session.commit()
 
         response = client.get(
             f"/api/v1/teachers/{sample_teacher.user_id}/classes?include_archived=true",
-            headers=teacher_headers
+            headers=teacher_headers,
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -101,11 +103,12 @@ class TestGetTeacherClasses:
         archived_count = sum(1 for c in data if c.get("archived") == True)
         assert archived_count >= 1
 
-    def test_teacher_cannot_access_other_classes(self, client, teacher_headers, sample_admin):
+    def test_teacher_cannot_access_other_classes(
+        self, client, teacher_headers, sample_admin
+    ):
         """Test teacher cannot access another teacher's classes."""
         response = client.get(
-            f"/api/v1/teachers/{sample_admin.user_id}/classes",
-            headers=teacher_headers
+            f"/api/v1/teachers/{sample_admin.user_id}/classes", headers=teacher_headers
         )
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -119,8 +122,7 @@ class TestGetClassDetails:
     def test_get_class_details_success(self, client, sample_class, teacher_headers):
         """Test getting class details."""
         response = client.get(
-            f"/api/v1/classes/{sample_class.class_id}",
-            headers=teacher_headers
+            f"/api/v1/classes/{sample_class.class_id}", headers=teacher_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -131,8 +133,7 @@ class TestGetClassDetails:
     def test_get_nonexistent_class(self, client, teacher_headers):
         """Test getting nonexistent class."""
         response = client.get(
-            "/api/v1/classes/nonexistent_class_id",
-            headers=teacher_headers
+            "/api/v1/classes/nonexistent_class_id", headers=teacher_headers
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -150,8 +151,8 @@ class TestUpdateClass:
             headers=teacher_headers,
             json={
                 "name": "Updated Physics Class",
-                "description": "Updated description"
-            }
+                "description": "Updated description",
+            },
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -164,7 +165,7 @@ class TestUpdateClass:
         response = client.patch(
             f"/api/v1/classes/{sample_class.class_id}",
             headers=teacher_headers,
-            json={"grade_levels": [5, 6]}  # Invalid
+            json={"grade_levels": [5, 6]},  # Invalid
         )
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -178,8 +179,7 @@ class TestArchiveClass:
     def test_archive_class_success(self, client, sample_class, teacher_headers):
         """Test successfully archiving a class."""
         response = client.delete(
-            f"/api/v1/classes/{sample_class.class_id}",
-            headers=teacher_headers
+            f"/api/v1/classes/{sample_class.class_id}", headers=teacher_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -192,20 +192,21 @@ class TestArchiveClass:
 class TestGetClassRoster:
     """Test GET /api/v1/classes/{class_id}/students endpoint."""
 
-    def test_get_roster_success(self, client, sample_class, teacher_headers, sample_student, db_session):
+    def test_get_roster_success(
+        self, client, sample_class, teacher_headers, sample_student, db_session
+    ):
         """Test getting class roster."""
         # Enroll student
         from app.models.class_student import ClassStudent
+
         enrollment = ClassStudent(
-            class_id=sample_class.class_id,
-            student_id=sample_student.user_id
+            class_id=sample_class.class_id, student_id=sample_student.user_id
         )
         db_session.add(enrollment)
         db_session.commit()
 
         response = client.get(
-            f"/api/v1/classes/{sample_class.class_id}/students",
-            headers=teacher_headers
+            f"/api/v1/classes/{sample_class.class_id}/students", headers=teacher_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -217,8 +218,7 @@ class TestGetClassRoster:
     def test_get_roster_empty_class(self, client, sample_class, teacher_headers):
         """Test getting roster for empty class."""
         response = client.get(
-            f"/api/v1/classes/{sample_class.class_id}/students",
-            headers=teacher_headers
+            f"/api/v1/classes/{sample_class.class_id}/students", headers=teacher_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -232,29 +232,33 @@ class TestGetClassRoster:
 class TestRemoveStudentFromClass:
     """Test DELETE /api/v1/classes/{class_id}/students/{student_id} endpoint."""
 
-    def test_remove_student_success(self, client, sample_class, sample_student, teacher_headers, db_session):
+    def test_remove_student_success(
+        self, client, sample_class, sample_student, teacher_headers, db_session
+    ):
         """Test successfully removing a student."""
         # Enroll student first
         from app.models.class_student import ClassStudent
+
         enrollment = ClassStudent(
-            class_id=sample_class.class_id,
-            student_id=sample_student.user_id
+            class_id=sample_class.class_id, student_id=sample_student.user_id
         )
         db_session.add(enrollment)
         db_session.commit()
 
         response = client.delete(
             f"/api/v1/classes/{sample_class.class_id}/students/{sample_student.user_id}",
-            headers=teacher_headers
+            headers=teacher_headers,
         )
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
-    def test_remove_unenrolled_student(self, client, sample_class, sample_student, teacher_headers):
+    def test_remove_unenrolled_student(
+        self, client, sample_class, sample_student, teacher_headers
+    ):
         """Test removing a student not enrolled."""
         response = client.delete(
             f"/api/v1/classes/{sample_class.class_id}/students/{sample_student.user_id}",
-            headers=teacher_headers
+            headers=teacher_headers,
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -276,8 +280,8 @@ class TestStudentAccountRequests:
                 "student_last_name": "Student",
                 "grade_level": 10,
                 "class_id": sample_class.class_id,
-                "notes": "Test request"
-            }
+                "notes": "Test request",
+            },
         )
 
         assert response.status_code == status.HTTP_201_CREATED
@@ -296,16 +300,16 @@ class TestStudentAccountRequests:
                         "student_email": "student1@school.edu",
                         "student_first_name": "Student",
                         "student_last_name": "One",
-                        "grade_level": 10
+                        "grade_level": 10,
                     },
                     {
                         "student_email": "student2@school.edu",
                         "student_first_name": "Student",
                         "student_last_name": "Two",
-                        "grade_level": 11
-                    }
+                        "grade_level": 11,
+                    },
                 ]
-            }
+            },
         )
 
         assert response.status_code == status.HTTP_201_CREATED
@@ -313,7 +317,9 @@ class TestStudentAccountRequests:
         assert isinstance(data, list)
         assert len(data) == 2
 
-    def test_create_request_duplicate_email(self, client, teacher_headers, sample_student):
+    def test_create_request_duplicate_email(
+        self, client, teacher_headers, sample_student
+    ):
         """Test creating request with existing user email."""
         response = client.post(
             "/api/v1/teachers/student-requests",
@@ -322,8 +328,8 @@ class TestStudentAccountRequests:
                 "student_email": sample_student.email,
                 "student_first_name": "Test",
                 "student_last_name": "Student",
-                "grade_level": 10
-            }
+                "grade_level": 10,
+            },
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -335,7 +341,7 @@ class TestStudentAccountRequests:
                 "student_email": f"student{i}@school.edu",
                 "student_first_name": "Student",
                 "student_last_name": str(i),
-                "grade_level": 10
+                "grade_level": 10,
             }
             for i in range(51)  # 51 is too many (max 50)
         ]
@@ -343,7 +349,7 @@ class TestStudentAccountRequests:
         response = client.post(
             "/api/v1/teachers/student-requests",
             headers=teacher_headers,
-            json={"students": students}
+            json={"students": students},
         )
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -358,18 +364,20 @@ class TestGetTeacherRequests:
         """Test getting teacher's requests."""
         response = client.get(
             f"/api/v1/teachers/{sample_teacher.user_id}/student-requests",
-            headers=teacher_headers
+            headers=teacher_headers,
         )
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert isinstance(data, list)
 
-    def test_get_requests_filtered_by_status(self, client, sample_teacher, teacher_headers):
+    def test_get_requests_filtered_by_status(
+        self, client, sample_teacher, teacher_headers
+    ):
         """Test getting requests filtered by status."""
         response = client.get(
             f"/api/v1/teachers/{sample_teacher.user_id}/student-requests?status_filter=pending",
-            headers=teacher_headers
+            headers=teacher_headers,
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -380,11 +388,13 @@ class TestGetTeacherRequests:
 class TestTeacherDashboard:
     """Test GET /api/v1/teachers/{teacher_id}/dashboard endpoint."""
 
-    def test_get_dashboard_success(self, client, sample_teacher, teacher_headers, sample_class):
+    def test_get_dashboard_success(
+        self, client, sample_teacher, teacher_headers, sample_class
+    ):
         """Test getting teacher dashboard."""
         response = client.get(
             f"/api/v1/teachers/{sample_teacher.user_id}/dashboard",
-            headers=teacher_headers
+            headers=teacher_headers,
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -397,11 +407,13 @@ class TestTeacherDashboard:
         assert "classes" in data
         assert isinstance(data["classes"], list)
 
-    def test_teacher_cannot_access_other_dashboard(self, client, teacher_headers, sample_admin):
+    def test_teacher_cannot_access_other_dashboard(
+        self, client, teacher_headers, sample_admin
+    ):
         """Test teacher cannot access another teacher's dashboard."""
         response = client.get(
             f"/api/v1/teachers/{sample_admin.user_id}/dashboard",
-            headers=teacher_headers
+            headers=teacher_headers,
         )
 
         assert response.status_code == status.HTTP_403_FORBIDDEN

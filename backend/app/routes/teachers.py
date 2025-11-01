@@ -43,6 +43,7 @@ router = APIRouter(prefix="/api/v1/teachers", tags=["Teachers"])
 
 # Dependencies
 
+
 def get_db() -> Session:
     """Get database session dependency."""
     raise NotImplementedError("Database dependency not configured")
@@ -61,12 +62,18 @@ def require_teacher(current_user: dict = Depends(get_current_active_user)) -> di
     if current_user.get("role") != "teacher":
         raise HTTPException(
             status_code=403,
-            detail={"error": {"code": "FORBIDDEN", "message": "Only teachers can access this endpoint"}}
+            detail={
+                "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Only teachers can access this endpoint",
+                }
+            },
         )
     return current_user
 
 
 # Story 1.3.1: Teacher Profile & Class List (2 points)
+
 
 @router.get(
     "/profile",
@@ -277,6 +284,7 @@ async def get_teacher_classes(
 
 
 # Story 1.3.2: Class Management (3 points)
+
 
 @router.post(
     "/classes",
@@ -607,7 +615,10 @@ async def update_class(
         401: {"description": "Unauthorized"},
         403: {"description": "Forbidden - Not class teacher", "model": ErrorResponse},
         404: {"description": "Class not found", "model": ErrorResponse},
-        409: {"description": "Conflict - Students have progress", "model": ErrorResponse},
+        409: {
+            "description": "Conflict - Students have progress",
+            "model": ErrorResponse,
+        },
     },
 )
 async def archive_class(
@@ -667,6 +678,7 @@ async def archive_class(
 
 
 # Story 1.3.3: Student Account Request (2 points)
+
 
 @router.post(
     "/student-requests",

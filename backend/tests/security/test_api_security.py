@@ -29,24 +29,23 @@ class TestMassAssignment:
                 "first_name": "Test",
                 "last_name": "User",
                 "role": "admin",  # Trying to become admin
-                "grade_level": 10
-            }
+                "grade_level": 10,
+            },
         )
 
         # Should either reject or ignore the admin role
         if response.status_code == 201:
             user_data = response.json()
-            assert user_data["role"] != "admin", "Users should not be able to self-assign admin role"
+            assert (
+                user_data["role"] != "admin"
+            ), "Users should not be able to self-assign admin role"
 
     def test_cannot_modify_readonly_fields(self):
         """Test that readonly fields like user_id, created_at cannot be modified."""
         # Login as student
         login_response = client.post(
             "/api/v1/auth/login",
-            json={
-                "email": "student@test.com",
-                "password": "Password123!"
-            }
+            json={"email": "student@test.com", "password": "Password123!"},
         )
 
         token = login_response.json()["access_token"]
@@ -60,8 +59,8 @@ class TestMassAssignment:
                 "user_id": "attacker_user_id",  # Should be ignored
                 "created_at": "2000-01-01T00:00:00",  # Should be ignored
                 "role": "admin",  # Should be ignored
-                "first_name": "Updated"  # Should be allowed
-            }
+                "first_name": "Updated",  # Should be allowed
+            },
         )
 
         # Check that readonly fields weren't modified
@@ -85,8 +84,8 @@ class TestExcessiveDataExposure:
                 "first_name": "New",
                 "last_name": "User",
                 "role": "student",
-                "grade_level": 10
-            }
+                "grade_level": 10,
+            },
         )
 
         # Check response doesn't contain password
@@ -96,17 +95,13 @@ class TestExcessiveDataExposure:
         # Check profile endpoint
         login_response = client.post(
             "/api/v1/auth/login",
-            json={
-                "email": "newuser@test.com",
-                "password": "SecretPassword123!"
-            }
+            json={"email": "newuser@test.com", "password": "SecretPassword123!"},
         )
 
         token = login_response.json()["access_token"]
 
         profile_response = client.get(
-            "/api/v1/auth/me",
-            headers={"Authorization": f"Bearer {token}"}
+            "/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"}
         )
 
         profile_text = profile_response.text.lower()
@@ -117,26 +112,29 @@ class TestExcessiveDataExposure:
         """Test that internal fields are not exposed in API responses."""
         login_response = client.post(
             "/api/v1/auth/login",
-            json={
-                "email": "student@test.com",
-                "password": "Password123!"
-            }
+            json={"email": "student@test.com", "password": "Password123!"},
         )
 
         token = login_response.json()["access_token"]
 
         response = client.get(
-            "/api/v1/auth/me",
-            headers={"Authorization": f"Bearer {token}"}
+            "/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"}
         )
 
         response_data = response.json()
 
         # Internal fields that should not be exposed
-        internal_fields = ["password_hash", "password", "password_salt", "internal_notes"]
+        internal_fields = [
+            "password_hash",
+            "password",
+            "password_salt",
+            "internal_notes",
+        ]
 
         for field in internal_fields:
-            assert field not in response_data, f"Internal field {field} should not be exposed"
+            assert (
+                field not in response_data
+            ), f"Internal field {field} should not be exposed"
 
 
 class TestBrokenObjectLevelAuthorization:
@@ -147,10 +145,7 @@ class TestBrokenObjectLevelAuthorization:
         # Login as student 1
         login1 = client.post(
             "/api/v1/auth/login",
-            json={
-                "email": "student1@test.com",
-                "password": "Password123!"
-            }
+            json={"email": "student1@test.com", "password": "Password123!"},
         )
 
         student1_token = login1.json()["access_token"]
@@ -158,7 +153,7 @@ class TestBrokenObjectLevelAuthorization:
         # Try to access student 2's profile
         response = client.get(
             "/api/v1/students/student2_user_id/profile",
-            headers={"Authorization": f"Bearer {student1_token}"}
+            headers={"Authorization": f"Bearer {student1_token}"},
         )
 
         # Should be forbidden or not found
@@ -169,10 +164,7 @@ class TestBrokenObjectLevelAuthorization:
         # Login as student 1
         login1 = client.post(
             "/api/v1/auth/login",
-            json={
-                "email": "student1@test.com",
-                "password": "Password123!"
-            }
+            json={"email": "student1@test.com", "password": "Password123!"},
         )
 
         student1_token = login1.json()["access_token"]
@@ -181,7 +173,7 @@ class TestBrokenObjectLevelAuthorization:
         response = client.patch(
             "/api/v1/students/student2_user_id/profile",
             headers={"Authorization": f"Bearer {student1_token}"},
-            json={"first_name": "Hacked"}
+            json={"first_name": "Hacked"},
         )
 
         # Should be forbidden
@@ -192,10 +184,7 @@ class TestBrokenObjectLevelAuthorization:
         # Login as teacher 1
         login1 = client.post(
             "/api/v1/auth/login",
-            json={
-                "email": "teacher1@test.com",
-                "password": "TeacherPassword123!"
-            }
+            json={"email": "teacher1@test.com", "password": "TeacherPassword123!"},
         )
 
         teacher1_token = login1.json()["access_token"]
@@ -203,7 +192,7 @@ class TestBrokenObjectLevelAuthorization:
         # Try to access teacher 2's class
         response = client.get(
             "/api/v1/teacher/classes/teacher2_class_id",
-            headers={"Authorization": f"Bearer {teacher1_token}"}
+            headers={"Authorization": f"Bearer {teacher1_token}"},
         )
 
         # Should be forbidden
@@ -223,11 +212,7 @@ class TestInjectionAttacks:
 
         for payload in nosql_payloads:
             response = client.post(
-                "/api/v1/auth/login",
-                json={
-                    "email": payload,
-                    "password": "anything"
-                }
+                "/api/v1/auth/login", json={"email": payload, "password": "anything"}
             )
 
             # Should not return 200
@@ -246,10 +231,7 @@ class TestInjectionAttacks:
         for payload in command_injection_payloads:
             response = client.post(
                 "/api/v1/students/profile",
-                json={
-                    "first_name": payload,
-                    "last_name": "User"
-                }
+                json={"first_name": payload, "last_name": "User"},
             )
 
             # Should not execute commands
@@ -269,11 +251,7 @@ class TestInjectionAttacks:
 
         for payload in ldap_payloads:
             response = client.post(
-                "/api/v1/auth/login",
-                json={
-                    "email": payload,
-                    "password": "anything"
-                }
+                "/api/v1/auth/login", json={"email": payload, "password": "anything"}
             )
 
             # Should not bypass authentication
@@ -303,10 +281,7 @@ class TestRateLimiting:
         # Login
         login_response = client.post(
             "/api/v1/auth/login",
-            json={
-                "email": "student@test.com",
-                "password": "Password123!"
-            }
+            json={"email": "student@test.com", "password": "Password123!"},
         )
 
         token = login_response.json()["access_token"]
@@ -317,7 +292,7 @@ class TestRateLimiting:
         for i in range(50):
             response = client.get(
                 "/api/v1/student/dashboard",
-                headers={"Authorization": f"Bearer {token}"}
+                headers={"Authorization": f"Bearer {token}"},
             )
 
             if response.status_code == 429:
@@ -341,8 +316,8 @@ class TestBusinessLogicSecurity:
                 "first_name": "Test",
                 "last_name": "User",
                 "role": "student",
-                "grade_level": -1  # Invalid
-            }
+                "grade_level": -1,  # Invalid
+            },
         )
 
         assert response.status_code == 422
@@ -352,10 +327,7 @@ class TestBusinessLogicSecurity:
         # Login as teacher
         login_response = client.post(
             "/api/v1/auth/login",
-            json={
-                "email": "teacher@test.com",
-                "password": "TeacherPassword123!"
-            }
+            json={"email": "teacher@test.com", "password": "TeacherPassword123!"},
         )
 
         token = login_response.json()["access_token"]
@@ -372,7 +344,7 @@ class TestBusinessLogicSecurity:
             response = client.post(
                 "/api/v1/teacher/classes",
                 headers={"Authorization": f"Bearer {token}"},
-                json=data
+                json=data,
             )
 
             assert response.status_code in [400, 422]
@@ -392,10 +364,7 @@ class TestDataLeakage:
         # Try to login with non-existent user
         response = client.post(
             "/api/v1/auth/login",
-            json={
-                "email": "nonexistent@test.com",
-                "password": "Password123!"
-            }
+            json={"email": "nonexistent@test.com", "password": "Password123!"},
         )
 
         error_message = response.json().get("detail", "").lower()
@@ -414,10 +383,7 @@ class TestDataLeakage:
         start = time.time()
         client.post(
             "/api/v1/auth/login",
-            json={
-                "email": "existing@test.com",
-                "password": "WrongPassword"
-            }
+            json={"email": "existing@test.com", "password": "WrongPassword"},
         )
         existing_time = time.time() - start
 
@@ -425,10 +391,7 @@ class TestDataLeakage:
         start = time.time()
         client.post(
             "/api/v1/auth/login",
-            json={
-                "email": "nonexistent@test.com",
-                "password": "WrongPassword"
-            }
+            json={"email": "nonexistent@test.com", "password": "WrongPassword"},
         )
         nonexistent_time = time.time() - start
 

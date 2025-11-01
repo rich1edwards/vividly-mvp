@@ -58,7 +58,9 @@ def login(
 
     user = auth_service.authenticate_user(db, credentials.email, credentials.password)
 
-    print(f"[Auth Endpoint] User authenticated successfully: user_id={user.user_id}, email={user.email}")
+    print(
+        f"[Auth Endpoint] User authenticated successfully: user_id={user.user_id}, email={user.email}"
+    )
     print(f"[Auth Endpoint] Creating tokens for user...")
 
     tokens = auth_service.create_user_tokens(db, user)
@@ -124,7 +126,9 @@ def request_password_reset(
     Request password reset link (always returns success for security).
     """
     # TODO: Implement password reset request logic
-    return {"message": "If an account exists with this email, a password reset link has been sent"}
+    return {
+        "message": "If an account exists with this email, a password reset link has been sent"
+    }
 
 
 @router.post("/password-reset/confirm")

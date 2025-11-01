@@ -79,7 +79,9 @@ async def update_student_profile(
             detail="Students can only update their own profile",
         )
 
-    updated_student = student_service.update_student_profile(db, student_id, profile_data)
+    updated_student = student_service.update_student_profile(
+        db, student_id, profile_data
+    )
     return updated_student
 
 
@@ -213,7 +215,11 @@ async def get_learning_progress(
     return progress
 
 
-@router.post("/{student_id}/classes/join", response_model=dict, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{student_id}/classes/join",
+    response_model=dict,
+    status_code=status.HTTP_201_CREATED,
+)
 async def join_class(
     student_id: str,
     join_data: JoinClassRequest,

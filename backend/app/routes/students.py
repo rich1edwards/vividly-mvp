@@ -36,6 +36,7 @@ router = APIRouter(prefix="/api/v1/students", tags=["Students"])
 
 # Dependencies
 
+
 def get_db() -> Session:
     """Get database session dependency."""
     raise NotImplementedError("Database dependency not configured")
@@ -54,12 +55,18 @@ def require_student(current_user: dict = Depends(get_current_active_user)) -> di
     if current_user.get("role") != "student":
         raise HTTPException(
             status_code=403,
-            detail={"error": {"code": "FORBIDDEN", "message": "Only students can access this endpoint"}}
+            detail={
+                "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Only students can access this endpoint",
+                }
+            },
         )
     return current_user
 
 
 # Story 1.2.1: Student Profile Management (3 points)
+
 
 @router.get(
     "/profile",
@@ -79,7 +86,10 @@ def require_student(current_user: dict = Depends(get_current_active_user)) -> di
     responses={
         200: {"description": "Student profile retrieved"},
         401: {"description": "Unauthorized"},
-        403: {"description": "Forbidden - Not a student", "model": ValidationErrorResponse},
+        403: {
+            "description": "Forbidden - Not a student",
+            "model": ValidationErrorResponse,
+        },
     },
 )
 async def get_student_profile(
@@ -193,7 +203,10 @@ async def get_student_profile(
     responses={
         200: {"description": "Profile updated successfully"},
         401: {"description": "Unauthorized"},
-        403: {"description": "Forbidden - Not a student", "model": ValidationErrorResponse},
+        403: {
+            "description": "Forbidden - Not a student",
+            "model": ValidationErrorResponse,
+        },
         422: {"description": "Validation error", "model": ValidationErrorResponse},
     },
 )
@@ -252,6 +265,7 @@ async def update_student_profile(
 
 # Story 1.2.2: Interest Selection & Management (3 points)
 
+
 @router.get(
     "/interests",
     response_model=InterestsResponse,
@@ -269,7 +283,10 @@ async def update_student_profile(
     responses={
         200: {"description": "Interests retrieved"},
         401: {"description": "Unauthorized"},
-        403: {"description": "Forbidden - Not a student", "model": ValidationErrorResponse},
+        403: {
+            "description": "Forbidden - Not a student",
+            "model": ValidationErrorResponse,
+        },
     },
 )
 async def get_student_interests(
@@ -352,7 +369,10 @@ async def get_student_interests(
     responses={
         200: {"description": "Interests updated successfully"},
         401: {"description": "Unauthorized"},
-        403: {"description": "Forbidden - Not a student", "model": ValidationErrorResponse},
+        403: {
+            "description": "Forbidden - Not a student",
+            "model": ValidationErrorResponse,
+        },
         422: {"description": "Validation error", "model": ValidationErrorResponse},
     },
 )
@@ -465,6 +485,7 @@ async def update_student_interests(
 
 # Story 1.2.3: Student Progress Tracking (2 points)
 
+
 @router.get(
     "/progress",
     response_model=ProgressResponse,
@@ -488,7 +509,10 @@ async def update_student_interests(
     responses={
         200: {"description": "Progress retrieved"},
         401: {"description": "Unauthorized"},
-        403: {"description": "Forbidden - Not a student", "model": ValidationErrorResponse},
+        403: {
+            "description": "Forbidden - Not a student",
+            "model": ValidationErrorResponse,
+        },
     },
 )
 async def get_student_progress(

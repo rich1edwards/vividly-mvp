@@ -31,30 +31,30 @@ class PipelineRunner:
         self.script_dir = script_dir
         self.stages = [
             {
-                'name': 'Download',
-                'script': '01_download_openstax.sh',
-                'description': 'Download OpenStax textbooks in CNXML format'
+                "name": "Download",
+                "script": "01_download_openstax.sh",
+                "description": "Download OpenStax textbooks in CNXML format",
             },
             {
-                'name': 'Process',
-                'script': '02_process_content.py',
-                'description': 'Parse CNXML and extract structured content'
+                "name": "Process",
+                "script": "02_process_content.py",
+                "description": "Parse CNXML and extract structured content",
             },
             {
-                'name': 'Chunk',
-                'script': '03_chunk_content.py',
-                'description': 'Split content into 500-word chunks'
+                "name": "Chunk",
+                "script": "03_chunk_content.py",
+                "description": "Split content into 500-word chunks",
             },
             {
-                'name': 'Embed',
-                'script': '04_generate_embeddings.py',
-                'description': 'Generate 768-dim embeddings using Vertex AI'
+                "name": "Embed",
+                "script": "04_generate_embeddings.py",
+                "description": "Generate 768-dim embeddings using Vertex AI",
             },
             {
-                'name': 'Index',
-                'script': '05_create_vector_index.py',
-                'description': 'Create and deploy vector search index'
-            }
+                "name": "Index",
+                "script": "05_create_vector_index.py",
+                "description": "Create and deploy vector search index",
+            },
         ]
 
     def run_stage(self, stage: dict) -> bool:
@@ -67,7 +67,7 @@ class PipelineRunner:
         Returns:
             True if successful, False otherwise
         """
-        script_path = self.script_dir / stage['script']
+        script_path = self.script_dir / stage["script"]
 
         print("")
         print("=" * 70)
@@ -77,9 +77,9 @@ class PipelineRunner:
         print("")
 
         # Determine how to run script
-        if script_path.suffix == '.sh':
+        if script_path.suffix == ".sh":
             # Bash script
-            cmd = ['bash', str(script_path)]
+            cmd = ["bash", str(script_path)]
         else:
             # Python script
             cmd = [sys.executable, str(script_path)]
@@ -87,10 +87,7 @@ class PipelineRunner:
         # Run script
         try:
             result = subprocess.run(
-                cmd,
-                cwd=str(self.script_dir),
-                check=True,
-                text=True
+                cmd, cwd=str(self.script_dir), check=True, text=True
             )
             return True
 
@@ -125,7 +122,9 @@ class PipelineRunner:
         start_time = datetime.now()
 
         # Run selected stages
-        for i, stage in enumerate(self.stages[start_stage - 1:end_stage], start=start_stage):
+        for i, stage in enumerate(
+            self.stages[start_stage - 1 : end_stage], start=start_stage
+        ):
             success = self.run_stage(stage)
 
             if not success:
@@ -170,12 +169,12 @@ def check_prerequisites():
     errors = []
 
     # Check Google Cloud project
-    project_id = os.getenv('GOOGLE_CLOUD_PROJECT')
+    project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
     if not project_id:
         errors.append("GOOGLE_CLOUD_PROJECT environment variable not set")
 
     # Check credentials
-    creds = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    creds = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     if not creds:
         errors.append("GOOGLE_APPLICATION_CREDENTIALS environment variable not set")
     elif not Path(creds).exists():
@@ -202,7 +201,7 @@ def check_prerequisites():
 def main():
     """Main pipeline orchestration."""
     parser = argparse.ArgumentParser(
-        description='Run OER content ingestion pipeline',
+        description="Run OER content ingestion pipeline",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -220,35 +219,29 @@ Examples:
 
   # Skip prerequisites check (not recommended)
   python run_pipeline.py --skip-prereqs
-        """
+        """,
     )
 
     parser.add_argument(
-        '--start',
+        "--start",
         type=int,
         default=1,
         choices=[1, 2, 3, 4, 5],
-        help='Starting stage (1-5)'
+        help="Starting stage (1-5)",
     )
 
     parser.add_argument(
-        '--end',
-        type=int,
-        default=5,
-        choices=[1, 2, 3, 4, 5],
-        help='Ending stage (1-5)'
+        "--end", type=int, default=5, choices=[1, 2, 3, 4, 5], help="Ending stage (1-5)"
     )
 
     parser.add_argument(
-        '--info',
-        action='store_true',
-        help='Print pipeline information and exit'
+        "--info", action="store_true", help="Print pipeline information and exit"
     )
 
     parser.add_argument(
-        '--skip-prereqs',
-        action='store_true',
-        help='Skip prerequisites check (not recommended)'
+        "--skip-prereqs",
+        action="store_true",
+        help="Skip prerequisites check (not recommended)",
     )
 
     args = parser.parse_args()
@@ -280,5 +273,5 @@ Examples:
     sys.exit(0 if success else 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

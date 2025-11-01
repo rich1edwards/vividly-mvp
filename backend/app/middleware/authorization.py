@@ -27,18 +27,15 @@ ROLE_HIERARCHY = {
 ENDPOINT_PERMISSIONS: Dict[str, Set[UserRole]] = {
     # Admin-only endpoints
     r"^/api/v1/admin/.*": {UserRole.ADMIN},
-
     # Teacher endpoints
     r"^/api/v1/teachers/.*": {UserRole.ADMIN, UserRole.TEACHER},
     r"^/api/v1/classes/.*": {UserRole.ADMIN, UserRole.TEACHER},
-
     # Student endpoints
     r"^/api/v1/students/.*": {UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT},
     r"^/api/v1/topics/.*": {UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT},
     r"^/api/v1/content/.*": {UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT},
     r"^/api/v1/cache/.*": {UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT},
     r"^/api/v1/nlu/.*": {UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT},
-
     # Public endpoints (no authentication required)
     r"^/health$": set(),  # Empty set = public
     r"^/api/docs.*": set(),
@@ -90,7 +87,7 @@ class AuthorizationMiddleware(BaseHTTPMiddleware):
             return Response(
                 content='{"detail":"Authentication required"}',
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                media_type="application/json"
+                media_type="application/json",
             )
 
         # Check if user's role has permission
@@ -110,7 +107,7 @@ class AuthorizationMiddleware(BaseHTTPMiddleware):
             return Response(
                 content='{"detail":"Insufficient permissions"}',
                 status_code=status.HTTP_403_FORBIDDEN,
-                media_type="application/json"
+                media_type="application/json",
             )
 
         # Authorization successful
@@ -169,10 +166,12 @@ def require_role(*allowed_roles: UserRole):
     Args:
         allowed_roles: Roles allowed to access this endpoint
     """
+
     def decorator(func):
         # Store allowed roles in function metadata
         func._allowed_roles = set(allowed_roles)
         return func
+
     return decorator
 
 

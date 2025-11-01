@@ -24,7 +24,9 @@ from app.models.user import User
 router = APIRouter(prefix="/teachers", tags=["Teachers"])
 
 
-@router.post("/classes", response_model=ClassResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/classes", response_model=ClassResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_class(
     class_data: CreateClassRequest,
     current_user: User = Depends(get_current_active_teacher),
@@ -140,7 +142,9 @@ async def update_class(
     - class_code cannot be changed
     - updated_at timestamp is automatically updated
     """
-    updated_class = teacher_service.update_class(db, class_id, current_user.user_id, class_data)
+    updated_class = teacher_service.update_class(
+        db, class_id, current_user.user_id, class_data
+    )
     return updated_class
 
 
@@ -198,7 +202,9 @@ async def get_class_roster(
     return roster
 
 
-@router.delete("/classes/{class_id}/students/{student_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/classes/{class_id}/students/{student_id}", status_code=status.HTTP_204_NO_CONTENT
+)
 async def remove_student_from_class(
     class_id: str,
     student_id: str,
@@ -221,13 +227,17 @@ async def remove_student_from_class(
     - Student's progress data is preserved
     - Student can rejoin using the class code
     """
-    teacher_service.remove_student_from_class(db, class_id, student_id, current_user.user_id)
+    teacher_service.remove_student_from_class(
+        db, class_id, student_id, current_user.user_id
+    )
     return
 
 
 @router.post(
     "/student-requests",
-    response_model=Union[StudentAccountRequestResponse, List[StudentAccountRequestResponse]],
+    response_model=Union[
+        StudentAccountRequestResponse, List[StudentAccountRequestResponse]
+    ],
     status_code=status.HTTP_201_CREATED,
 )
 async def create_student_account_request(
@@ -277,18 +287,26 @@ async def create_student_account_request(
     # Determine if single or bulk request
     if isinstance(request_data, BulkStudentAccountRequest):
         # Bulk request
-        requests = teacher_service.create_bulk_student_requests(db, current_user.user_id, request_data)
+        requests = teacher_service.create_bulk_student_requests(
+            db, current_user.user_id, request_data
+        )
         return requests
     else:
         # Single request
-        request = teacher_service.create_student_account_request(db, current_user.user_id, request_data)
+        request = teacher_service.create_student_account_request(
+            db, current_user.user_id, request_data
+        )
         return request
 
 
-@router.get("/{teacher_id}/student-requests", response_model=List[StudentAccountRequestResponse])
+@router.get(
+    "/{teacher_id}/student-requests", response_model=List[StudentAccountRequestResponse]
+)
 async def get_teacher_student_requests(
     teacher_id: str,
-    status_filter: Optional[str] = Query(None, description="Filter by status: pending, approved, rejected"),
+    status_filter: Optional[str] = Query(
+        None, description="Filter by status: pending, approved, rejected"
+    ),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):

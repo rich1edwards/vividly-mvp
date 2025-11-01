@@ -27,7 +27,7 @@ class TestNLUService:
         result = await service.extract_topic(
             student_query="Explain Newton's third law",
             grade_level=10,
-            student_id="student_123"
+            student_id="student_123",
         )
 
         assert result is not None
@@ -46,7 +46,7 @@ class TestNLUService:
         result = await service.extract_topic(
             student_query="What's the weather today?",
             grade_level=10,
-            student_id="student_123"
+            student_id="student_123",
         )
 
         # In mock mode, might not detect out of scope, but should still work
@@ -62,7 +62,7 @@ class TestNLUService:
         result = await service.extract_topic(
             student_query="Tell me about forces",
             grade_level=10,
-            student_id="student_123"
+            student_id="student_123",
         )
 
         # Should either extract a topic or need clarification
@@ -84,7 +84,7 @@ class TestRAGService:
             topic_id="topic_phys_mech_newton_3",
             interest="basketball",
             grade_level=10,
-            limit=5
+            limit=5,
         )
 
         assert isinstance(content, list)
@@ -104,7 +104,7 @@ class TestRAGService:
             topic_id="topic_phys_mech_newton_3",
             interest="basketball",
             grade_level=10,
-            limit=5
+            limit=5,
         )
 
         # Should return results (mock mode always returns data)
@@ -134,11 +134,8 @@ class TestScriptGenerationService:
             topic_name="Newton's Third Law",
             interest="basketball",
             grade_level=10,
-            rag_content=[{
-                "text": "Force pairs example",
-                "source": "OpenStax"
-            }],
-            duration_seconds=180
+            rag_content=[{"text": "Force pairs example", "source": "OpenStax"}],
+            duration_seconds=180,
         )
 
         assert script is not None
@@ -161,7 +158,7 @@ class TestScriptGenerationService:
             interest="basketball",
             grade_level=10,
             rag_content=[],
-            duration_seconds=180
+            duration_seconds=180,
         )
 
         # Verify script structure
@@ -183,17 +180,17 @@ class TestTTSService:
         script = {
             "script_id": "script_123",
             "hook": "Ever wonder why basketball players jump so high?",
-            "sections": [{
-                "title": "Newton's Third Law",
-                "content": "For every action there is an equal and opposite reaction."
-            }],
-            "key_takeaways": ["Forces come in pairs"]
+            "sections": [
+                {
+                    "title": "Newton's Third Law",
+                    "content": "For every action there is an equal and opposite reaction.",
+                }
+            ],
+            "key_takeaways": ["Forces come in pairs"],
         }
 
         audio = await service.generate_audio(
-            script=script,
-            voice_type="female_professional",
-            output_format="mp3"
+            script=script, voice_type="female_professional", output_format="mp3"
         )
 
         assert audio is not None
@@ -220,7 +217,7 @@ class TestTTSService:
         script = {
             "hook": "Test hook",
             "sections": [{"content": "Section 1"}, {"content": "Section 2"}],
-            "key_takeaways": ["Point 1", "Point 2"]
+            "key_takeaways": ["Point 1", "Point 2"],
         }
 
         text = service._build_narration_text(script)
@@ -241,19 +238,21 @@ class TestVideoService:
         script = {
             "script_id": "script_123",
             "hook": "Test hook",
-            "sections": [{
-                "title": "Test Section",
-                "content": "Test content",
-                "duration_seconds": 45
-            }],
-            "key_takeaways": ["Point 1"]
+            "sections": [
+                {
+                    "title": "Test Section",
+                    "content": "Test content",
+                    "duration_seconds": 45,
+                }
+            ],
+            "key_takeaways": ["Point 1"],
         }
 
         video = await service.generate_video(
             script=script,
             audio_url="gs://bucket/audio.mp3",
             interest="basketball",
-            subject="physics"
+            subject="physics",
         )
 
         assert video is not None
@@ -338,7 +337,7 @@ class TestEmbeddingsService:
         assert service.validate_embedding(invalid_dim) is False
 
         # Invalid values
-        invalid_val = [float('inf')] * 768
+        invalid_val = [float("inf")] * 768
         assert service.validate_embedding(invalid_val) is False
 
 
@@ -355,22 +354,25 @@ class TestContentIngestionService:
             "license": "CC BY 4.0",
             "url": "https://openstax.org",
             "version": "2e",
-            "chapters": [{
-                "number": 1,
-                "title": "Test Chapter",
-                "sections": [{
-                    "number": "1.1",
-                    "title": "Test Section",
-                    "content": "This is test content. " * 100,  # Make it long enough
-                    "topic_ids": ["topic_test_123"]
-                }]
-            }]
+            "chapters": [
+                {
+                    "number": 1,
+                    "title": "Test Chapter",
+                    "sections": [
+                        {
+                            "number": "1.1",
+                            "title": "Test Section",
+                            "content": "This is test content. "
+                            * 100,  # Make it long enough
+                            "topic_ids": ["topic_test_123"],
+                        }
+                    ],
+                }
+            ],
         }
 
         result = await service.ingest_openstax_content(
-            source_title="Test Physics",
-            subject="physics",
-            content_data=content_data
+            source_title="Test Physics", subject="physics", content_data=content_data
         )
 
         assert result is not None
@@ -391,9 +393,14 @@ class TestContentIngestionService:
             text=text,
             chapter="Chapter 1",
             section="Section 1.1",
-            source={"title": "Test", "author": "Test", "url": "test", "license": "CC BY"},
+            source={
+                "title": "Test",
+                "author": "Test",
+                "url": "test",
+                "license": "CC BY",
+            },
             subject="physics",
-            topic_ids=["topic_test"]
+            topic_ids=["topic_test"],
         )
 
         assert len(chunks) > 0
@@ -439,7 +446,7 @@ class TestContentGenerationService:
             student_query="Explain Newton's third law",
             student_id="student_123",
             grade_level=10,
-            interest="basketball"
+            interest="basketball",
         )
 
         assert result is not None
@@ -447,7 +454,13 @@ class TestContentGenerationService:
         assert "generation_id" in result
 
         # Should either complete, need clarification, or be out of scope
-        assert result["status"] in ["completed", "clarification_needed", "out_of_scope", "generating", "failed"]
+        assert result["status"] in [
+            "completed",
+            "clarification_needed",
+            "out_of_scope",
+            "generating",
+            "failed",
+        ]
 
     @pytest.mark.asyncio
     async def test_pipeline_clarification_needed(self):
@@ -459,11 +472,16 @@ class TestContentGenerationService:
         result = await service.generate_content_from_query(
             student_query="Tell me about stuff",
             student_id="student_123",
-            grade_level=10
+            grade_level=10,
         )
 
         # Should handle it gracefully
-        assert result["status"] in ["clarification_needed", "out_of_scope", "failed", "extraction_failed"]
+        assert result["status"] in [
+            "clarification_needed",
+            "out_of_scope",
+            "failed",
+            "extraction_failed",
+        ]
 
     @pytest.mark.asyncio
     async def test_pipeline_out_of_scope(self):
@@ -473,9 +491,7 @@ class TestContentGenerationService:
 
         # Non-academic query
         result = await service.generate_content_from_query(
-            student_query="What's for lunch?",
-            student_id="student_123",
-            grade_level=10
+            student_query="What's for lunch?", student_id="student_123", grade_level=10
         )
 
         # Should be marked as out of scope
@@ -499,9 +515,7 @@ class TestContentGenerationService:
 
         service = ContentGenerationService()
         result = await service.generate_content_from_topic(
-            topic_id="topic_phys_mech_newton_3",
-            interest="basketball",
-            grade_level=10
+            topic_id="topic_phys_mech_newton_3", interest="basketball", grade_level=10
         )
 
         assert result is not None
@@ -525,12 +539,19 @@ class TestContentGenerationPipeline:
             student_query="Explain Newton's third law using basketball examples",
             student_id="student_123",
             grade_level=10,
-            interest="basketball"
+            interest="basketball",
         )
 
         # Should complete or provide useful status (including failed in mock mode)
         assert result is not None
-        assert result["status"] in ["completed", "generating", "clarification_needed", "out_of_scope", "failed", "extraction_failed"]
+        assert result["status"] in [
+            "completed",
+            "generating",
+            "clarification_needed",
+            "out_of_scope",
+            "failed",
+            "extraction_failed",
+        ]
 
         # If completed, should have all components
         if result["status"] == "completed":
@@ -549,9 +570,7 @@ class TestContentGenerationPipeline:
 
         # Should not crash on edge cases
         result = await service.generate_content_from_query(
-            student_query="",  # Empty query
-            student_id="student_123",
-            grade_level=10
+            student_query="", student_id="student_123", grade_level=10  # Empty query
         )
 
         assert result is not None

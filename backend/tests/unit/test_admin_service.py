@@ -71,7 +71,9 @@ class TestListUsers:
         """Test listing users filtered by role."""
         db = Mock()
 
-        db.query.return_value.filter.return_value.filter.return_value.order_by.return_value.limit.return_value.all.return_value = []
+        db.query.return_value.filter.return_value.filter.return_value.order_by.return_value.limit.return_value.all.return_value = (
+            []
+        )
 
         result = list_users(db=db, role="teacher", limit=20)
 
@@ -81,7 +83,9 @@ class TestListUsers:
         """Test listing users with search query."""
         db = Mock()
 
-        db.query.return_value.filter.return_value.filter.return_value.order_by.return_value.limit.return_value.all.return_value = []
+        db.query.return_value.filter.return_value.filter.return_value.order_by.return_value.limit.return_value.all.return_value = (
+            []
+        )
 
         result = list_users(db=db, search="john", limit=20)
 
@@ -92,12 +96,16 @@ class TestListUsers:
         db = Mock()
         mock_users = [Mock(user_id=f"user_{i}") for i in range(21)]
 
-        db.query.return_value.filter.return_value.filter.return_value.order_by.return_value.limit.return_value.all.return_value = mock_users
+        db.query.return_value.filter.return_value.filter.return_value.order_by.return_value.limit.return_value.all.return_value = (
+            mock_users
+        )
 
         result = list_users(db=db, cursor="user_0", limit=20)
 
         assert result["pagination"]["has_more"] is True
-        assert result["pagination"]["next_cursor"] == "user_19"  # Last user in the trimmed list (users[:20])
+        assert (
+            result["pagination"]["next_cursor"] == "user_19"
+        )  # Last user in the trimmed list (users[:20])
         assert len(result["users"]) == 20
 
 
@@ -108,7 +116,9 @@ class TestCreateUser:
     def test_create_user_success(self):
         """Test successful user creation."""
         db = Mock()
-        db.query.return_value.filter.return_value.first.return_value = None  # No existing user
+        db.query.return_value.filter.return_value.first.return_value = (
+            None  # No existing user
+        )
 
         user = create_user(
             db=db,
@@ -281,11 +291,13 @@ class TestDeleteUser:
 class TestBulkUploadUsers:
     """Test bulk upload users functionality."""
 
-    @patch('app.services.admin_service.create_user')
+    @patch("app.services.admin_service.create_user")
     def test_bulk_upload_success(self, mock_create_user):
         """Test successful bulk upload."""
         db = Mock()
-        db.query.return_value.filter.return_value.all.return_value = []  # No existing emails
+        db.query.return_value.filter.return_value.all.return_value = (
+            []
+        )  # No existing emails
 
         # Mock successful user creation
         mock_create_user.side_effect = [
@@ -320,9 +332,13 @@ class TestBulkUploadUsers:
     def test_bulk_upload_duplicate_email(self):
         """Test bulk upload with duplicate email."""
         db = Mock()
-        db.query.return_value.filter.return_value.all.return_value = [("existing@test.com",)]
+        db.query.return_value.filter.return_value.all.return_value = [
+            ("existing@test.com",)
+        ]
 
-        csv_content = "first_name,last_name,email,role\nJohn,Doe,existing@test.com,student"
+        csv_content = (
+            "first_name,last_name,email,role\nJohn,Doe,existing@test.com,student"
+        )
         file = Mock(spec=UploadFile)
         file.file = io.BytesIO(csv_content.encode())
 
@@ -362,9 +378,13 @@ class TestBulkUploadUsers:
     def test_bulk_upload_atomic_mode_failure(self):
         """Test bulk upload in atomic mode fails completely on error."""
         db = Mock()
-        db.query.return_value.filter.return_value.all.return_value = [("existing@test.com",)]
+        db.query.return_value.filter.return_value.all.return_value = [
+            ("existing@test.com",)
+        ]
 
-        csv_content = "first_name,last_name,email,role\nJohn,Doe,existing@test.com,student"
+        csv_content = (
+            "first_name,last_name,email,role\nJohn,Doe,existing@test.com,student"
+        )
         file = Mock(spec=UploadFile)
         file.file = io.BytesIO(csv_content.encode())
 
@@ -374,11 +394,13 @@ class TestBulkUploadUsers:
         assert exc_info.value.status_code == 400
         db.rollback.assert_called()
 
-    @patch('app.services.admin_service.create_user')
+    @patch("app.services.admin_service.create_user")
     def test_bulk_upload_partial_success(self, mock_create_user):
         """Test bulk upload with some successes and failures."""
         db = Mock()
-        db.query.return_value.filter.return_value.all.return_value = [("existing@test.com",)]
+        db.query.return_value.filter.return_value.all.return_value = [
+            ("existing@test.com",)
+        ]
 
         # Mock successful user creation for the valid email
         mock_create_user.return_value = Mock(user_id="user_1")
@@ -426,7 +448,9 @@ class TestAccountRequests:
     def test_list_pending_requests_with_school_filter(self):
         """Test listing requests filtered by school."""
         db = Mock()
-        db.query.return_value.filter.return_value.filter.return_value.order_by.return_value.limit.return_value.all.return_value = []
+        db.query.return_value.filter.return_value.filter.return_value.order_by.return_value.limit.return_value.all.return_value = (
+            []
+        )
 
         result = list_pending_requests(db=db, school_id="school_123")
 
@@ -450,7 +474,10 @@ class TestAccountRequests:
         )
         mock_teacher = Mock(first_name="Teacher", last_name="Smith")
 
-        db.query.return_value.filter.return_value.first.side_effect = [mock_request, mock_teacher]
+        db.query.return_value.filter.return_value.first.side_effect = [
+            mock_request,
+            mock_teacher,
+        ]
 
         result = get_request_details(db=db, request_id="req_1")
 
@@ -473,7 +500,7 @@ class TestAccountRequests:
 class TestApproveRequest:
     """Test account request approval."""
 
-    @patch('app.services.admin_service.create_user')
+    @patch("app.services.admin_service.create_user")
     def test_approve_request_success(self, mock_create_user):
         """Test successful request approval."""
         db = Mock()
@@ -531,10 +558,15 @@ class TestApproveRequest:
     def test_approve_request_duplicate_email(self):
         """Test approving request for existing user."""
         db = Mock()
-        mock_request = Mock(status=RequestStatus.PENDING, student_email="existing@test.com")
+        mock_request = Mock(
+            status=RequestStatus.PENDING, student_email="existing@test.com"
+        )
         existing_user = Mock()
 
-        db.query.return_value.filter.return_value.first.side_effect = [mock_request, existing_user]
+        db.query.return_value.filter.return_value.first.side_effect = [
+            mock_request,
+            existing_user,
+        ]
 
         with pytest.raises(HTTPException) as exc_info:
             approve_request(db=db, request_id="req_1", admin_id="admin_1")
@@ -557,7 +589,12 @@ class TestDenyRequest:
         )
         db.query.return_value.filter.return_value.first.return_value = mock_request
 
-        result = deny_request(db=db, request_id="req_1", admin_id="admin_1", reason="Insufficient information")
+        result = deny_request(
+            db=db,
+            request_id="req_1",
+            admin_id="admin_1",
+            reason="Insufficient information",
+        )
 
         assert result["status"] == "denied"
         assert mock_request.status == RequestStatus.REJECTED
@@ -570,7 +607,9 @@ class TestDenyRequest:
         db.query.return_value.filter.return_value.first.return_value = None
 
         with pytest.raises(HTTPException) as exc_info:
-            deny_request(db=db, request_id="nonexistent", admin_id="admin_1", reason="Test")
+            deny_request(
+                db=db, request_id="nonexistent", admin_id="admin_1", reason="Test"
+            )
 
         assert exc_info.value.status_code == 404
 

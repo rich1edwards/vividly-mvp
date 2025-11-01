@@ -2,6 +2,7 @@
 Session model for JWT refresh token tracking.
 """
 from sqlalchemy import Column, String, Boolean, Text, TIMESTAMP, ForeignKey
+
 # INET replaced with String for SQLite compatibility
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -25,7 +26,9 @@ class Session(Base):
     session_id = Column(String(100), primary_key=True, index=True)
 
     # User association
-    user_id = Column(String(100), ForeignKey("users.user_id"), nullable=False, index=True)
+    user_id = Column(
+        String(100), ForeignKey("users.user_id"), nullable=False, index=True
+    )
 
     # Token storage (hashed for security)
     refresh_token_hash = Column(Text, nullable=False)

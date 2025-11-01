@@ -111,16 +111,27 @@ class CreateClassRequest(BaseModel):
     """
 
     name: str = Field(..., min_length=1, max_length=200, description="Class name")
-    subject: str = Field(..., min_length=1, max_length=100, description="Subject (e.g., Physics)")
+    subject: str = Field(
+        ..., min_length=1, max_length=100, description="Subject (e.g., Physics)"
+    )
     grade_level: int = Field(..., ge=9, le=12, description="Grade level (9-12)")
-    description: Optional[str] = Field(None, max_length=1000, description="Class description")
+    description: Optional[str] = Field(
+        None, max_length=1000, description="Class description"
+    )
 
     @validator("subject")
     def validate_subject(cls, v):
         """Validate subject is in allowed list."""
         allowed_subjects = [
-            "Physics", "Chemistry", "Biology", "Math", "Algebra",
-            "Geometry", "Calculus", "Computer Science", "Engineering"
+            "Physics",
+            "Chemistry",
+            "Biology",
+            "Math",
+            "Algebra",
+            "Geometry",
+            "Calculus",
+            "Computer Science",
+            "Engineering",
         ]
         if v not in allowed_subjects:
             raise ValueError(f"Subject must be one of: {', '.join(allowed_subjects)}")
@@ -138,8 +149,12 @@ class UpdateClassRequest(BaseModel):
         }
     """
 
-    name: Optional[str] = Field(None, min_length=1, max_length=200, description="Class name")
-    description: Optional[str] = Field(None, max_length=1000, description="Class description")
+    name: Optional[str] = Field(
+        None, min_length=1, max_length=200, description="Class name"
+    )
+    description: Optional[str] = Field(
+        None, max_length=1000, description="Class description"
+    )
 
 
 class ClassResponse(BaseModel):
@@ -238,17 +253,24 @@ class CreateStudentRequestRequest(BaseModel):
         }
     """
 
-    student_first_name: str = Field(..., min_length=1, max_length=100, description="Student first name")
-    student_last_name: str = Field(..., min_length=1, max_length=100, description="Student last name")
+    student_first_name: str = Field(
+        ..., min_length=1, max_length=100, description="Student first name"
+    )
+    student_last_name: str = Field(
+        ..., min_length=1, max_length=100, description="Student last name"
+    )
     student_email: str = Field(..., description="Student email address")
     grade_level: int = Field(..., ge=9, le=12, description="Grade level (9-12)")
     class_id: str = Field(..., description="Class ID to add student to")
-    notes: Optional[str] = Field(None, max_length=1000, description="Additional notes for approver")
+    notes: Optional[str] = Field(
+        None, max_length=1000, description="Additional notes for approver"
+    )
 
     @validator("student_email")
     def validate_email_format(cls, v):
         """Basic email validation."""
         import re
+
         if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", v):
             raise ValueError("Invalid email format")
         return v

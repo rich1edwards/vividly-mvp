@@ -47,6 +47,7 @@ def get_email_service() -> EmailService:
 # Story 3.3.1: Email Notification Endpoints (Internal API)
 # ============================================================================
 
+
 @router.post(
     "/send",
     response_model=EmailNotificationResponse,
@@ -66,7 +67,7 @@ def get_email_service() -> EmailService:
     - account_request_approved: Account approved notification
     - account_request_denied: Account request update
     """,
-    status_code=status.HTTP_202_ACCEPTED
+    status_code=status.HTTP_202_ACCEPTED,
 )
 async def send_notification(
     request: EmailNotificationRequest,
@@ -89,24 +90,29 @@ async def send_notification(
             recipient_name=request.recipient.name,
             template=request.template,
             data=request.data,
-            priority=request.priority.value
+            priority=request.priority.value,
         )
 
         # Calculate estimated send time (in production, based on queue depth)
         from datetime import datetime, timedelta
+
         estimated_time = datetime.utcnow() + timedelta(seconds=30)
 
         return EmailNotificationResponse(
             notification_id=notification_id,
-            status=NotificationStatus.QUEUED if status_str == "queued" else NotificationStatus.FAILED,
-            estimated_send_time=estimated_time.isoformat() + "Z" if status_str == "queued" else None
+            status=NotificationStatus.QUEUED
+            if status_str == "queued"
+            else NotificationStatus.FAILED,
+            estimated_send_time=estimated_time.isoformat() + "Z"
+            if status_str == "queued"
+            else None,
         )
 
     except Exception as e:
         logger.error(f"Failed to send notification: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to queue notification"
+            detail="Failed to queue notification",
         )
 
 
@@ -118,7 +124,7 @@ async def send_notification(
     Get delivery status for a notification.
 
     Returns current status and delivery timestamps.
-    """
+    """,
 )
 async def get_notification_status(
     notification_id: str,
@@ -145,14 +151,13 @@ async def get_notification_status(
             delivered_at=status_info.get("delivered_at"),
             opened_at=status_info.get("opened_at"),
             clicked_at=status_info.get("clicked_at"),
-            error_message=status_info.get("error_message")
+            error_message=status_info.get("error_message"),
         )
 
     except Exception as e:
         logger.error(f"Failed to get notification status: {e}")
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Notification not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Notification not found"
         )
 
 
@@ -166,7 +171,7 @@ async def get_notification_status(
     Useful for bulk operations like sending welcome emails to multiple users.
     Maximum 100 notifications per batch.
     """,
-    status_code=status.HTTP_202_ACCEPTED
+    status_code=status.HTTP_202_ACCEPTED,
 )
 async def send_batch_notifications(
     request: BatchNotificationRequest,
@@ -189,36 +194,40 @@ async def send_batch_notifications(
             {
                 "recipient": {
                     "email": notif.recipient.email,
-                    "name": notif.recipient.name
+                    "name": notif.recipient.name,
                 },
                 "template": notif.template,
-                "data": notif.data
+                "data": notif.data,
             }
             for notif in request.notifications
         ]
 
-        batch_id, queued_count, failed_count, notification_ids = email_service.send_batch(
-            notifications=notifications
-        )
+        (
+            batch_id,
+            queued_count,
+            failed_count,
+            notification_ids,
+        ) = email_service.send_batch(notifications=notifications)
 
         return BatchNotificationResponse(
             batch_id=batch_id,
             queued_count=queued_count,
             failed_count=failed_count,
-            notification_ids=notification_ids
+            notification_ids=notification_ids,
         )
 
     except Exception as e:
         logger.error(f"Failed to send batch notifications: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to queue batch notifications"
+            detail="Failed to queue batch notifications",
         )
 
 
 # ============================================================================
 # Story 3.3.2: In-App Notification Endpoints (User-Facing API)
 # ============================================================================
+
 
 @router.get(
     "/inbox",
@@ -230,13 +239,13 @@ async def send_batch_notifications(
     Returns list of recent notifications and unread count.
     Supports filtering by read/unread status.
     """,
-    tags=["notifications-user"]
+    tags=["notifications-user"],
 )
 async def get_user_notifications(
     unread_only: bool = False,
     limit: int = 20,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get user in-app notifications.
@@ -253,17 +262,13 @@ async def get_user_notifications(
     try:
         # TODO: Query from Notification model
         # For now, return empty list
-        return InAppNotificationList(
-            notifications=[],
-            unread_count=0,
-            total_count=0
-        )
+        return InAppNotificationList(notifications=[], unread_count=0, total_count=0)
 
     except Exception as e:
         logger.error(f"Failed to get notifications: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve notifications"
+            detail="Failed to retrieve notifications",
         )
 
 
@@ -276,12 +281,12 @@ async def get_user_notifications(
 
     Updates read status for specified notification IDs.
     """,
-    tags=["notifications-user"]
+    tags=["notifications-user"],
 )
 async def mark_notifications_read(
     request: MarkReadRequest,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Mark notifications as read.
@@ -297,14 +302,16 @@ async def mark_notifications_read(
     try:
         # TODO: Update Notification records
         # For now, just return success
-        logger.info(f"Marked {len(request.notification_ids)} notifications as read for user {current_user.user_id}")
+        logger.info(
+            f"Marked {len(request.notification_ids)} notifications as read for user {current_user.user_id}"
+        )
         return None
 
     except Exception as e:
         logger.error(f"Failed to mark notifications read: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to update notifications"
+            detail="Failed to update notifications",
         )
 
 
@@ -315,12 +322,12 @@ async def mark_notifications_read(
     description="""
     Delete a notification from user's inbox.
     """,
-    tags=["notifications-user"]
+    tags=["notifications-user"],
 )
 async def delete_notification(
     notification_id: str,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Delete user notification.
@@ -336,12 +343,13 @@ async def delete_notification(
     try:
         # TODO: Delete Notification record
         # Verify ownership before deleting
-        logger.info(f"Deleted notification {notification_id} for user {current_user.user_id}")
+        logger.info(
+            f"Deleted notification {notification_id} for user {current_user.user_id}"
+        )
         return None
 
     except Exception as e:
         logger.error(f"Failed to delete notification: {e}")
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Notification not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Notification not found"
         )

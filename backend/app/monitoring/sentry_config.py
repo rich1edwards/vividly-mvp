@@ -44,7 +44,6 @@ def init_sentry():
     sentry_sdk.init(
         dsn=sentry_dsn,
         environment=environment,
-
         # Integrations
         integrations=[
             FastApiIntegration(
@@ -53,16 +52,11 @@ def init_sentry():
             ),
             SqlalchemyIntegration(),
             RedisIntegration(),
-            LoggingIntegration(
-                level=None,
-                event_level=None
-            ),
+            LoggingIntegration(level=None, event_level=None),
         ],
-
         # Performance Monitoring
         traces_sample_rate=traces_sample_rate,
         profiles_sample_rate=profiles_sample_rate,
-
         # Additional options
         send_default_pii=False,
         attach_stacktrace=True,
@@ -123,20 +117,15 @@ def capture_exception(exception: Exception, **kwargs):
 
 def set_user_context(user_id: str, email: str = None, username: str = None):
     """Set user context for error tracking."""
-    sentry_sdk.set_user({
-        "id": user_id,
-        "email": email,
-        "username": username
-    })
+    sentry_sdk.set_user({"id": user_id, "email": email, "username": username})
 
 
-def add_breadcrumb(message: str, category: str = "default", level: str = "info", **data):
+def add_breadcrumb(
+    message: str, category: str = "default", level: str = "info", **data
+):
     """Add breadcrumb for debugging."""
     sentry_sdk.add_breadcrumb(
-        message=message,
-        category=category,
-        level=level,
-        data=data
+        message=message, category=category, level=level, data=data
     )
 
 
@@ -155,16 +144,12 @@ class SentryMiddleware(BaseHTTPMiddleware):
             data={
                 "method": request.method,
                 "url": str(request.url),
-            }
+            },
         )
 
         if hasattr(request.state, "user"):
             user = request.state.user
-            set_user_context(
-                user_id=str(user.id),
-                email=user.email,
-                username=user.name
-            )
+            set_user_context(user_id=str(user.id), email=user.email, username=user.name)
 
         response = await call_next(request)
 
@@ -172,7 +157,7 @@ class SentryMiddleware(BaseHTTPMiddleware):
             message=f"Response {response.status_code}",
             category="http",
             level="info" if response.status_code < 400 else "warning",
-            data={"status_code": response.status_code}
+            data={"status_code": response.status_code},
         )
 
         return response

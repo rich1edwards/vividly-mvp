@@ -8,8 +8,10 @@ from datetime import datetime
 
 # User Management Schemas
 
+
 class UserCreate(BaseModel):
     """Create a single user."""
+
     email: EmailStr
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: str = Field(..., min_length=1, max_length=100)
@@ -22,6 +24,7 @@ class UserCreate(BaseModel):
 
 class UserUpdate(BaseModel):
     """Update user profile."""
+
     role: Optional[str] = Field(None, pattern="^(student|teacher|admin)$")
     grade_level: Optional[int] = Field(None, ge=9, le=12)
     subjects: Optional[List[str]] = None
@@ -31,6 +34,7 @@ class UserUpdate(BaseModel):
 
 class UserResponse(BaseModel):
     """User response."""
+
     user_id: str
     email: str
     first_name: str
@@ -43,13 +47,13 @@ class UserResponse(BaseModel):
     created_at: datetime
     last_login_at: Optional[datetime]
 
-    @model_serializer(mode='wrap')
+    @model_serializer(mode="wrap")
     def _serialize(self, serializer: Any, info: Any) -> dict:
         """Convert archived to is_active on serialization."""
         data = serializer(self)
         # Replace archived with is_active (inverted)
-        if 'archived' in data:
-            data['is_active'] = not data.pop('archived')
+        if "archived" in data:
+            data["is_active"] = not data.pop("archived")
         return data
 
     class Config:
@@ -58,14 +62,17 @@ class UserResponse(BaseModel):
 
 class UserListResponse(BaseModel):
     """Paginated user list response."""
+
     users: List[UserResponse]
     pagination: dict
 
 
 # Bulk Upload Schemas
 
+
 class BulkUploadResponse(BaseModel):
     """Bulk upload results."""
+
     upload_id: str
     total_rows: int
     successful: int
@@ -76,8 +83,10 @@ class BulkUploadResponse(BaseModel):
 
 # Account Request Schemas
 
+
 class RequestResponse(BaseModel):
     """Account request response."""
+
     request_id: str
     student_first_name: str
     student_last_name: str
@@ -97,12 +106,14 @@ class RequestResponse(BaseModel):
 
 class RequestListResponse(BaseModel):
     """Paginated request list response."""
+
     requests: List[dict]
     pagination: dict
 
 
 class ApproveRequestResponse(BaseModel):
     """Request approval response."""
+
     request_id: str
     status: str
     user_created: dict
@@ -113,11 +124,13 @@ class ApproveRequestResponse(BaseModel):
 
 class DenyRequestRequest(BaseModel):
     """Request denial request."""
+
     reason: str = Field(..., min_length=1, max_length=500)
 
 
 class DenyRequestResponse(BaseModel):
     """Request denial response."""
+
     request_id: str
     status: str
     denied_at: datetime

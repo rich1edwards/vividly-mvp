@@ -28,11 +28,11 @@ try:
 
     # Hash password using bcrypt (same way as the app)
     salt = bcrypt.gensalt(rounds=12)
-    password_hash = bcrypt.hashpw(new_password.encode('utf-8'), salt).decode('utf-8')
+    password_hash = bcrypt.hashpw(new_password.encode("utf-8"), salt).decode("utf-8")
 
     result = session.execute(
         text("UPDATE users SET password_hash = :password_hash WHERE email = :email"),
-        {"password_hash": password_hash, "email": email}
+        {"password_hash": password_hash, "email": email},
     )
 
     session.commit()

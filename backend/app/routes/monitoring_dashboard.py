@@ -26,12 +26,18 @@ from sqlalchemy import and_, func, desc, or_
 from ..middleware.auth import get_current_active_user, require_admin, require_teacher
 from ..services.request_tracker import RequestTracker
 from ..services.circuit_breaker import get_all_circuit_breaker_stats
-from ..models.request_tracking import ContentRequest, RequestStage, RequestEvent, RequestMetrics
+from ..models.request_tracking import (
+    ContentRequest,
+    RequestStage,
+    RequestEvent,
+    RequestMetrics,
+)
 
 router = APIRouter(prefix="/api/v1/monitoring", tags=["Monitoring Dashboard"])
 
 
 # Response Models
+
 
 class DashboardOverviewResponse(BaseModel):
     """Overview statistics for dashboard."""
@@ -97,6 +103,7 @@ class MetricsBucket(BaseModel):
 
 # Dependencies
 
+
 def get_db() -> Session:
     """Get database session (placeholder)."""
     # Implement based on your DB setup
@@ -104,6 +111,7 @@ def get_db() -> Session:
 
 
 # Routes
+
 
 @router.get("/dashboard", response_model=DashboardOverviewResponse)
 async def get_dashboard_overview(
@@ -127,11 +135,17 @@ async def get_dashboard_overview(
     active_count = (
         db.query(func.count(ContentRequest.id))
         .filter(
-            ContentRequest.status.in_([
-                'pending', 'validating', 'retrieving',
-                'generating_script', 'generating_video',
-                'processing_video', 'notifying'
-            ])
+            ContentRequest.status.in_(
+                [
+                    "pending",
+                    "validating",
+                    "retrieving",
+                    "generating_script",
+                    "generating_video",
+                    "processing_video",
+                    "notifying",
+                ]
+            )
         )
         .scalar()
     )
@@ -141,8 +155,8 @@ async def get_dashboard_overview(
         db.query(func.count(ContentRequest.id))
         .filter(
             and_(
-                ContentRequest.status == 'completed',
-                ContentRequest.completed_at >= today_start
+                ContentRequest.status == "completed",
+                ContentRequest.completed_at >= today_start,
             )
         )
         .scalar()
@@ -153,8 +167,8 @@ async def get_dashboard_overview(
         db.query(func.count(ContentRequest.id))
         .filter(
             and_(
-                ContentRequest.status == 'failed',
-                ContentRequest.failed_at >= today_start
+                ContentRequest.status == "failed",
+                ContentRequest.failed_at >= today_start,
             )
         )
         .scalar()
@@ -165,8 +179,8 @@ async def get_dashboard_overview(
         db.query(func.avg(ContentRequest.total_duration_seconds))
         .filter(
             and_(
-                ContentRequest.status == 'completed',
-                ContentRequest.completed_at >= today_start
+                ContentRequest.status == "completed",
+                ContentRequest.completed_at >= today_start,
             )
         )
         .scalar()
@@ -174,7 +188,11 @@ async def get_dashboard_overview(
 
     # Success rate
     total_finished_today = completed_today + failed_today
-    success_rate = (completed_today / total_finished_today * 100) if total_finished_today > 0 else None
+    success_rate = (
+        (completed_today / total_finished_today * 100)
+        if total_finished_today > 0
+        else None
+    )
 
     # Requests per hour (last 24 hours)
     day_ago = now - timedelta(hours=24)
@@ -216,18 +234,26 @@ async def list_requests(
     query = db.query(ContentRequest)
 
     # Filter by organization if teacher
-    if hasattr(current_user, 'role') and current_user.role == 'teacher':
-        query = query.filter(ContentRequest.organization_id == current_user.organization_id)
+    if hasattr(current_user, "role") and current_user.role == "teacher":
+        query = query.filter(
+            ContentRequest.organization_id == current_user.organization_id
+        )
 
     # Filter by status
     if status:
-        if status == 'active':
+        if status == "active":
             query = query.filter(
-                ContentRequest.status.in_([
-                    'pending', 'validating', 'retrieving',
-                    'generating_script', 'generating_video',
-                    'processing_video', 'notifying'
-                ])
+                ContentRequest.status.in_(
+                    [
+                        "pending",
+                        "validating",
+                        "retrieving",
+                        "generating_script",
+                        "generating_video",
+                        "processing_video",
+                        "notifying",
+                    ]
+                )
             )
         else:
             query = query.filter(ContentRequest.status == status)
@@ -241,20 +267,26 @@ async def list_requests(
     # Convert to response
     results = []
     for req in requests:
-        elapsed = (datetime.utcnow() - req.created_at).total_seconds() if req.created_at else 0
-        results.append(RequestSummary(
-            id=str(req.id),
-            correlation_id=req.correlation_id,
-            student_id=str(req.student_id),
-            student_name=req.student.name if req.student else None,
-            topic=req.topic,
-            status=req.status,
-            current_stage=req.current_stage,
-            progress_percentage=req.progress_percentage,
-            created_at=req.created_at.isoformat() if req.created_at else None,
-            elapsed_seconds=int(elapsed),
-            error_message=req.error_message,
-        ))
+        elapsed = (
+            (datetime.utcnow() - req.created_at).total_seconds()
+            if req.created_at
+            else 0
+        )
+        results.append(
+            RequestSummary(
+                id=str(req.id),
+                correlation_id=req.correlation_id,
+                student_id=str(req.student_id),
+                student_name=req.student.name if req.student else None,
+                topic=req.topic,
+                status=req.status,
+                current_stage=req.current_stage,
+                progress_percentage=req.progress_percentage,
+                created_at=req.created_at.isoformat() if req.created_at else None,
+                elapsed_seconds=int(elapsed),
+                error_message=req.error_message,
+            )
+        )
 
     return results
 
@@ -275,6 +307,7 @@ async def get_request_detail(
 
     if not status:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=404, detail="Request not found")
 
     request = db.query(ContentRequest).filter(ContentRequest.id == request_id).first()
@@ -334,24 +367,36 @@ async def get_metrics(
     # Query aggregated metrics
     results = (
         db.query(
-            func.date_trunc('hour', ContentRequest.created_at).label('hour'),
-            func.count(ContentRequest.id).label('total'),
-            func.count(ContentRequest.id).filter(ContentRequest.status == 'completed').label('successful'),
-            func.count(ContentRequest.id).filter(ContentRequest.status == 'failed').label('failed'),
-            func.count(ContentRequest.id).filter(
-                ContentRequest.status.in_([
-                    'pending', 'validating', 'retrieving',
-                    'generating_script', 'generating_video',
-                    'processing_video', 'notifying'
-                ])
-            ).label('in_progress'),
+            func.date_trunc("hour", ContentRequest.created_at).label("hour"),
+            func.count(ContentRequest.id).label("total"),
+            func.count(ContentRequest.id)
+            .filter(ContentRequest.status == "completed")
+            .label("successful"),
+            func.count(ContentRequest.id)
+            .filter(ContentRequest.status == "failed")
+            .label("failed"),
+            func.count(ContentRequest.id)
+            .filter(
+                ContentRequest.status.in_(
+                    [
+                        "pending",
+                        "validating",
+                        "retrieving",
+                        "generating_script",
+                        "generating_video",
+                        "processing_video",
+                        "notifying",
+                    ]
+                )
+            )
+            .label("in_progress"),
             func.avg(ContentRequest.total_duration_seconds)
-            .filter(ContentRequest.status == 'completed')
-            .label('avg_duration'),
+            .filter(ContentRequest.status == "completed")
+            .label("avg_duration"),
         )
         .filter(ContentRequest.created_at >= cutoff)
-        .group_by(func.date_trunc('hour', ContentRequest.created_at))
-        .order_by(desc('hour'))
+        .group_by(func.date_trunc("hour", ContentRequest.created_at))
+        .order_by(desc("hour"))
         .all()
     )
 
@@ -393,6 +438,7 @@ async def stream_updates(
 
     Sends updates every 2 seconds with current request status.
     """
+
     async def event_generator():
         """Generate SSE events."""
         try:
@@ -405,11 +451,17 @@ async def stream_updates(
                 active_requests = (
                     db.query(ContentRequest)
                     .filter(
-                        ContentRequest.status.in_([
-                            'pending', 'validating', 'retrieving',
-                            'generating_script', 'generating_video',
-                            'processing_video', 'notifying'
-                        ])
+                        ContentRequest.status.in_(
+                            [
+                                "pending",
+                                "validating",
+                                "retrieving",
+                                "generating_script",
+                                "generating_video",
+                                "processing_video",
+                                "notifying",
+                            ]
+                        )
                     )
                     .order_by(desc(ContentRequest.created_at))
                     .limit(20)

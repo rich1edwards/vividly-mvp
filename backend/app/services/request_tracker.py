@@ -131,7 +131,9 @@ class RequestTracker:
             event_data={"student_id": student_id, "topic": topic},
         )
 
-        logger.info(f"Created content request {request.id} with correlation_id {correlation_id}")
+        logger.info(
+            f"Created content request {request.id} with correlation_id {correlation_id}"
+        )
 
         return str(request.id), correlation_id
 
@@ -144,7 +146,11 @@ class RequestTracker:
         """
         from ..models.request_tracking import ContentRequest
 
-        request = self.db.query(ContentRequest).filter(ContentRequest.id == request_id).first()
+        request = (
+            self.db.query(ContentRequest)
+            .filter(ContentRequest.id == request_id)
+            .first()
+        )
         if not request:
             raise ValueError(f"Request {request_id} not found")
 
@@ -152,7 +158,9 @@ class RequestTracker:
         request.status = "validating"  # First stage
         self.db.commit()
 
-        self.log_event(request_id, "request_started", "Request processing started", severity="info")
+        self.log_event(
+            request_id, "request_started", "Request processing started", severity="info"
+        )
 
     def start_stage(
         self,
@@ -172,7 +180,12 @@ class RequestTracker:
 
         stage = (
             self.db.query(RequestStage)
-            .filter(and_(RequestStage.request_id == request_id, RequestStage.stage_name == stage_name))
+            .filter(
+                and_(
+                    RequestStage.request_id == request_id,
+                    RequestStage.stage_name == stage_name,
+                )
+            )
             .first()
         )
 
@@ -185,7 +198,11 @@ class RequestTracker:
             stage.stage_metadata = metadata
 
         # Update request status
-        request = self.db.query(ContentRequest).filter(ContentRequest.id == request_id).first()
+        request = (
+            self.db.query(ContentRequest)
+            .filter(ContentRequest.id == request_id)
+            .first()
+        )
         if request:
             # Map stage name to request status
             status_map = {
@@ -227,7 +244,12 @@ class RequestTracker:
 
         stage = (
             self.db.query(RequestStage)
-            .filter(and_(RequestStage.request_id == request_id, RequestStage.stage_name == stage_name))
+            .filter(
+                and_(
+                    RequestStage.request_id == request_id,
+                    RequestStage.stage_name == stage_name,
+                )
+            )
             .first()
         )
 
@@ -277,7 +299,12 @@ class RequestTracker:
 
         stage = (
             self.db.query(RequestStage)
-            .filter(and_(RequestStage.request_id == request_id, RequestStage.stage_name == stage_name))
+            .filter(
+                and_(
+                    RequestStage.request_id == request_id,
+                    RequestStage.stage_name == stage_name,
+                )
+            )
             .first()
         )
 
@@ -294,7 +321,11 @@ class RequestTracker:
             stage.duration_seconds = duration
 
         # Update request status to failed
-        request = self.db.query(ContentRequest).filter(ContentRequest.id == request_id).first()
+        request = (
+            self.db.query(ContentRequest)
+            .filter(ContentRequest.id == request_id)
+            .first()
+        )
         if request:
             request.status = "failed"
             request.failed_at = datetime.utcnow()
@@ -313,7 +344,9 @@ class RequestTracker:
             event_data={"error_message": error_message, "is_retryable": is_retryable},
         )
 
-        logger.error(f"Stage {stage_name} failed for request {request_id}: {error_message}")
+        logger.error(
+            f"Stage {stage_name} failed for request {request_id}: {error_message}"
+        )
 
     def retry_stage(self, request_id: str, stage_name: str) -> bool:
         """
@@ -330,7 +363,12 @@ class RequestTracker:
 
         stage = (
             self.db.query(RequestStage)
-            .filter(and_(RequestStage.request_id == request_id, RequestStage.stage_name == stage_name))
+            .filter(
+                and_(
+                    RequestStage.request_id == request_id,
+                    RequestStage.stage_name == stage_name,
+                )
+            )
             .first()
         )
 
@@ -382,7 +420,11 @@ class RequestTracker:
         """
         from ..models.request_tracking import ContentRequest
 
-        request = self.db.query(ContentRequest).filter(ContentRequest.id == request_id).first()
+        request = (
+            self.db.query(ContentRequest)
+            .filter(ContentRequest.id == request_id)
+            .first()
+        )
         if not request:
             raise ValueError(f"Request {request_id} not found")
 
@@ -432,7 +474,11 @@ class RequestTracker:
         """
         from ..models.request_tracking import ContentRequest
 
-        request = self.db.query(ContentRequest).filter(ContentRequest.id == request_id).first()
+        request = (
+            self.db.query(ContentRequest)
+            .filter(ContentRequest.id == request_id)
+            .first()
+        )
         if not request:
             raise ValueError(f"Request {request_id} not found")
 
@@ -503,7 +549,11 @@ class RequestTracker:
         """
         from ..models.request_tracking import ContentRequest, RequestStage
 
-        request = self.db.query(ContentRequest).filter(ContentRequest.id == request_id).first()
+        request = (
+            self.db.query(ContentRequest)
+            .filter(ContentRequest.id == request_id)
+            .first()
+        )
         if not request:
             return None
 
@@ -520,9 +570,15 @@ class RequestTracker:
             "status": request.status,
             "current_stage": request.current_stage,
             "progress_percentage": request.progress_percentage,
-            "created_at": request.created_at.isoformat() if request.created_at else None,
-            "started_at": request.started_at.isoformat() if request.started_at else None,
-            "completed_at": request.completed_at.isoformat() if request.completed_at else None,
+            "created_at": request.created_at.isoformat()
+            if request.created_at
+            else None,
+            "started_at": request.started_at.isoformat()
+            if request.started_at
+            else None,
+            "completed_at": request.completed_at.isoformat()
+            if request.completed_at
+            else None,
             "total_duration_seconds": request.total_duration_seconds,
             "video_url": request.video_url,
             "error_message": request.error_message,
@@ -531,7 +587,9 @@ class RequestTracker:
                 {
                     "name": stage.stage_name,
                     "status": stage.status,
-                    "duration_seconds": float(stage.duration_seconds) if stage.duration_seconds else None,
+                    "duration_seconds": float(stage.duration_seconds)
+                    if stage.duration_seconds
+                    else None,
                     "error_message": stage.error_message,
                     "retry_count": stage.retry_count,
                 }
@@ -539,7 +597,9 @@ class RequestTracker:
             ],
         }
 
-    def get_request_events(self, request_id: str, limit: int = 100) -> List[Dict[str, Any]]:
+    def get_request_events(
+        self, request_id: str, limit: int = 100
+    ) -> List[Dict[str, Any]]:
         """
         Get event log for a request.
 
@@ -566,7 +626,9 @@ class RequestTracker:
                 "message": event.event_message,
                 "stage_name": event.stage_name,
                 "severity": event.severity,
-                "created_at": event.created_at.isoformat() if event.created_at else None,
+                "created_at": event.created_at.isoformat()
+                if event.created_at
+                else None,
                 "event_data": event.event_data,
             }
             for event in events
@@ -587,7 +649,9 @@ class RequestTracker:
             yield
             self.complete_stage(request_id, stage_name)
         except Exception as e:
-            self.fail_stage(request_id, stage_name, str(e), {"exception_type": type(e).__name__})
+            self.fail_stage(
+                request_id, stage_name, str(e), {"exception_type": type(e).__name__}
+            )
             raise
 
     def _generate_correlation_id(self) -> str:
@@ -615,7 +679,9 @@ class CorrelationIDMiddleware:
 
             if not correlation_id:
                 # Generate new correlation ID
-                correlation_id = f"req_{int(time.time() * 1000)}_{str(uuid.uuid4())[:8]}"
+                correlation_id = (
+                    f"req_{int(time.time() * 1000)}_{str(uuid.uuid4())[:8]}"
+                )
             else:
                 correlation_id = correlation_id.decode("utf-8")
 

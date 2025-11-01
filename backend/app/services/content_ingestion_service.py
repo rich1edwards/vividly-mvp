@@ -41,14 +41,11 @@ class ContentIngestionService:
             "max_chunk_size": 500,  # words
             "min_chunk_size": 100,  # words
             "overlap": 50,  # words overlap between chunks
-            "split_on": ["\\n\\n", "\\n", ". "]  # Split priority
+            "split_on": ["\\n\\n", "\\n", ". "],  # Split priority
         }
 
     async def ingest_openstax_content(
-        self,
-        source_title: str,
-        subject: str,
-        content_data: Dict[str, Any]
+        self, source_title: str, subject: str, content_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
         Ingest content from OpenStax textbook.
@@ -76,17 +73,13 @@ class ContentIngestionService:
         try:
             # Create source record
             source = self._create_source_record(
-                source_title=source_title,
-                subject=subject,
-                content_data=content_data
+                source_title=source_title, subject=subject, content_data=content_data
             )
 
             # Extract and chunk content
             logger.info(f"[{ingestion_id}] Extracting and chunking content")
             chunks = self._process_chapters(
-                content_data=content_data,
-                source=source,
-                subject=subject
+                content_data=content_data, source=source, subject=subject
             )
 
             logger.info(f"[{ingestion_id}] Created {len(chunks)} chunks")
@@ -95,8 +88,7 @@ class ContentIngestionService:
             logger.info(f"[{ingestion_id}] Generating embeddings")
             chunk_texts = [chunk["cleaned_text"] for chunk in chunks]
             embeddings = await self.embeddings_service.generate_embeddings_batch(
-                texts=chunk_texts,
-                batch_size=100
+                texts=chunk_texts, batch_size=100
             )
 
             # Attach embeddings to chunks
@@ -112,7 +104,7 @@ class ContentIngestionService:
             await self._update_source_status(
                 source_id=source["source_id"],
                 status="completed",
-                chunks_count=len(stored_chunks)
+                chunks_count=len(stored_chunks),
             )
 
             logger.info(f"[{ingestion_id}] Ingestion complete")
@@ -125,22 +117,15 @@ class ContentIngestionService:
                 "chunks_created": len(stored_chunks),
                 "total_words": sum(chunk["word_count"] for chunk in chunks),
                 "subjects": [subject],
-                "completed_at": datetime.utcnow().isoformat()
+                "completed_at": datetime.utcnow().isoformat(),
             }
 
         except Exception as e:
             logger.error(f"[{ingestion_id}] Ingestion failed: {e}", exc_info=True)
-            return {
-                "status": "failed",
-                "ingestion_id": ingestion_id,
-                "error": str(e)
-            }
+            return {"status": "failed", "ingestion_id": ingestion_id, "error": str(e)}
 
     def _create_source_record(
-        self,
-        source_title: str,
-        subject: str,
-        content_data: Dict
+        self, source_title: str, subject: str, content_data: Dict
     ) -> Dict:
         """Create source metadata record."""
         source_id = self._generate_source_id(source_title)
@@ -154,14 +139,11 @@ class ContentIngestionService:
             "license": content_data.get("license", "CC BY 4.0"),
             "source_version": content_data.get("version", "2e"),
             "total_chapters": len(content_data.get("chapters", [])),
-            "created_at": datetime.utcnow()
+            "created_at": datetime.utcnow(),
         }
 
     def _process_chapters(
-        self,
-        content_data: Dict,
-        source: Dict,
-        subject: str
+        self, content_data: Dict, source: Dict, subject: str
     ) -> List[Dict]:
         """Process all chapters and create chunks."""
         all_chunks = []
@@ -182,7 +164,7 @@ class ContentIngestionService:
                     section=f"{section_number} {section_title}",
                     source=source,
                     subject=subject,
-                    topic_ids=section.get("topic_ids", [])
+                    topic_ids=section.get("topic_ids", []),
                 )
 
                 all_chunks.extend(chunks)
@@ -196,7 +178,7 @@ class ContentIngestionService:
         section: str,
         source: Dict,
         subject: str,
-        topic_ids: List[str]
+        topic_ids: List[str],
     ) -> List[Dict]:
         """
         Chunk text into semantic units.
@@ -221,7 +203,10 @@ class ContentIngestionService:
             sentence_words = len(sentence.split())
 
             # Check if adding this sentence exceeds max chunk size
-            if current_word_count + sentence_words > self.chunk_config["max_chunk_size"]:
+            if (
+                current_word_count + sentence_words
+                > self.chunk_config["max_chunk_size"]
+            ):
                 # Save current chunk if it's big enough
                 if current_word_count >= self.chunk_config["min_chunk_size"]:
                     chunk_dict = self._create_chunk_dict(
@@ -230,12 +215,14 @@ class ContentIngestionService:
                         section=section,
                         source=source,
                         subject=subject,
-                        topic_ids=topic_ids
+                        topic_ids=topic_ids,
                     )
                     chunks.append(chunk_dict)
 
                     # Start new chunk with overlap
-                    overlap_sentences = current_chunk[-2:] if len(current_chunk) >= 2 else []
+                    overlap_sentences = (
+                        current_chunk[-2:] if len(current_chunk) >= 2 else []
+                    )
                     current_chunk = overlap_sentences + [sentence]
                     current_word_count = sum(len(s.split()) for s in current_chunk)
                 else:
@@ -255,7 +242,7 @@ class ContentIngestionService:
                 section=section,
                 source=source,
                 subject=subject,
-                topic_ids=topic_ids
+                topic_ids=topic_ids,
             )
             chunks.append(chunk_dict)
 
@@ -268,7 +255,7 @@ class ContentIngestionService:
         section: str,
         source: Dict,
         subject: str,
-        topic_ids: List[str]
+        topic_ids: List[str],
     ) -> Dict:
         """Create chunk dictionary with metadata."""
         text = " ".join(sentences)
@@ -297,16 +284,16 @@ class ContentIngestionService:
             "word_count": len(cleaned_text.split()),
             "keywords": keywords,
             "concepts": concepts,
-            "created_at": datetime.utcnow()
+            "created_at": datetime.utcnow(),
         }
 
     def _clean_text(self, text: str) -> str:
         """Clean and normalize text."""
         # Remove extra whitespace
-        text = re.sub(r'\s+', ' ', text)
+        text = re.sub(r"\s+", " ", text)
 
         # Remove special characters but keep punctuation
-        text = re.sub(r'[^\w\s.,!?;:()\-\'\"]+', '', text)
+        text = re.sub(r"[^\w\s.,!?;:()\-\'\"]+", "", text)
 
         # Trim
         text = text.strip()
@@ -316,7 +303,7 @@ class ContentIngestionService:
     def _split_sentences(self, text: str) -> List[str]:
         """Split text into sentences."""
         # Simple sentence splitter (can be improved with spaCy/NLTK)
-        sentences = re.split(r'(?<=[.!?])\s+', text)
+        sentences = re.split(r"(?<=[.!?])\s+", text)
 
         # Filter empty
         sentences = [s.strip() for s in sentences if s.strip()]
@@ -335,16 +322,60 @@ class ContentIngestionService:
 
         # Remove common stop words
         stop_words = {
-            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-            'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'be',
-            'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
-            'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that',
-            'these', 'those', 'it', 'its', 'they', 'them', 'their', 'we', 'us',
-            'our', 'you', 'your'
+            "the",
+            "a",
+            "an",
+            "and",
+            "or",
+            "but",
+            "in",
+            "on",
+            "at",
+            "to",
+            "for",
+            "of",
+            "with",
+            "by",
+            "from",
+            "as",
+            "is",
+            "was",
+            "are",
+            "were",
+            "be",
+            "been",
+            "being",
+            "have",
+            "has",
+            "had",
+            "do",
+            "does",
+            "did",
+            "will",
+            "would",
+            "could",
+            "should",
+            "may",
+            "might",
+            "can",
+            "this",
+            "that",
+            "these",
+            "those",
+            "it",
+            "its",
+            "they",
+            "them",
+            "their",
+            "we",
+            "us",
+            "our",
+            "you",
+            "your",
         }
 
         # Extract words
-        words = re.findall(r'\b[a-z]{3,}\b', text_lower)
+        words = re.findall(r"\b[a-z]{3,}\b", text_lower)
 
         # Filter stop words
         words = [w for w in words if w not in stop_words]
@@ -371,20 +402,20 @@ class ContentIngestionService:
         # Subject-specific concept patterns
         concept_patterns = {
             "physics": [
-                r'\b(force|energy|momentum|velocity|acceleration|friction|gravity)\b',
-                r'\b(newton|law|motion|inertia|mass|weight)\b',
-                r'\b(kinetic|potential|thermal|mechanical)\b'
+                r"\b(force|energy|momentum|velocity|acceleration|friction|gravity)\b",
+                r"\b(newton|law|motion|inertia|mass|weight)\b",
+                r"\b(kinetic|potential|thermal|mechanical)\b",
             ],
             "chemistry": [
-                r'\b(atom|molecule|element|compound|reaction|bond)\b',
-                r'\b(acid|base|ph|solution|solvent|solute)\b',
-                r'\b(oxidation|reduction|catalyst|equilibrium)\b'
+                r"\b(atom|molecule|element|compound|reaction|bond)\b",
+                r"\b(acid|base|ph|solution|solvent|solute)\b",
+                r"\b(oxidation|reduction|catalyst|equilibrium)\b",
             ],
             "math": [
-                r'\b(equation|function|variable|constant|derivative)\b',
-                r'\b(integral|limit|theorem|proof|formula)\b',
-                r'\b(slope|intercept|quadratic|linear|polynomial)\b'
-            ]
+                r"\b(equation|function|variable|constant|derivative)\b",
+                r"\b(integral|limit|theorem|proof|formula)\b",
+                r"\b(slope|intercept|quadratic|linear|polynomial)\b",
+            ],
         }
 
         text_lower = text.lower()
@@ -412,10 +443,7 @@ class ContentIngestionService:
         return chunk_ids
 
     async def _update_source_status(
-        self,
-        source_id: str,
-        status: str,
-        chunks_count: int
+        self, source_id: str, status: str, chunks_count: int
     ):
         """Update content source status."""
         # Mock update

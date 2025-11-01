@@ -25,7 +25,7 @@ class TextChunker:
         target_size: int = 500,
         min_size: int = 300,
         max_size: int = 800,
-        overlap: int = 50
+        overlap: int = 50,
     ):
         """
         Initialize chunker.
@@ -60,12 +60,9 @@ class TextChunker:
         chunks = []
         chunk_counter = 0
 
-        for chapter in book_data['chapters']:
+        for chapter in book_data["chapters"]:
             chapter_chunks = self._chunk_chapter(
-                chapter,
-                book_data['title'],
-                book_data['subject'],
-                chunk_counter
+                chapter, book_data["title"], book_data["subject"], chunk_counter
             )
             chunks.extend(chapter_chunks)
             chunk_counter += len(chapter_chunks)
@@ -73,29 +70,25 @@ class TextChunker:
         return chunks
 
     def _chunk_chapter(
-        self,
-        chapter: Dict,
-        book_title: str,
-        subject: str,
-        start_index: int
+        self, chapter: Dict, book_title: str, subject: str, start_index: int
     ) -> List[Dict]:
         """Chunk a single chapter."""
         chunks = []
 
         # Combine all content blocks into sequential text
         text_segments = []
-        for block in chapter['content_blocks']:
-            if block['type'] == 'paragraph':
-                text_segments.append(block['text'])
-            elif block['type'] == 'example':
+        for block in chapter["content_blocks"]:
+            if block["type"] == "paragraph":
+                text_segments.append(block["text"])
+            elif block["type"] == "example":
                 text_segments.append(f"{block['title']}: {block['text']}")
-            elif block['type'] == 'learning_objective':
+            elif block["type"] == "learning_objective":
                 text_segments.append(f"Learning Objective: {block['text']}")
-            elif block['type'] == 'figure':
+            elif block["type"] == "figure":
                 text_segments.append(f"Figure: {block['caption']}")
 
         # Join into full chapter text
-        full_text = ' '.join(text_segments)
+        full_text = " ".join(text_segments)
 
         # Split into words
         words = self._tokenize_words(full_text)
@@ -111,7 +104,7 @@ class TextChunker:
             # Extend to sentence boundary if possible
             chunk_words = self._extend_to_sentence_boundary(chunk_words, words, end_idx)
 
-            chunk_text = ' '.join(chunk_words)
+            chunk_text = " ".join(chunk_words)
             word_count = len(chunk_words)
 
             # Skip chunks that are too small (unless it's the last chunk)
@@ -121,19 +114,21 @@ class TextChunker:
 
             # Create chunk metadata
             chunk_id = f"{subject}-{chapter['id']}-{chunk_num:03d}"
-            chunks.append({
-                'chunk_id': chunk_id,
-                'text': chunk_text,
-                'word_count': word_count,
-                'token_count': self._count_tokens(chunk_text),
-                'metadata': {
-                    'source_title': book_title,
-                    'chapter_id': chapter['id'],
-                    'chapter_title': chapter['title'],
-                    'subject': subject,
-                    'chunk_index': start_index + chunk_num
+            chunks.append(
+                {
+                    "chunk_id": chunk_id,
+                    "text": chunk_text,
+                    "word_count": word_count,
+                    "token_count": self._count_tokens(chunk_text),
+                    "metadata": {
+                        "source_title": book_title,
+                        "chapter_id": chapter["id"],
+                        "chapter_title": chapter["title"],
+                        "subject": subject,
+                        "chunk_index": start_index + chunk_num,
+                    },
                 }
-            })
+            )
 
             chunk_num += 1
 
@@ -153,14 +148,11 @@ class TextChunker:
             List of words
         """
         # Split on whitespace and punctuation boundaries
-        words = re.findall(r'\S+', text)
+        words = re.findall(r"\S+", text)
         return words
 
     def _extend_to_sentence_boundary(
-        self,
-        chunk_words: List[str],
-        all_words: List[str],
-        end_idx: int
+        self, chunk_words: List[str], all_words: List[str], end_idx: int
     ) -> List[str]:
         """
         Extend chunk to nearest sentence boundary.
@@ -176,7 +168,7 @@ class TextChunker:
             Extended chunk words
         """
         # Sentence ending punctuation
-        sentence_enders = {'.', '!', '?'}
+        sentence_enders = {".", "!", "?"}
 
         # Look ahead up to 50 words for sentence boundary
         lookahead = 50
@@ -184,7 +176,7 @@ class TextChunker:
             word = chunk_words[i]
             if any(word.endswith(ender) for ender in sentence_enders):
                 # Found sentence boundary, truncate here
-                return chunk_words[:i + 1]
+                return chunk_words[: i + 1]
 
         # No boundary found in current chunk, look ahead
         for i in range(end_idx, min(end_idx + lookahead, len(all_words))):
@@ -195,7 +187,7 @@ class TextChunker:
 
         # No boundary found, return as is (but cap at max_size)
         if len(chunk_words) > self.max_size:
-            return chunk_words[:self.max_size]
+            return chunk_words[: self.max_size]
 
         return chunk_words
 
@@ -228,51 +220,53 @@ class TextChunker:
         """
         if not chunks:
             return {
-                'total_chunks': 0,
-                'avg_word_count': 0,
-                'avg_token_count': 0,
-                'min_word_count': 0,
-                'max_word_count': 0
+                "total_chunks": 0,
+                "avg_word_count": 0,
+                "avg_token_count": 0,
+                "min_word_count": 0,
+                "max_word_count": 0,
             }
 
-        word_counts = [c['word_count'] for c in chunks]
-        token_counts = [c['token_count'] for c in chunks]
+        word_counts = [c["word_count"] for c in chunks]
+        token_counts = [c["token_count"] for c in chunks]
 
         return {
-            'total_chunks': len(chunks),
-            'avg_word_count': sum(word_counts) / len(word_counts),
-            'avg_token_count': sum(token_counts) / len(token_counts),
-            'min_word_count': min(word_counts),
-            'max_word_count': max(word_counts),
-            'total_words': sum(word_counts),
-            'total_tokens': sum(token_counts)
+            "total_chunks": len(chunks),
+            "avg_word_count": sum(word_counts) / len(word_counts),
+            "avg_token_count": sum(token_counts) / len(token_counts),
+            "min_word_count": min(word_counts),
+            "max_word_count": max(word_counts),
+            "total_words": sum(word_counts),
+            "total_tokens": sum(token_counts),
         }
 
 
 def main():
     """Test chunker with sample text."""
-    sample_text = """
+    sample_text = (
+        """
     Newton's third law of motion states that for every action, there is an equal
     and opposite reaction. This law is fundamental to understanding how forces work
     in the physical world. When you push against a wall, the wall pushes back with
     an equal force. When a rocket expels gas backward, the gas pushes the rocket
     forward. These are examples of action-reaction pairs.
-    """ * 50  # Repeat to create larger text
+    """
+        * 50
+    )  # Repeat to create larger text
 
     chunker = TextChunker()
 
     # Create mock book data
     book_data = {
-        'title': 'Test Book',
-        'subject': 'physics',
-        'chapters': [{
-            'id': 'chapter-01',
-            'title': 'Test Chapter',
-            'content_blocks': [{
-                'type': 'paragraph',
-                'text': sample_text
-            }]
-        }]
+        "title": "Test Book",
+        "subject": "physics",
+        "chapters": [
+            {
+                "id": "chapter-01",
+                "title": "Test Chapter",
+                "content_blocks": [{"type": "paragraph", "text": sample_text}],
+            }
+        ],
     }
 
     chunks = chunker.chunk_book(book_data)
@@ -284,5 +278,5 @@ def main():
     print(f"Word count range: {stats['min_word_count']} - {stats['max_word_count']}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

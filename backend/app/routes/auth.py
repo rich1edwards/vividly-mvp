@@ -41,6 +41,7 @@ router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
 
 # Dependencies
 
+
 def get_db() -> Session:
     """
     Get database session dependency.
@@ -60,6 +61,7 @@ def get_db() -> Session:
 
 
 # Story 1.1.1: User Registration Endpoint (3 points)
+
 
 @router.post(
     "/register",
@@ -157,6 +159,7 @@ async def register(
 
 
 # Story 1.1.2: User Login Endpoint (2 points)
+
 
 @router.post(
     "/login",
@@ -279,6 +282,7 @@ async def login(
 
 # Story 1.1.3: Token Refresh Endpoint (2 points)
 
+
 @router.post(
     "/refresh",
     response_model=RefreshTokenResponse,
@@ -297,7 +301,10 @@ async def login(
     """,
     responses={
         200: {"description": "Token refreshed successfully"},
-        401: {"description": "Invalid or expired refresh token", "model": ErrorResponse},
+        401: {
+            "description": "Invalid or expired refresh token",
+            "model": ErrorResponse,
+        },
     },
 )
 async def refresh_token(
@@ -387,6 +394,7 @@ async def refresh_token(
 
 # Story 1.1.4: Logout Endpoint (2 points)
 
+
 @router.post(
     "/logout",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -446,6 +454,7 @@ async def logout(
 
 
 # Story 1.1.5: Get Current User Endpoint (2 points)
+
 
 @router.get(
     "/me",
@@ -529,6 +538,7 @@ async def get_current_user_profile(
 
 
 # Story 1.1.6: Password Reset Flow (2 points)
+
 
 @router.post(
     "/reset-password",

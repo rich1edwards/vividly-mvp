@@ -47,7 +47,7 @@ class EmailService:
         recipient_name: str,
         template: str,
         data: Dict,
-        priority: str = "normal"
+        priority: str = "normal",
     ) -> Tuple[str, str]:
         """
         Queue email for sending.
@@ -83,7 +83,7 @@ class EmailService:
                 recipient_email=recipient_email,
                 recipient_name=recipient_name,
                 template=template,
-                data=data
+                data=data,
             )
 
             status = "queued" if success else "failed"
@@ -94,10 +94,7 @@ class EmailService:
             logger.error(f"Failed to queue email: {e}")
             return notification_id, "failed"
 
-    def send_batch(
-        self,
-        notifications: List[Dict]
-    ) -> Tuple[str, int, int, List[str]]:
+    def send_batch(self, notifications: List[Dict]) -> Tuple[str, int, int, List[str]]:
         """
         Send batch of email notifications.
 
@@ -118,7 +115,7 @@ class EmailService:
                 recipient_name=notif["recipient"]["name"],
                 template=notif["template"],
                 data=notif.get("data", {}),
-                priority=notif.get("priority", "normal")
+                priority=notif.get("priority", "normal"),
             )
 
             notification_ids.append(notif_id)
@@ -147,10 +144,11 @@ class EmailService:
             "notification_id": notification_id,
             "status": "delivered",
             "sent_at": datetime.utcnow().isoformat() + "Z",
-            "delivered_at": (datetime.utcnow() + timedelta(seconds=2)).isoformat() + "Z",
+            "delivered_at": (datetime.utcnow() + timedelta(seconds=2)).isoformat()
+            + "Z",
             "opened_at": None,
             "clicked_at": None,
-            "error_message": None
+            "error_message": None,
         }
 
     def _send_email(
@@ -159,7 +157,7 @@ class EmailService:
         recipient_email: str,
         recipient_name: str,
         template: str,
-        data: Dict
+        data: Dict,
     ) -> bool:
         """
         Send email via SendGrid.
@@ -273,7 +271,7 @@ class EmailService:
                     </p>
                 </body>
                 </html>
-            """
+            """,
         }
 
     def _get_welcome_teacher_template(self) -> Dict:
@@ -298,7 +296,7 @@ class EmailService:
                     </a>
                 </body>
                 </html>
-            """
+            """,
         }
 
     def _get_welcome_admin_template(self) -> Dict:
@@ -317,7 +315,7 @@ class EmailService:
                     </a>
                 </body>
                 </html>
-            """
+            """,
         }
 
     def _get_password_reset_template(self) -> Dict:
@@ -339,7 +337,7 @@ class EmailService:
                     <p style="color: #666; font-size: 14px;">If you didn't request this, please ignore this email.</p>
                 </body>
                 </html>
-            """
+            """,
         }
 
     def _get_content_ready_template(self) -> Dict:
@@ -364,7 +362,7 @@ class EmailService:
                     </a>
                 </body>
                 </html>
-            """
+            """,
         }
 
     def _get_account_approved_template(self) -> Dict:
@@ -386,7 +384,7 @@ class EmailService:
                     <p>Teacher: {{ teacher_name }}</p>
                 </body>
                 </html>
-            """
+            """,
         }
 
     def _get_account_denied_template(self) -> Dict:
@@ -407,5 +405,5 @@ class EmailService:
                     </p>
                 </body>
                 </html>
-            """
+            """,
         }

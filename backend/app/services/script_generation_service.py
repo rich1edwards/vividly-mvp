@@ -55,7 +55,7 @@ class ScriptGenerationService:
         interest: str,
         grade_level: int,
         rag_content: List[Dict],
-        duration_seconds: int = 180
+        duration_seconds: int = 180,
     ) -> Dict[str, Any]:
         """
         Generate personalized educational video script.
@@ -101,7 +101,7 @@ class ScriptGenerationService:
                 interest=interest,
                 grade_level=grade_level,
                 rag_content=rag_content,
-                duration_seconds=duration_seconds
+                duration_seconds=duration_seconds,
             )
 
             # Generate script with Gemini
@@ -112,7 +112,7 @@ class ScriptGenerationService:
                     "top_p": 0.9,
                     "top_k": 40,
                     "max_output_tokens": 2048,
-                }
+                },
             )
 
             # Parse response
@@ -138,15 +138,14 @@ class ScriptGenerationService:
         interest: str,
         grade_level: int,
         rag_content: List[Dict],
-        duration_seconds: int
+        duration_seconds: int,
     ) -> str:
         """Build prompt for script generation."""
 
         # Format RAG content for context
-        context_text = "\n\n".join([
-            f"Source: {c['source']}\n{c['text']}"
-            for c in rag_content
-        ])
+        context_text = "\n\n".join(
+            [f"Source: {c['source']}\n{c['text']}" for c in rag_content]
+        )
 
         prompt = f"""You are an expert educational content creator using LearnLM principles.
 
@@ -209,8 +208,8 @@ Generate the script (JSON only, no markdown):"""
         text = text.strip()
 
         # Extract JSON
-        json_start = text.find('{')
-        json_end = text.rfind('}') + 1
+        json_start = text.find("{")
+        json_end = text.rfind("}") + 1
 
         if json_start == -1:
             raise ValueError("No JSON found in response")
@@ -224,7 +223,7 @@ Generate the script (JSON only, no markdown):"""
         topic_name: str,
         interest: str,
         grade_level: int,
-        duration_seconds: int
+        duration_seconds: int,
     ) -> Dict:
         """Mock script generation for testing."""
 
@@ -241,39 +240,40 @@ Generate the script (JSON only, no markdown):"""
                     "title": f"Introduction to {topic_name}",
                     "content": f"Let's explore {topic_name} using examples from {interest} that you know and love.",
                     "duration_seconds": 45,
-                    "visuals": [f"{interest} action shot", "Concept diagram"]
+                    "visuals": [f"{interest} action shot", "Concept diagram"],
                 },
                 {
                     "title": "The Core Concept",
                     "content": f"The key idea behind {topic_name} is fascinating. Let me explain it step by step.",
                     "duration_seconds": 60,
-                    "visuals": ["Animated diagram", "Real-world example"]
+                    "visuals": ["Animated diagram", "Real-world example"],
                 },
                 {
                     "title": f"How It Works in {interest.title()}",
                     "content": f"Now let's see how {topic_name} applies directly to {interest}. This is where it gets really interesting!",
                     "duration_seconds": 60,
-                    "visuals": [f"{interest} slow-motion", "Force analysis"]
+                    "visuals": [f"{interest} slow-motion", "Force analysis"],
                 },
                 {
                     "title": "Summary and Key Points",
                     "content": f"Let's recap what we've learned about {topic_name} and how it connects to {interest}.",
                     "duration_seconds": 15,
-                    "visuals": ["Key points on screen"]
-                }
+                    "visuals": ["Key points on screen"],
+                },
             ],
             "key_takeaways": [
                 f"{topic_name} is a fundamental concept in science",
                 f"You can see it in action during {interest}",
-                "Understanding this helps you appreciate both science and sports"
+                "Understanding this helps you appreciate both science and sports",
             ],
             "duration_estimate_seconds": duration_seconds,
-            "generated_at": datetime.utcnow().isoformat()
+            "generated_at": datetime.utcnow().isoformat(),
         }
 
     def _generate_script_id(self, topic_id: str, interest: str) -> str:
         """Generate unique script ID."""
         import hashlib
+
         content = f"{topic_id}|{interest}|{datetime.utcnow().isoformat()}"
         hash_val = hashlib.sha256(content.encode()).hexdigest()[:16]
         return f"script_{hash_val}"

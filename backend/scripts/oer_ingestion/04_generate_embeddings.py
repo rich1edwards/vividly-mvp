@@ -21,7 +21,7 @@ def generate_embeddings_for_book(
     chunks_file: Path,
     output_dir: Path,
     embeddings_client: VertexAIEmbeddings,
-    batch_size: int = 5
+    batch_size: int = 5,
 ) -> dict:
     """
     Generate embeddings for a single book's chunks.
@@ -35,19 +35,21 @@ def generate_embeddings_for_book(
     Returns:
         Generation statistics
     """
-    book_id = chunks_file.stem.replace('-chunks', '')
+    book_id = chunks_file.stem.replace("-chunks", "")
     print(f"Generating embeddings: {book_id}")
     print("=" * 60)
 
     # Load chunks
-    with open(chunks_file, 'r', encoding='utf-8') as f:
+    with open(chunks_file, "r", encoding="utf-8") as f:
         chunks = json.load(f)
 
     print(f"  Total chunks: {len(chunks)}")
 
     # Generate embeddings
     start_time = datetime.now()
-    embedded_chunks = embeddings_client.generate_embeddings(chunks, batch_size=batch_size)
+    embedded_chunks = embeddings_client.generate_embeddings(
+        chunks, batch_size=batch_size
+    )
     duration = (datetime.now() - start_time).total_seconds()
 
     print(f"  Duration: {duration:.1f} seconds")
@@ -55,7 +57,7 @@ def generate_embeddings_for_book(
 
     # Save embeddings
     output_file = output_dir / f"{book_id}-embeddings.json"
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         json.dump(embedded_chunks, f, indent=2, ensure_ascii=False)
 
     file_size_mb = output_file.stat().st_size / (1024 * 1024)
@@ -63,20 +65,20 @@ def generate_embeddings_for_book(
     print("")
 
     return {
-        'book_id': book_id,
-        'chunks': len(chunks),
-        'embedded': len(embedded_chunks),
-        'duration_seconds': duration,
-        'rate': len(embedded_chunks) / duration,
-        'output_file': str(output_file),
-        'size_mb': file_size_mb
+        "book_id": book_id,
+        "chunks": len(chunks),
+        "embedded": len(embedded_chunks),
+        "duration_seconds": duration,
+        "rate": len(embedded_chunks) / duration,
+        "output_file": str(output_file),
+        "size_mb": file_size_mb,
     }
 
 
 def main():
     """Main embedding generation function."""
     # Get project ID from environment
-    project_id = os.getenv('GOOGLE_CLOUD_PROJECT')
+    project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
     if not project_id:
         print("✗ Error: GOOGLE_CLOUD_PROJECT environment variable not set")
         print("")
@@ -85,9 +87,9 @@ def main():
         sys.exit(1)
 
     script_dir = Path(__file__).parent
-    data_dir = script_dir / 'data'
-    chunks_dir = data_dir / 'chunks'
-    embeddings_dir = data_dir / 'embeddings'
+    data_dir = script_dir / "data"
+    chunks_dir = data_dir / "chunks"
+    embeddings_dir = data_dir / "embeddings"
 
     # Create output directory
     embeddings_dir.mkdir(parents=True, exist_ok=True)
@@ -102,7 +104,7 @@ def main():
     print("")
 
     # Find all chunked books
-    chunks_files = list(chunks_dir.glob('*-chunks.json'))
+    chunks_files = list(chunks_dir.glob("*-chunks.json"))
 
     if not chunks_files:
         print("✗ Error: No chunked books found in:", chunks_dir)
@@ -114,8 +116,7 @@ def main():
 
     # Initialize embeddings client
     embeddings_client = VertexAIEmbeddings(
-        project_id=project_id,
-        location='us-central1'
+        project_id=project_id, location="us-central1"
     )
 
     # Process all books
@@ -125,16 +126,14 @@ def main():
     for chunks_file in chunks_files:
         try:
             result = generate_embeddings_for_book(
-                chunks_file,
-                embeddings_dir,
-                embeddings_client,
-                batch_size=5
+                chunks_file, embeddings_dir, embeddings_client, batch_size=5
             )
             results.append(result)
         except Exception as e:
             print(f"✗ Error embedding {chunks_file.stem}: {e}")
             print("")
             import traceback
+
             traceback.print_exc()
 
     total_duration = (datetime.now() - start_time).total_seconds()
@@ -159,9 +158,9 @@ def main():
             print(f"    Size: {result['size_mb']:.2f} MB")
             print("")
 
-            total_chunks += result['chunks']
-            total_embedded += result['embedded']
-            total_size += result['size_mb']
+            total_chunks += result["chunks"]
+            total_embedded += result["embedded"]
+            total_size += result["size_mb"]
 
         print(f"Totals:")
         print(f"  Books: {len(results)}")
@@ -184,5 +183,5 @@ def main():
     print("Next step: python 05_create_vector_index.py")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

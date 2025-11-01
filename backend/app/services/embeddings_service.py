@@ -43,6 +43,7 @@ class EmbeddingsService:
         self.vertex_available = False
         try:
             from vertexai.language_models import TextEmbeddingModel
+
             self.embedding_model = TextEmbeddingModel.from_pretrained(self.model_name)
             self.vertex_available = True
             logger.info(f"Vertex AI Embeddings initialized: {self.model_name}")
@@ -86,9 +87,7 @@ class EmbeddingsService:
             return self._mock_embedding(text)
 
     async def generate_embeddings_batch(
-        self,
-        texts: List[str],
-        batch_size: int = 100
+        self, texts: List[str], batch_size: int = 100
     ) -> List[Dict[str, Any]]:
         """
         Generate embeddings for multiple texts in batches.
@@ -116,7 +115,7 @@ class EmbeddingsService:
                     "index": i,
                     "text": text,
                     "embedding": self._mock_embedding(text),
-                    "embedding_id": self._generate_embedding_id(text)
+                    "embedding_id": self._generate_embedding_id(text),
                 }
                 for i, text in enumerate(texts)
             ]
@@ -129,12 +128,13 @@ class EmbeddingsService:
                 batch_end = min(batch_start + batch_size, len(texts))
                 batch_texts = texts[batch_start:batch_end]
 
-                logger.info(f"Generating embeddings for batch {batch_start}-{batch_end}")
+                logger.info(
+                    f"Generating embeddings for batch {batch_start}-{batch_end}"
+                )
 
                 # Truncate texts
                 truncated_texts = [
-                    self._truncate_text(text, max_tokens=3000)
-                    for text in batch_texts
+                    self._truncate_text(text, max_tokens=3000) for text in batch_texts
                 ]
 
                 # Generate embeddings
@@ -143,12 +143,14 @@ class EmbeddingsService:
                 # Collect results
                 for i, (text, embedding) in enumerate(zip(batch_texts, embeddings)):
                     global_index = batch_start + i
-                    results.append({
-                        "index": global_index,
-                        "text": text,
-                        "embedding": embedding.values,
-                        "embedding_id": self._generate_embedding_id(text)
-                    })
+                    results.append(
+                        {
+                            "index": global_index,
+                            "text": text,
+                            "embedding": embedding.values,
+                            "embedding_id": self._generate_embedding_id(text),
+                        }
+                    )
 
                 # Rate limiting: small delay between batches
                 if batch_end < len(texts):
@@ -165,7 +167,7 @@ class EmbeddingsService:
                     "index": i,
                     "text": text,
                     "embedding": self._mock_embedding(text),
-                    "embedding_id": self._generate_embedding_id(text)
+                    "embedding_id": self._generate_embedding_id(text),
                 }
                 for i, text in enumerate(texts)
             ]
@@ -197,7 +199,7 @@ class EmbeddingsService:
             return text
 
         # Truncate and add ellipsis
-        truncated = text[:max_chars-3] + "..."
+        truncated = text[: max_chars - 3] + "..."
         logger.warning(f"Text truncated from {len(text)} to {len(truncated)} chars")
         return truncated
 

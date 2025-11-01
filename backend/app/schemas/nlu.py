@@ -10,11 +10,24 @@ from typing import List, Optional
 class TopicExtractionRequest(BaseModel):
     """Request to extract topic from student query."""
 
-    query: str = Field(..., description="Student's natural language query", min_length=3, max_length=500)
-    grade_level: int = Field(..., description="Student's grade level (9-12)", ge=9, le=12)
-    student_id: Optional[str] = Field(None, description="Optional student ID for context")
-    recent_topics: Optional[List[str]] = Field(default_factory=list, description="Recently studied topic IDs")
-    subject_context: Optional[str] = Field(None, description="Subject hint (Physics, Chemistry, etc.)")
+    query: str = Field(
+        ...,
+        description="Student's natural language query",
+        min_length=3,
+        max_length=500,
+    )
+    grade_level: int = Field(
+        ..., description="Student's grade level (9-12)", ge=9, le=12
+    )
+    student_id: Optional[str] = Field(
+        None, description="Optional student ID for context"
+    )
+    recent_topics: Optional[List[str]] = Field(
+        default_factory=list, description="Recently studied topic IDs"
+    )
+    subject_context: Optional[str] = Field(
+        None, description="Subject hint (Physics, Chemistry, etc.)"
+    )
 
     class Config:
         json_schema_extra = {
@@ -22,8 +35,11 @@ class TopicExtractionRequest(BaseModel):
                 "query": "Explain Newton's Third Law using basketball",
                 "grade_level": 10,
                 "student_id": "user_abc123",
-                "recent_topics": ["topic_phys_mech_newton_1", "topic_phys_mech_newton_2"],
-                "subject_context": "Physics"
+                "recent_topics": [
+                    "topic_phys_mech_newton_1",
+                    "topic_phys_mech_newton_2",
+                ],
+                "subject_context": "Physics",
             }
         }
 
@@ -31,11 +47,17 @@ class TopicExtractionRequest(BaseModel):
 class TopicExtractionResponse(BaseModel):
     """Response from topic extraction."""
 
-    confidence: float = Field(..., description="Confidence score (0.0-1.0)", ge=0.0, le=1.0)
+    confidence: float = Field(
+        ..., description="Confidence score (0.0-1.0)", ge=0.0, le=1.0
+    )
     topic_id: Optional[str] = Field(None, description="Extracted topic ID if confident")
     topic_name: Optional[str] = Field(None, description="Human-readable topic name")
-    clarification_needed: bool = Field(..., description="Whether clarification is needed")
-    clarifying_questions: List[str] = Field(default_factory=list, description="Questions to help clarify")
+    clarification_needed: bool = Field(
+        ..., description="Whether clarification is needed"
+    )
+    clarifying_questions: List[str] = Field(
+        default_factory=list, description="Questions to help clarify"
+    )
     out_of_scope: bool = Field(..., description="Whether query is non-academic")
     reasoning: str = Field(..., description="Explanation of extraction decision")
 
@@ -48,7 +70,7 @@ class TopicExtractionResponse(BaseModel):
                 "clarification_needed": False,
                 "clarifying_questions": [],
                 "out_of_scope": False,
-                "reasoning": "Clear reference to Newton's Third Law with basketball context"
+                "reasoning": "Clear reference to Newton's Third Law with basketball context",
             }
         }
 
@@ -57,9 +79,13 @@ class ClarificationRequest(BaseModel):
     """Request with clarification answer."""
 
     original_query: str = Field(..., description="Original student query")
-    clarification_answer: str = Field(..., description="Student's answer to clarifying question")
+    clarification_answer: str = Field(
+        ..., description="Student's answer to clarifying question"
+    )
     grade_level: int = Field(..., description="Student's grade level", ge=9, le=12)
-    previous_extraction: Optional[dict] = Field(None, description="Previous extraction result")
+    previous_extraction: Optional[dict] = Field(
+        None, description="Previous extraction result"
+    )
 
     class Config:
         json_schema_extra = {
@@ -69,8 +95,8 @@ class ClarificationRequest(BaseModel):
                 "grade_level": 11,
                 "previous_extraction": {
                     "confidence": 0.65,
-                    "clarification_needed": True
-                }
+                    "clarification_needed": True,
+                },
             }
         }
 
@@ -80,7 +106,9 @@ class TopicSuggestionRequest(BaseModel):
 
     grade_level: int = Field(..., description="Student's grade level", ge=9, le=12)
     subject: Optional[str] = Field(None, description="Subject filter")
-    recent_topics: Optional[List[str]] = Field(default_factory=list, description="Recently studied topics")
+    recent_topics: Optional[List[str]] = Field(
+        default_factory=list, description="Recently studied topics"
+    )
     limit: int = Field(default=5, description="Number of suggestions", ge=1, le=20)
 
     class Config:
@@ -89,7 +117,7 @@ class TopicSuggestionRequest(BaseModel):
                 "grade_level": 10,
                 "subject": "Physics",
                 "recent_topics": ["topic_phys_mech_newton_1"],
-                "limit": 5
+                "limit": 5,
             }
         }
 
@@ -121,9 +149,9 @@ class TopicSuggestionsResponse(BaseModel):
                         "subject": "Physics",
                         "difficulty": "intermediate",
                         "relevance_score": 0.95,
-                        "reason": "Natural progression after Newton's First Law"
+                        "reason": "Natural progression after Newton's First Law",
                     }
                 ],
-                "total_suggestions": 5
+                "total_suggestions": 5,
             }
         }

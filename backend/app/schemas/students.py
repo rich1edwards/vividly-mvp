@@ -20,9 +20,15 @@ class UpdateProfileRequest(BaseModel):
         }
     """
 
-    first_name: Optional[str] = Field(None, min_length=1, max_length=100, description="First name")
-    last_name: Optional[str] = Field(None, min_length=1, max_length=100, description="Last name")
-    grade_level: Optional[int] = Field(None, ge=9, le=12, description="Grade level (9-12)")
+    first_name: Optional[str] = Field(
+        None, min_length=1, max_length=100, description="First name"
+    )
+    last_name: Optional[str] = Field(
+        None, min_length=1, max_length=100, description="Last name"
+    )
+    grade_level: Optional[int] = Field(
+        None, ge=9, le=12, description="Grade level (9-12)"
+    )
 
 
 class InterestDetail(BaseModel):
@@ -111,7 +117,7 @@ class UpdateInterestsRequest(BaseModel):
         ...,
         min_items=1,
         max_items=5,
-        description="List of interest IDs (1-5 interests)"
+        description="List of interest IDs (1-5 interests)",
     )
 
     @validator("interest_ids")

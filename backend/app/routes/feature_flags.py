@@ -30,6 +30,7 @@ router = APIRouter(prefix="/api/v1/feature-flags", tags=["Feature Flags"])
 
 # Request/Response Models
 
+
 class CreateFeatureFlagRequest(BaseModel):
     """Request to create a new feature flag."""
 
@@ -37,14 +38,20 @@ class CreateFeatureFlagRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=255, description="Display name")
     description: Optional[str] = Field(None, description="Flag description")
     enabled: bool = Field(False, description="Initial enabled state")
-    rollout_percentage: int = Field(0, ge=0, le=100, description="Initial rollout percentage (0-100)")
-    organization_id: Optional[str] = Field(None, description="Organization ID (null for global)")
+    rollout_percentage: int = Field(
+        0, ge=0, le=100, description="Initial rollout percentage (0-100)"
+    )
+    organization_id: Optional[str] = Field(
+        None, description="Organization ID (null for global)"
+    )
 
     @validator("key")
     def validate_key(cls, v):
         """Validate flag key format."""
         if not v.replace("_", "").replace("-", "").isalnum():
-            raise ValueError("Flag key must contain only alphanumeric characters, underscores, and hyphens")
+            raise ValueError(
+                "Flag key must contain only alphanumeric characters, underscores, and hyphens"
+            )
         return v
 
 
@@ -52,7 +59,9 @@ class UpdateFeatureFlagRequest(BaseModel):
     """Request to update a feature flag."""
 
     enabled: Optional[bool] = Field(None, description="New enabled state")
-    rollout_percentage: Optional[int] = Field(None, ge=0, le=100, description="New rollout percentage")
+    rollout_percentage: Optional[int] = Field(
+        None, ge=0, le=100, description="New rollout percentage"
+    )
 
 
 class SetOverrideRequest(BaseModel):
@@ -123,7 +132,9 @@ async def list_flags(
     return [flag.to_dict() for flag in flags]
 
 
-@router.post("", response_model=FeatureFlagResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=FeatureFlagResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_flag(
     request: CreateFeatureFlagRequest,
     current_user=Depends(require_admin),
@@ -163,7 +174,9 @@ async def get_flag(
     """
     flag = service._get_flag(key, organization_id)
     if not flag:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Feature flag not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Feature flag not found"
+        )
 
     return flag.to_dict()
 
@@ -189,7 +202,9 @@ async def update_flag(
     )
 
     if not flag:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Feature flag not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Feature flag not found"
+        )
 
     return flag.to_dict()
 
@@ -208,7 +223,9 @@ async def delete_flag(
     """
     success = service.delete_flag(key, organization_id)
     if not success:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Feature flag not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Feature flag not found"
+        )
 
 
 @router.post("/{key}/overrides", status_code=status.HTTP_201_CREATED)
@@ -255,7 +272,9 @@ async def remove_override(
     """
     success = service.remove_user_override(key, user_id, organization_id)
     if not success:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Override not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Override not found"
+        )
 
 
 @router.get("/audit/log")
@@ -289,7 +308,9 @@ async def check_flag(
     enabled = service.is_enabled(
         flag_key=key,
         user_id=str(current_user.id),
-        organization_id=str(current_user.organization_id) if current_user.organization_id else None,
+        organization_id=str(current_user.organization_id)
+        if current_user.organization_id
+        else None,
     )
 
     return FlagCheckResponse(key=key, enabled=enabled)
@@ -307,7 +328,9 @@ async def check_all_flags(
     """
     flags = service.get_all_flags(
         user_id=str(current_user.id),
-        organization_id=str(current_user.organization_id) if current_user.organization_id else None,
+        organization_id=str(current_user.organization_id)
+        if current_user.organization_id
+        else None,
     )
 
     return flags

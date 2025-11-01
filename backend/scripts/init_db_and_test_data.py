@@ -43,6 +43,7 @@ def init_database():
     try:
         # Use CASCADE to drop tables with dependencies
         from sqlalchemy import text
+
         with engine.begin() as conn:
             # Drop all tables with CASCADE
             conn.execute(text("DROP SCHEMA public CASCADE"))
@@ -76,7 +77,7 @@ def create_test_users(db):
             "last_name": "Student",
             "role": UserRole.STUDENT,
             "status": UserStatus.ACTIVE,
-            "grade_level": 8
+            "grade_level": 8,
         },
         {
             "user_id": str(uuid.uuid4()),
@@ -85,8 +86,8 @@ def create_test_users(db):
             "first_name": "Test",
             "last_name": "Teacher",
             "role": UserRole.TEACHER,
-            "status": UserStatus.ACTIVE
-        }
+            "status": UserStatus.ACTIVE,
+        },
     ]
 
     created_users = []
@@ -123,42 +124,44 @@ def create_sample_topics(db):
             "name": "Photosynthesis",
             "subject": "science",
             "grade_level": 8,
-            "description": "The process by which plants convert light energy into chemical energy"
+            "description": "The process by which plants convert light energy into chemical energy",
         },
         {
             "topic_id": "newtons_laws",
             "name": "Newton's Laws of Motion",
             "subject": "science",
             "grade_level": 9,
-            "description": "The three fundamental laws that describe the relationship between motion and forces"
+            "description": "The three fundamental laws that describe the relationship between motion and forces",
         },
         {
             "topic_id": "water_cycle",
             "name": "The Water Cycle",
             "subject": "science",
             "grade_level": 6,
-            "description": "The continuous movement of water on, above, and below Earth's surface"
+            "description": "The continuous movement of water on, above, and below Earth's surface",
         },
         {
             "topic_id": "fractions_decimals",
             "name": "Fractions and Decimals",
             "subject": "math",
             "grade_level": 7,
-            "description": "Understanding and converting between fractions and decimal numbers"
+            "description": "Understanding and converting between fractions and decimal numbers",
         },
         {
             "topic_id": "american_revolution",
             "name": "The American Revolution",
             "subject": "history",
             "grade_level": 8,
-            "description": "The colonial revolt against British rule from 1765-1783"
-        }
+            "description": "The colonial revolt against British rule from 1765-1783",
+        },
     ]
 
     created_topics = []
     for topic_data in sample_topics:
         # Check if topic already exists
-        existing_topic = db.query(Topic).filter(Topic.name == topic_data["name"]).first()
+        existing_topic = (
+            db.query(Topic).filter(Topic.name == topic_data["name"]).first()
+        )
         if existing_topic:
             logger.info(f"  - Topic '{topic_data['name']}' already exists, skipping")
             created_topics.append(existing_topic)
@@ -170,7 +173,9 @@ def create_sample_topics(db):
         db.refresh(topic)
 
         created_topics.append(topic)
-        logger.info(f"  ✓ Created topic: {topic.name} ({topic.subject}, Grade {topic.grade_level})")
+        logger.info(
+            f"  ✓ Created topic: {topic.name} ({topic.subject}, Grade {topic.grade_level})"
+        )
 
     return created_topics
 
@@ -187,15 +192,19 @@ def create_sample_interests(db):
         {"interest_id": "music", "name": "Music", "category": "arts"},
         {"interest_id": "animals", "name": "Animals", "category": "nature"},
         {"interest_id": "space", "name": "Space", "category": "science"},
-        {"interest_id": "movies", "name": "Movies", "category": "entertainment"}
+        {"interest_id": "movies", "name": "Movies", "category": "entertainment"},
     ]
 
     created_interests = []
     for interest_data in sample_interests:
         # Check if interest already exists
-        existing_interest = db.query(Interest).filter(Interest.name == interest_data["name"]).first()
+        existing_interest = (
+            db.query(Interest).filter(Interest.name == interest_data["name"]).first()
+        )
         if existing_interest:
-            logger.info(f"  - Interest '{interest_data['name']}' already exists, skipping")
+            logger.info(
+                f"  - Interest '{interest_data['name']}' already exists, skipping"
+            )
             created_interests.append(existing_interest)
             continue
 

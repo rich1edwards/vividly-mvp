@@ -31,7 +31,7 @@ class VertexAIEmbeddings:
         self,
         project_id: str,
         location: str = "us-central1",
-        model_name: str = "text-embedding-gecko@003"
+        model_name: str = "text-embedding-gecko@003",
     ):
         """
         Initialize embeddings client.
@@ -56,9 +56,7 @@ class VertexAIEmbeddings:
         self.request_times = []
 
     def generate_embeddings(
-        self,
-        chunks: List[Dict],
-        batch_size: int = 5
+        self, chunks: List[Dict], batch_size: int = 5
     ) -> List[Dict]:
         """
         Generate embeddings for all chunks.
@@ -79,7 +77,7 @@ class VertexAIEmbeddings:
 
         # Process in batches with progress bar
         for i in tqdm(range(0, len(chunks), batch_size), desc="Embedding batches"):
-            batch = chunks[i:i + batch_size]
+            batch = chunks[i : i + batch_size]
 
             # Rate limiting
             self._rate_limit()
@@ -99,12 +97,12 @@ class VertexAIEmbeddings:
                     print(f"Retry failed: {retry_error}")
                     # Add chunks without embeddings (will be filtered later)
                     for chunk in batch:
-                        chunk['embedding'] = None
-                        chunk['embedding_error'] = str(retry_error)
+                        chunk["embedding"] = None
+                        chunk["embedding_error"] = str(retry_error)
                         embedded_chunks.append(chunk)
 
         # Filter out failed embeddings
-        successful = [c for c in embedded_chunks if c.get('embedding') is not None]
+        successful = [c for c in embedded_chunks if c.get("embedding") is not None]
         failed = len(embedded_chunks) - len(successful)
 
         print(f"\nEmbedding generation complete:")
@@ -116,15 +114,15 @@ class VertexAIEmbeddings:
 
     def _generate_batch(self, batch: List[Dict]) -> List[Dict]:
         """Generate embeddings for a single batch."""
-        texts = [chunk['text'] for chunk in batch]
+        texts = [chunk["text"] for chunk in batch]
 
         # Call Vertex AI API
         embeddings = self.model.get_embeddings(texts)
 
         # Add embeddings to chunks
         for chunk, embedding_result in zip(batch, embeddings):
-            chunk['embedding'] = embedding_result.values
-            chunk['embedding_dim'] = len(embedding_result.values)
+            chunk["embedding"] = embedding_result.values
+            chunk["embedding_dim"] = len(embedding_result.values)
 
         return batch
 
@@ -167,7 +165,7 @@ class VertexVectorSearch:
         self,
         project_id: str,
         location: str = "us-central1",
-        index_display_name: str = "vividly-oer-index"
+        index_display_name: str = "vividly-oer-index",
     ):
         """
         Initialize vector search client.
@@ -188,7 +186,7 @@ class VertexVectorSearch:
         self,
         embeddings: List[Dict],
         dimensions: int = 768,
-        distance_measure: str = "DOT_PRODUCT_DISTANCE"
+        distance_measure: str = "DOT_PRODUCT_DISTANCE",
     ) -> MatchingEngineIndex:
         """
         Create vector search index.
@@ -215,7 +213,7 @@ class VertexVectorSearch:
             distance_measure_type=distance_measure,
             leaf_node_embedding_count=500,
             leaf_nodes_to_search_percent=7,
-            description=f"OpenStax OER content embeddings for Vividly MVP"
+            description=f"OpenStax OER content embeddings for Vividly MVP",
         )
 
         print(f"✓ Index created: {index.resource_name}")
@@ -227,7 +225,7 @@ class VertexVectorSearch:
         endpoint_display_name: str = "vividly-oer-endpoint",
         machine_type: str = "e2-standard-2",
         min_replica_count: int = 1,
-        max_replica_count: int = 3
+        max_replica_count: int = 3,
     ) -> MatchingEngineIndexEndpoint:
         """
         Deploy index to endpoint.
@@ -251,7 +249,7 @@ class VertexVectorSearch:
         endpoint = aiplatform.MatchingEngineIndexEndpoint.create(
             display_name=endpoint_display_name,
             description="Vector search endpoint for OER content",
-            public_endpoint_enabled=False  # Private VPC endpoint
+            public_endpoint_enabled=False,  # Private VPC endpoint
         )
 
         print(f"✓ Endpoint created: {endpoint.resource_name}")
@@ -264,17 +262,14 @@ class VertexVectorSearch:
             display_name="OER Index Deployment",
             machine_type=machine_type,
             min_replica_count=min_replica_count,
-            max_replica_count=max_replica_count
+            max_replica_count=max_replica_count,
         )
 
         print("✓ Index deployed successfully")
         return endpoint
 
     def upload_embeddings(
-        self,
-        index: MatchingEngineIndex,
-        embeddings: List[Dict],
-        gcs_bucket: str
+        self, index: MatchingEngineIndex, embeddings: List[Dict], gcs_bucket: str
     ):
         """
         Upload embeddings to GCS and update index.
@@ -292,19 +287,21 @@ class VertexVectorSearch:
         # Format embeddings for Vertex AI
         formatted_data = []
         for chunk in embeddings:
-            formatted_data.append({
-                'id': chunk['chunk_id'],
-                'embedding': chunk['embedding'],
-                'restricts': [],
-                'crowding_tag': chunk['metadata']['subject']
-            })
+            formatted_data.append(
+                {
+                    "id": chunk["chunk_id"],
+                    "embedding": chunk["embedding"],
+                    "restricts": [],
+                    "crowding_tag": chunk["metadata"]["subject"],
+                }
+            )
 
         # Upload to GCS
         client = storage.Client(project=self.project_id)
         bucket = client.bucket(gcs_bucket)
 
         # Create JSONL file
-        jsonl_content = '\n'.join([json.dumps(item) for item in formatted_data])
+        jsonl_content = "\n".join([json.dumps(item) for item in formatted_data])
         blob_name = f"oer_embeddings/embeddings_{int(time.time())}.jsonl"
         blob = bucket.blob(blob_name)
         blob.upload_from_string(jsonl_content)
@@ -314,9 +311,7 @@ class VertexVectorSearch:
 
         # Update index with new embeddings
         print("Updating index with embeddings...")
-        index.update_embeddings(
-            contents_delta_uri=gcs_uri
-        )
+        index.update_embeddings(contents_delta_uri=gcs_uri)
 
         print("✓ Index updated successfully")
 
@@ -324,7 +319,7 @@ class VertexVectorSearch:
         self,
         endpoint: MatchingEngineIndexEndpoint,
         query_embedding: List[float],
-        num_neighbors: int = 5
+        num_neighbors: int = 5,
     ) -> List[Dict]:
         """
         Search for similar embeddings.
@@ -340,15 +335,12 @@ class VertexVectorSearch:
         response = endpoint.find_neighbors(
             deployed_index_id="deployed_oer_index",
             queries=[query_embedding],
-            num_neighbors=num_neighbors
+            num_neighbors=num_neighbors,
         )
 
         results = []
         for match in response[0]:
-            results.append({
-                'chunk_id': match.id,
-                'distance': match.distance
-            })
+            results.append({"chunk_id": match.id, "distance": match.distance})
 
         return results
 
@@ -368,15 +360,15 @@ def main():
 
     sample_chunks = [
         {
-            'chunk_id': 'test-001',
-            'text': 'Newton\'s laws of motion describe the relationship between forces and motion.',
-            'metadata': {'subject': 'physics'}
+            "chunk_id": "test-001",
+            "text": "Newton's laws of motion describe the relationship between forces and motion.",
+            "metadata": {"subject": "physics"},
         },
         {
-            'chunk_id': 'test-002',
-            'text': 'The periodic table organizes chemical elements by atomic number.',
-            'metadata': {'subject': 'chemistry'}
-        }
+            "chunk_id": "test-002",
+            "text": "The periodic table organizes chemical elements by atomic number.",
+            "metadata": {"subject": "chemistry"},
+        },
     ]
 
     embedded = embeddings_client.generate_embeddings(sample_chunks, batch_size=2)
@@ -388,5 +380,5 @@ def main():
         print("")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

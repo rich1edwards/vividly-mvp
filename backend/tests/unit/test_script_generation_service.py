@@ -8,7 +8,7 @@ from datetime import datetime
 
 from app.services.script_generation_service import (
     ScriptGenerationService,
-    get_script_generation_service
+    get_script_generation_service,
 )
 
 
@@ -30,7 +30,7 @@ class TestScriptGenerationServiceInitialization:
 
         assert service.project_id == "custom-project"
 
-    @patch.dict('os.environ', {'GCP_PROJECT_ID': 'env-project'})
+    @patch.dict("os.environ", {"GCP_PROJECT_ID": "env-project"})
     def test_init_with_env_project(self):
         """Test initialization uses env var for project ID."""
         service = ScriptGenerationService()
@@ -50,7 +50,7 @@ class TestGenerateScript:
         rag_content = [
             {
                 "source": "OpenStax Physics",
-                "text": "Newton's Third Law states that for every action..."
+                "text": "Newton's Third Law states that for every action...",
             }
         ]
 
@@ -60,7 +60,7 @@ class TestGenerateScript:
             interest="basketball",
             grade_level=10,
             rag_content=rag_content,
-            duration_seconds=180
+            duration_seconds=180,
         )
 
         assert script["script_id"].startswith("script_")
@@ -86,7 +86,7 @@ class TestGenerateScript:
             topic_name="Newton's Third Law",
             interest="soccer",
             grade_level=10,
-            rag_content=rag_content
+            rag_content=rag_content,
         )
 
         assert "soccer" in script1["title"].lower()
@@ -97,7 +97,7 @@ class TestGenerateScript:
             topic_name="Newton's Third Law",
             interest="dance",
             grade_level=10,
-            rag_content=rag_content
+            rag_content=rag_content,
         )
 
         assert "dance" in script2["title"].lower()
@@ -116,7 +116,7 @@ class TestGenerateScript:
             interest="basketball",
             grade_level=10,
             rag_content=rag_content,
-            duration_seconds=120
+            duration_seconds=120,
         )
 
         assert script1["duration_estimate_seconds"] == 120
@@ -128,7 +128,7 @@ class TestGenerateScript:
             interest="basketball",
             grade_level=10,
             rag_content=rag_content,
-            duration_seconds=300
+            duration_seconds=300,
         )
 
         assert script2["duration_estimate_seconds"] == 300
@@ -143,7 +143,7 @@ class TestGenerateScript:
             topic_name="Test Topic",
             interest="basketball",
             grade_level=10,
-            rag_content=[{"source": "Test", "text": "Content"}]
+            rag_content=[{"source": "Test", "text": "Content"}],
         )
 
         for section in script["sections"]:
@@ -163,7 +163,7 @@ class TestGenerateScript:
             topic_name="Test Topic",
             interest="basketball",
             grade_level=10,
-            rag_content=[{"source": "Test", "text": "Content"}]
+            rag_content=[{"source": "Test", "text": "Content"}],
         )
 
         assert len(script["key_takeaways"]) >= 3
@@ -179,14 +179,11 @@ class TestPromptBuilding:
         service = ScriptGenerationService()
 
         rag_content = [
-            {
-                "source": "OpenStax Physics",
-                "text": "Newton's Third Law states..."
-            },
+            {"source": "OpenStax Physics", "text": "Newton's Third Law states..."},
             {
                 "source": "Khan Academy",
-                "text": "For every action, there is an equal and opposite reaction."
-            }
+                "text": "For every action, there is an equal and opposite reaction.",
+            },
         ]
 
         prompt = service._build_script_prompt(
@@ -194,7 +191,7 @@ class TestPromptBuilding:
             interest="basketball",
             grade_level=10,
             rag_content=rag_content,
-            duration_seconds=180
+            duration_seconds=180,
         )
 
         assert "Newton's Third Law" in prompt
@@ -213,7 +210,7 @@ class TestPromptBuilding:
             interest="soccer",
             grade_level=11,
             rag_content=[],
-            duration_seconds=120
+            duration_seconds=120,
         )
 
         assert "Test Topic" in prompt
@@ -229,7 +226,7 @@ class TestPromptBuilding:
             interest="basketball",
             grade_level=10,
             rag_content=[],
-            duration_seconds=180
+            duration_seconds=180,
         )
 
         assert "hook" in prompt.lower()
@@ -246,20 +243,22 @@ class TestScriptResponseParsing:
         """Test parsing valid JSON response."""
         service = ScriptGenerationService()
 
-        response = json.dumps({
-            "title": "Test Script",
-            "hook": "Engaging opening line",
-            "sections": [
-                {
-                    "title": "Introduction",
-                    "content": "Content here",
-                    "duration_seconds": 60,
-                    "visuals": ["Visual 1"]
-                }
-            ],
-            "key_takeaways": ["Point 1", "Point 2"],
-            "duration_estimate_seconds": 180
-        })
+        response = json.dumps(
+            {
+                "title": "Test Script",
+                "hook": "Engaging opening line",
+                "sections": [
+                    {
+                        "title": "Introduction",
+                        "content": "Content here",
+                        "duration_seconds": 60,
+                        "visuals": ["Visual 1"],
+                    }
+                ],
+                "key_takeaways": ["Point 1", "Point 2"],
+                "duration_estimate_seconds": 180,
+            }
+        )
 
         script = service._parse_script_response(response)
 
@@ -335,7 +334,7 @@ class TestMockGeneration:
             topic_name="Test Topic",
             interest="basketball",
             grade_level=10,
-            duration_seconds=180
+            duration_seconds=180,
         )
 
         assert script["script_id"].startswith("script_")
@@ -357,7 +356,7 @@ class TestMockGeneration:
             topic_name="Test Topic",
             interest="soccer",
             grade_level=11,
-            duration_seconds=180
+            duration_seconds=180,
         )
 
         assert len(script["sections"]) == 4
@@ -371,7 +370,7 @@ class TestMockGeneration:
             topic_name="Physics Concept",
             interest="skateboarding",
             grade_level=10,
-            duration_seconds=180
+            duration_seconds=180,
         )
 
         title_lower = script["title"].lower()
@@ -386,7 +385,7 @@ class TestMockGeneration:
             topic_name="Test",
             interest="basketball",
             grade_level=10,
-            duration_seconds=180
+            duration_seconds=180,
         )
 
         assert len(script["key_takeaways"]) == 3
@@ -411,8 +410,7 @@ class TestScriptIDGeneration:
 
         # Generate multiple IDs (they include timestamp so should be unique)
         ids = [
-            service._generate_script_id("topic_test", "basketball")
-            for _ in range(5)
+            service._generate_script_id("topic_test", "basketball") for _ in range(5)
         ]
 
         # All IDs should be unique
@@ -460,7 +458,7 @@ class TestEdgeCases:
             interest="basketball",
             grade_level=10,
             rag_content=[],
-            duration_seconds=180
+            duration_seconds=180,
         )
 
         assert "script_id" in script
@@ -477,7 +475,7 @@ class TestEdgeCases:
             interest="basketball",
             grade_level=10,
             rag_content=[],
-            duration_seconds=60
+            duration_seconds=60,
         )
 
         assert script["duration_estimate_seconds"] == 60
@@ -487,7 +485,9 @@ class TestEdgeCases:
         """Test script generation with long topic name."""
         service = ScriptGenerationService()
 
-        long_topic = "Understanding the Fundamental Principles of Advanced Quantum Mechanics"
+        long_topic = (
+            "Understanding the Fundamental Principles of Advanced Quantum Mechanics"
+        )
 
         script = await service.generate_script(
             topic_id="topic_test",
@@ -495,7 +495,7 @@ class TestEdgeCases:
             interest="basketball",
             grade_level=12,
             rag_content=[],
-            duration_seconds=180
+            duration_seconds=180,
         )
 
         assert long_topic in script["title"]
@@ -511,7 +511,7 @@ class TestEdgeCases:
             interest="rock & roll",
             grade_level=10,
             rag_content=[],
-            duration_seconds=180
+            duration_seconds=180,
         )
 
         assert "script_id" in script
@@ -520,24 +520,26 @@ class TestEdgeCases:
         """Test parsing script with nested objects."""
         service = ScriptGenerationService()
 
-        response = json.dumps({
-            "title": "Test",
-            "hook": "Hook",
-            "sections": [
-                {
-                    "title": "Section 1",
-                    "content": "Content",
-                    "duration_seconds": 60,
-                    "visuals": ["Visual 1", "Visual 2"],
-                    "metadata": {
-                        "difficulty": "medium",
-                        "tags": ["physics", "motion"]
+        response = json.dumps(
+            {
+                "title": "Test",
+                "hook": "Hook",
+                "sections": [
+                    {
+                        "title": "Section 1",
+                        "content": "Content",
+                        "duration_seconds": 60,
+                        "visuals": ["Visual 1", "Visual 2"],
+                        "metadata": {
+                            "difficulty": "medium",
+                            "tags": ["physics", "motion"],
+                        },
                     }
-                }
-            ],
-            "key_takeaways": ["Point 1"],
-            "duration_estimate_seconds": 180
-        })
+                ],
+                "key_takeaways": ["Point 1"],
+                "duration_estimate_seconds": 180,
+            }
+        )
 
         script = service._parse_script_response(response)
 

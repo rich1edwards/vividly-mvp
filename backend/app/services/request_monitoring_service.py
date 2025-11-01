@@ -58,7 +58,7 @@ class RequestMonitoringService:
         status: str = "in_progress",
         confidence_score: Optional[float] = None,
         metadata: Optional[Dict[str, Any]] = None,
-        error: Optional[str] = None
+        error: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Track a request pipeline event.
@@ -83,7 +83,7 @@ class RequestMonitoringService:
             "confidence_score": confidence_score,
             "metadata": metadata or {},
             "error": error,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
         }
 
         # Add to cache
@@ -121,7 +121,7 @@ class RequestMonitoringService:
                 "found": False,
                 "events": [],
                 "current_stage": None,
-                "status": "unknown"
+                "status": "unknown",
             }
 
         # Determine current stage and overall status
@@ -152,13 +152,11 @@ class RequestMonitoringService:
             "started_at": first_event["timestamp"],
             "elapsed_seconds": elapsed_seconds,
             "total_stages": len(events),
-            "metadata": latest_event.get("metadata", {})
+            "metadata": latest_event.get("metadata", {}),
         }
 
     def get_all_active_requests(
-        self,
-        student_id: Optional[str] = None,
-        limit: int = 100
+        self, student_id: Optional[str] = None, limit: int = 100
     ) -> List[Dict[str, Any]]:
         """
         Get all active (in-progress) requests.
@@ -192,10 +190,7 @@ class RequestMonitoringService:
             active_requests.append(flow)
 
         # Sort by most recent first
-        active_requests.sort(
-            key=lambda x: x["started_at"],
-            reverse=True
-        )
+        active_requests.sort(key=lambda x: x["started_at"], reverse=True)
 
         return active_requests[:limit]
 
@@ -204,7 +199,7 @@ class RequestMonitoringService:
         db: Session,
         student_email: Optional[str] = None,
         student_id: Optional[str] = None,
-        limit: int = 50
+        limit: int = 50,
     ) -> List[Dict[str, Any]]:
         """
         Search requests by student email or ID.
@@ -220,9 +215,7 @@ class RequestMonitoringService:
         """
         # Get student ID from email if provided
         if student_email and not student_id:
-            student = db.query(User).filter(
-                User.email == student_email
-            ).first()
+            student = db.query(User).filter(User.email == student_email).first()
             if student:
                 student_id = student.user_id
             else:
@@ -256,7 +249,10 @@ class RequestMonitoringService:
             # Count by status
             if latest_event["stage"] == self.STAGE_COMPLETED:
                 completed_count += 1
-            elif latest_event["stage"] == self.STAGE_FAILED or latest_event["status"] == "failed":
+            elif (
+                latest_event["stage"] == self.STAGE_FAILED
+                or latest_event["status"] == "failed"
+            ):
                 failed_count += 1
             else:
                 active_count += 1
@@ -286,7 +282,7 @@ class RequestMonitoringService:
             "stage_counts": stage_counts,
             "avg_confidence_scores": avg_scores,
             "cache_size": len(self.cache),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
         }
 
     def _cleanup_cache(self):

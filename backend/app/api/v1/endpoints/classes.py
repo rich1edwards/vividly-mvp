@@ -142,7 +142,9 @@ async def get_class_roster(
     return roster
 
 
-@router.delete("/{class_id}/students/{student_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{class_id}/students/{student_id}", status_code=status.HTTP_204_NO_CONTENT
+)
 async def remove_student_from_class(
     class_id: str,
     student_id: str,

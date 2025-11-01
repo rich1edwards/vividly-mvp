@@ -34,10 +34,14 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers[
+            "Strict-Transport-Security"
+        ] = "max-age=31536000; includeSubDomains"
         response.headers["Content-Security-Policy"] = "default-src 'self'"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        response.headers[
+            "Permissions-Policy"
+        ] = "geolocation=(), microphone=(), camera=()"
 
         return response
 
@@ -67,9 +71,11 @@ class BruteForceProtectionMiddleware(BaseHTTPMiddleware):
             # Get email from request body (if available)
             try:
                 body = await request.body()
+
                 # Re-create request with body for downstream processing
                 async def receive():
                     return {"type": "http.request", "body": body}
+
                 request._receive = receive
 
                 if body:
@@ -83,11 +89,13 @@ class BruteForceProtectionMiddleware(BaseHTTPMiddleware):
                         lockout_time = self.locked_accounts[key]
                         if datetime.utcnow() < lockout_time:
                             remaining = (lockout_time - datetime.utcnow()).seconds
-                            logger.warning(f"Blocked login attempt for locked account: {email} from {client_ip}")
+                            logger.warning(
+                                f"Blocked login attempt for locked account: {email} from {client_ip}"
+                            )
                             return Response(
                                 content=f'{{"detail":"Account temporarily locked. Try again in {remaining} seconds."}}',
                                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                                media_type="application/json"
+                                media_type="application/json",
                             )
                         else:
                             # Lockout expired
@@ -122,7 +130,8 @@ class BruteForceProtectionMiddleware(BaseHTTPMiddleware):
 
         # Clean old attempts (older than 1 hour)
         self.failed_attempts[key] = [
-            (ts, count) for ts, count in self.failed_attempts[key]
+            (ts, count)
+            for ts, count in self.failed_attempts[key]
             if now - ts < timedelta(hours=1)
         ]
 
@@ -134,7 +143,9 @@ class BruteForceProtectionMiddleware(BaseHTTPMiddleware):
         if recent_attempts >= self.max_attempts:
             lockout_time = now + timedelta(seconds=self.lockout_duration)
             self.locked_accounts[key] = lockout_time
-            logger.warning(f"Account locked due to {recent_attempts} failed attempts: {key[1]} from {key[0]}")
+            logger.warning(
+                f"Account locked due to {recent_attempts} failed attempts: {key[1]} from {key[0]}"
+            )
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
@@ -170,7 +181,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                     return Response(
                         content='{"detail":"Rate limit exceeded. Please try again later."}',
                         status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                        media_type="application/json"
+                        media_type="application/json",
                     )
 
                 self._record_request(key)
@@ -178,7 +189,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         return await call_next(request)
 
-    def _is_rate_limited(self, key: Tuple[str, str], max_requests: int, window_seconds: int) -> bool:
+    def _is_rate_limited(
+        self, key: Tuple[str, str], max_requests: int, window_seconds: int
+    ) -> bool:
         """Check if the request should be rate limited."""
         now = datetime.utcnow()
         window_start = now - timedelta(seconds=window_seconds)
@@ -188,8 +201,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         # Clean old requests
         self.request_counts[key] = [
-            ts for ts in self.request_counts[key]
-            if ts > window_start
+            ts for ts in self.request_counts[key] if ts > window_start
         ]
 
         return len(self.request_counts[key]) >= max_requests

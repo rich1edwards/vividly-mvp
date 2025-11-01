@@ -22,12 +22,16 @@ class Class(Base):
     class_id = Column(String(100), primary_key=True, index=True)
 
     # Teacher association
-    teacher_id = Column(String(100), ForeignKey('users.user_id'), nullable=False, index=True)
+    teacher_id = Column(
+        String(100), ForeignKey("users.user_id"), nullable=False, index=True
+    )
 
     # Class details
     name = Column(String(255), nullable=False)
     subject = Column(String(100), nullable=True)
-    class_code = Column(String(50), unique=True, nullable=False, index=True)  # e.g., "PHYS-ABC-123"
+    class_code = Column(
+        String(50), unique=True, nullable=False, index=True
+    )  # e.g., "PHYS-ABC-123"
     description = Column(Text, nullable=True)
 
     # Grade levels (JSON array)

@@ -72,7 +72,11 @@ def create_class(db: Session, teacher_id: str, class_data: CreateClassRequest) -
         HTTPException: 404 if teacher not found
     """
     # Validate teacher exists
-    teacher = db.query(User).filter(User.user_id == teacher_id, User.role == "teacher").first()
+    teacher = (
+        db.query(User)
+        .filter(User.user_id == teacher_id, User.role == "teacher")
+        .first()
+    )
     if not teacher:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -115,7 +119,9 @@ def create_class(db: Session, teacher_id: str, class_data: CreateClassRequest) -
     return new_class
 
 
-def get_teacher_classes(db: Session, teacher_id: str, include_archived: bool = False) -> List[Class]:
+def get_teacher_classes(
+    db: Session, teacher_id: str, include_archived: bool = False
+) -> List[Class]:
     """
     Get all classes for a teacher.
 
@@ -167,7 +173,9 @@ def get_class_details(db: Session, class_id: str, teacher_id: str = None) -> Cla
     return class_obj
 
 
-def update_class(db: Session, class_id: str, class_data: UpdateClassRequest, teacher_id: str = None) -> Class:
+def update_class(
+    db: Session, class_id: str, class_data: UpdateClassRequest, teacher_id: str = None
+) -> Class:
     """
     Update class details.
 
@@ -256,28 +264,40 @@ def get_class_roster(db: Session, class_id: str, teacher_id: str = None) -> Dict
     student_list = []
     for user, enrollment in students:
         # Get progress summary
-        total_started = db.query(StudentProgress).filter(
-            StudentProgress.student_id == user.user_id,
-            StudentProgress.status.in_([ProgressStatus.IN_PROGRESS, ProgressStatus.COMPLETED]),
-        ).count()
+        total_started = (
+            db.query(StudentProgress)
+            .filter(
+                StudentProgress.student_id == user.user_id,
+                StudentProgress.status.in_(
+                    [ProgressStatus.IN_PROGRESS, ProgressStatus.COMPLETED]
+                ),
+            )
+            .count()
+        )
 
-        total_completed = db.query(StudentProgress).filter(
-            StudentProgress.student_id == user.user_id,
-            StudentProgress.status == ProgressStatus.COMPLETED,
-        ).count()
+        total_completed = (
+            db.query(StudentProgress)
+            .filter(
+                StudentProgress.student_id == user.user_id,
+                StudentProgress.status == ProgressStatus.COMPLETED,
+            )
+            .count()
+        )
 
-        student_list.append({
-            "user_id": user.user_id,
-            "email": user.email,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "grade_level": user.grade_level,
-            "enrolled_at": enrollment.enrolled_at,
-            "progress_summary": {
-                "topics_started": total_started,
-                "topics_completed": total_completed,
-            },
-        })
+        student_list.append(
+            {
+                "user_id": user.user_id,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "grade_level": user.grade_level,
+                "enrolled_at": enrollment.enrolled_at,
+                "progress_summary": {
+                    "topics_started": total_started,
+                    "topics_completed": total_completed,
+                },
+            }
+        )
 
     return {
         "class_id": class_obj.class_id,
@@ -287,7 +307,9 @@ def get_class_roster(db: Session, class_id: str, teacher_id: str = None) -> Dict
     }
 
 
-def remove_student_from_class(db: Session, class_id: str, student_id: str, teacher_id: str = None) -> None:
+def remove_student_from_class(
+    db: Session, class_id: str, student_id: str, teacher_id: str = None
+) -> None:
     """
     Remove a student from a class.
 
@@ -306,7 +328,9 @@ def remove_student_from_class(db: Session, class_id: str, student_id: str, teach
     # Find enrollment
     enrollment = (
         db.query(ClassStudent)
-        .filter(ClassStudent.class_id == class_id, ClassStudent.student_id == student_id)
+        .filter(
+            ClassStudent.class_id == class_id, ClassStudent.student_id == student_id
+        )
         .first()
     )
 
@@ -338,7 +362,9 @@ def create_student_account_request(
         HTTPException: 400 if email already exists
     """
     # Check if email already exists
-    existing_user = db.query(User).filter(User.email == request_data.student_email).first()
+    existing_user = (
+        db.query(User).filter(User.email == request_data.student_email).first()
+    )
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -406,7 +432,9 @@ def create_bulk_student_requests(
     return requests
 
 
-def get_teacher_requests(db: Session, teacher_id: str, status_filter: str = None) -> List[StudentRequest]:
+def get_teacher_requests(
+    db: Session, teacher_id: str, status_filter: str = None
+) -> List[StudentRequest]:
     """
     Get teacher's student account requests.
 
@@ -452,7 +480,10 @@ def get_teacher_dashboard(db: Session, teacher_id: str) -> Dict:
     # Get pending requests count
     pending_requests = (
         db.query(StudentRequest)
-        .filter(StudentRequest.requested_by == teacher_id, StudentRequest.status == RequestStatus.PENDING)
+        .filter(
+            StudentRequest.requested_by == teacher_id,
+            StudentRequest.status == RequestStatus.PENDING,
+        )
         .count()
     )
 
@@ -465,15 +496,17 @@ def get_teacher_dashboard(db: Session, teacher_id: str) -> Dict:
             .count()
         )
 
-        class_summaries.append({
-            "class_id": class_obj.class_id,
-            "name": class_obj.name,
-            "subject": class_obj.subject,
-            "class_code": class_obj.class_code,
-            "student_count": student_count,
-            "archived": class_obj.archived,
-            "created_at": class_obj.created_at,
-        })
+        class_summaries.append(
+            {
+                "class_id": class_obj.class_id,
+                "name": class_obj.name,
+                "subject": class_obj.subject,
+                "class_code": class_obj.class_code,
+                "student_count": student_count,
+                "archived": class_obj.archived,
+                "created_at": class_obj.created_at,
+            }
+        )
 
     return {
         "teacher_id": teacher_id,
@@ -486,6 +519,7 @@ def get_teacher_dashboard(db: Session, teacher_id: str) -> Dict:
 
 
 # Wrapper functions for class operations without teacher_id (auth handled in endpoints)
+
 
 def get_class_by_id(db: Session, class_id: str) -> Class:
     """

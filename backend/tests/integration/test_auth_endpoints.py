@@ -21,7 +21,7 @@ class TestRegisterEndpoint:
                 "last_name": "Student",
                 "role": "student",
                 "grade_level": 10,
-            }
+            },
         )
 
         assert response.status_code == status.HTTP_201_CREATED
@@ -40,7 +40,7 @@ class TestRegisterEndpoint:
                 "first_name": "New",
                 "last_name": "Teacher",
                 "role": "teacher",
-            }
+            },
         )
 
         assert response.status_code == status.HTTP_201_CREATED
@@ -56,7 +56,7 @@ class TestRegisterEndpoint:
                 "last_name": "User",
                 "role": "student",
                 "grade_level": 10,
-            }
+            },
         )
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -72,7 +72,7 @@ class TestRegisterEndpoint:
                 "last_name": "User",
                 "role": "student",
                 "grade_level": 10,
-            }
+            },
         )
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -88,7 +88,7 @@ class TestRegisterEndpoint:
                 "last_name": "User",
                 "role": "student",
                 "grade_level": 10,
-            }
+            },
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -106,7 +106,7 @@ class TestLoginEndpoint:
             json={
                 "email": sample_student.email,
                 "password": "Password123",
-            }
+            },
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -122,7 +122,7 @@ class TestLoginEndpoint:
             json={
                 "email": sample_student.email,
                 "password": "WrongPassword123",
-            }
+            },
         )
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -134,7 +134,7 @@ class TestLoginEndpoint:
             json={
                 "email": "nonexistent@test.com",
                 "password": "Password123",
-            }
+            },
         )
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -147,10 +147,7 @@ class TestGetMeEndpoint:
 
     def test_get_me_success(self, client, sample_student, student_headers):
         """Test getting current user info."""
-        response = client.get(
-            "/api/v1/auth/me",
-            headers=student_headers
-        )
+        response = client.get("/api/v1/auth/me", headers=student_headers)
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -167,11 +164,13 @@ class TestGetMeEndpoint:
     def test_get_me_invalid_token(self, client):
         """Test getting current user with invalid token."""
         response = client.get(
-            "/api/v1/auth/me",
-            headers={"Authorization": "Bearer invalid_token"}
+            "/api/v1/auth/me", headers={"Authorization": "Bearer invalid_token"}
         )
 
-        assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+        assert response.status_code in [
+            status.HTTP_401_UNAUTHORIZED,
+            status.HTTP_403_FORBIDDEN,
+        ]
 
 
 @pytest.mark.integration
@@ -181,18 +180,14 @@ class TestLogoutEndpoint:
 
     def test_logout_success(self, client, sample_student, student_headers):
         """Test successful logout."""
-        response = client.post(
-            "/api/v1/auth/logout",
-            headers=student_headers
-        )
+        response = client.post("/api/v1/auth/logout", headers=student_headers)
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
     def test_logout_all_devices(self, client, sample_student, student_headers):
         """Test logout from all devices."""
         response = client.post(
-            "/api/v1/auth/logout?all_devices=true",
-            headers=student_headers
+            "/api/v1/auth/logout?all_devices=true", headers=student_headers
         )
 
         assert response.status_code == status.HTTP_204_NO_CONTENT

@@ -19,12 +19,11 @@ class TestTopicsDiscovery:
         assert "pagination" in data
         assert len(data["topics"]) >= 3  # Sample topics
 
-    def test_list_topics_filter_by_subject(self, client, student_headers, sample_topics):
+    def test_list_topics_filter_by_subject(
+        self, client, student_headers, sample_topics
+    ):
         """Test filtering topics by subject."""
-        response = client.get(
-            "/api/v1/topics?subject=Physics",
-            headers=student_headers
-        )
+        response = client.get("/api/v1/topics?subject=Physics", headers=student_headers)
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -33,10 +32,7 @@ class TestTopicsDiscovery:
 
     def test_list_topics_filter_by_grade(self, client, student_headers, sample_topics):
         """Test filtering topics by grade level."""
-        response = client.get(
-            "/api/v1/topics?grade_level=10",
-            headers=student_headers
-        )
+        response = client.get("/api/v1/topics?grade_level=10", headers=student_headers)
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -47,10 +43,7 @@ class TestTopicsDiscovery:
     def test_list_topics_pagination(self, client, student_headers, sample_topics):
         """Test topic pagination."""
         # First page
-        response = client.get(
-            "/api/v1/topics?limit=2",
-            headers=student_headers
-        )
+        response = client.get("/api/v1/topics?limit=2", headers=student_headers)
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -60,8 +53,7 @@ class TestTopicsDiscovery:
             # Second page
             next_cursor = data["pagination"]["next_cursor"]
             response2 = client.get(
-                f"/api/v1/topics?limit=2&cursor={next_cursor}",
-                headers=student_headers
+                f"/api/v1/topics?limit=2&cursor={next_cursor}", headers=student_headers
             )
             assert response2.status_code == status.HTTP_200_OK
 
@@ -69,10 +61,7 @@ class TestTopicsDiscovery:
         """Test getting detailed topic information."""
         topic_id = sample_topics[0].topic_id
 
-        response = client.get(
-            f"/api/v1/topics/{topic_id}",
-            headers=student_headers
-        )
+        response = client.get(f"/api/v1/topics/{topic_id}", headers=student_headers)
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -83,13 +72,14 @@ class TestTopicsDiscovery:
     def test_get_topic_not_found(self, client, student_headers):
         """Test getting non-existent topic."""
         response = client.get(
-            "/api/v1/topics/nonexistent_topic",
-            headers=student_headers
+            "/api/v1/topics/nonexistent_topic", headers=student_headers
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_get_topic_prerequisites(self, client, student_headers, sample_topics, db_session):
+    def test_get_topic_prerequisites(
+        self, client, student_headers, sample_topics, db_session
+    ):
         """Test getting topic prerequisites with completion status."""
         # Set up prerequisites
         topic = sample_topics[2]
@@ -97,8 +87,7 @@ class TestTopicsDiscovery:
         db_session.commit()
 
         response = client.get(
-            f"/api/v1/topics/{topic.topic_id}/prerequisites",
-            headers=student_headers
+            f"/api/v1/topics/{topic.topic_id}/prerequisites", headers=student_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -112,10 +101,7 @@ class TestTopicsSearch:
 
     def test_search_topics_success(self, client, student_headers, sample_topics):
         """Test searching topics by name."""
-        response = client.get(
-            "/api/v1/topics/search?q=Newton",
-            headers=student_headers
-        )
+        response = client.get("/api/v1/topics/search?q=Newton", headers=student_headers)
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -127,16 +113,15 @@ class TestTopicsSearch:
         for result in data["results"]:
             topic = result["topic"]
             assert (
-                "newton" in topic["name"].lower() or
-                "newton" in (topic.get("description") or "").lower()
+                "newton" in topic["name"].lower()
+                or "newton" in (topic.get("description") or "").lower()
             )
 
-    def test_search_topics_relevance_scoring(self, client, student_headers, sample_topics):
+    def test_search_topics_relevance_scoring(
+        self, client, student_headers, sample_topics
+    ):
         """Test that search results have relevance scores."""
-        response = client.get(
-            "/api/v1/topics/search?q=Law",
-            headers=student_headers
-        )
+        response = client.get("/api/v1/topics/search?q=Law", headers=student_headers)
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -147,18 +132,14 @@ class TestTopicsSearch:
 
     def test_search_topics_min_query_length(self, client, student_headers):
         """Test that short queries are rejected."""
-        response = client.get(
-            "/api/v1/topics/search?q=a",
-            headers=student_headers
-        )
+        response = client.get("/api/v1/topics/search?q=a", headers=student_headers)
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_search_topics_limit(self, client, student_headers, sample_topics):
         """Test search result limiting."""
         response = client.get(
-            "/api/v1/topics/search?q=Newton&limit=1",
-            headers=student_headers
+            "/api/v1/topics/search?q=Newton&limit=1", headers=student_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -180,7 +161,9 @@ class TestInterestsCatalog:
         assert "categories" in data
         assert len(data["interests"]) >= 5  # Sample interests
 
-    def test_list_interests_includes_popularity(self, client, student_headers, sample_interests):
+    def test_list_interests_includes_popularity(
+        self, client, student_headers, sample_interests
+    ):
         """Test that interests include popularity scores."""
         response = client.get("/api/v1/interests", headers=student_headers)
 
@@ -211,8 +194,7 @@ class TestInterestsCatalog:
         interest_id = sample_interests[0].interest_id
 
         response = client.get(
-            f"/api/v1/interests/{interest_id}",
-            headers=student_headers
+            f"/api/v1/interests/{interest_id}", headers=student_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -224,8 +206,7 @@ class TestInterestsCatalog:
     def test_get_interest_not_found(self, client, student_headers):
         """Test getting non-existent interest."""
         response = client.get(
-            "/api/v1/interests/nonexistent_interest",
-            headers=student_headers
+            "/api/v1/interests/nonexistent_interest", headers=student_headers
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND

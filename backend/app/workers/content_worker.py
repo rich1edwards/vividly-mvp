@@ -17,8 +17,7 @@ from app.services.content_generation_service import ContentGenerationService
 from app.core.config import settings
 
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -69,14 +68,16 @@ class ContentWorker:
 
             # Validate required fields
             if not all([student_query, student_id, grade_level]):
-                raise ValueError("Missing required fields: student_query, student_id, or grade_level")
+                raise ValueError(
+                    "Missing required fields: student_query, student_id, or grade_level"
+                )
 
             # Generate content through the pipeline
             result = await self.content_service.generate_content_from_query(
                 student_query=student_query,
                 student_id=student_id,
                 grade_level=grade_level,
-                interest=interest
+                interest=interest,
             )
 
             # Handle different result statuses
@@ -84,15 +85,13 @@ class ContentWorker:
                 await self._update_request_status(
                     request_id,
                     "needs_clarification",
-                    metadata={"questions": result.get("clarifying_questions")}
+                    metadata={"questions": result.get("clarifying_questions")},
                 )
                 return result
 
             if result.get("status") == "out_of_scope":
                 await self._update_request_status(
-                    request_id,
-                    "rejected",
-                    metadata={"reason": "out_of_scope"}
+                    request_id, "rejected", metadata={"reason": "out_of_scope"}
                 )
                 return result
 
@@ -101,7 +100,7 @@ class ContentWorker:
                 await self._update_request_status(
                     request_id,
                     "completed",
-                    metadata={"cache_hit": True, "cache_key": result.get("cache_key")}
+                    metadata={"cache_hit": True, "cache_key": result.get("cache_key")},
                 )
                 return result
 
@@ -113,8 +112,8 @@ class ContentWorker:
                 metadata={
                     "cache_key": result.get("cache_key"),
                     "topic_id": result.get("topic_id"),
-                    "generation_time_seconds": result.get("generation_time_seconds")
-                }
+                    "generation_time_seconds": result.get("generation_time_seconds"),
+                },
             )
 
             return result
@@ -124,19 +123,14 @@ class ContentWorker:
 
             # Update status: failed
             await self._update_request_status(
-                request_id,
-                "failed",
-                metadata={"error": str(e)}
+                request_id, "failed", metadata={"error": str(e)}
             )
 
             # Re-raise for Cloud Run retry logic
             raise
 
     async def _update_request_status(
-        self,
-        request_id: str,
-        status: str,
-        metadata: Dict[str, Any] = None
+        self, request_id: str, status: str, metadata: Dict[str, Any] = None
     ):
         """
         Update request status in database.
@@ -152,9 +146,11 @@ class ContentWorker:
             # Import here to avoid circular dependency
             from app.models.request_tracking import ContentRequest
 
-            request = db.query(ContentRequest).filter(
-                ContentRequest.request_id == request_id
-            ).first()
+            request = (
+                db.query(ContentRequest)
+                .filter(ContentRequest.request_id == request_id)
+                .first()
+            )
 
             if request:
                 request.status = status

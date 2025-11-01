@@ -35,7 +35,7 @@ try:
 
     result = session.execute(
         text("UPDATE users SET password_hash = :password_hash WHERE email = :email"),
-        {"password_hash": password_hash, "email": email}
+        {"password_hash": password_hash, "email": email},
     )
 
     session.commit()

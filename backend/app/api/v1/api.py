@@ -5,7 +5,20 @@ Combines all endpoint routers for the v1 API.
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, students, teachers, classes, admin, topics, content, cache, notifications, nlu, interests, monitoring
+from app.api.v1.endpoints import (
+    auth,
+    students,
+    teachers,
+    classes,
+    admin,
+    topics,
+    content,
+    cache,
+    notifications,
+    nlu,
+    interests,
+    monitoring,
+)
 
 
 api_router = APIRouter()
@@ -22,11 +35,19 @@ api_router.include_router(interests.router, prefix="/interests", tags=["Interest
 api_router.include_router(content.router, prefix="/content", tags=["Content Metadata"])
 
 # Internal API endpoints (Sprint 3)
-api_router.include_router(cache.router, prefix="/internal/v1", tags=["Cache (Internal)"])
-api_router.include_router(notifications.router, prefix="/internal/v1/notifications", tags=["Notifications (Internal)"])
+api_router.include_router(
+    cache.router, prefix="/internal/v1", tags=["Cache (Internal)"]
+)
+api_router.include_router(
+    notifications.router,
+    prefix="/internal/v1/notifications",
+    tags=["Notifications (Internal)"],
+)
 
 # User-facing notification endpoints
-api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
+api_router.include_router(
+    notifications.router, prefix="/notifications", tags=["Notifications"]
+)
 
 # Phase 3: AI Pipeline endpoints
 api_router.include_router(nlu.router, tags=["NLU & Topic Extraction"])

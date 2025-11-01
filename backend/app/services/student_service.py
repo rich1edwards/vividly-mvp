@@ -9,7 +9,13 @@ import secrets
 
 from app.models.user import User
 from app.models.interest import Interest, StudentInterest
-from app.models.progress import StudentProgress, StudentActivity, Topic, ProgressStatus, ActivityType
+from app.models.progress import (
+    StudentProgress,
+    StudentActivity,
+    Topic,
+    ProgressStatus,
+    ActivityType,
+)
 from app.models.class_student import ClassStudent
 from app.models.class_model import Class
 from app.schemas.student import (
@@ -46,7 +52,11 @@ def get_student_profile(db: Session, student_id: str) -> Dict:
         HTTPException: 404 if student not found
     """
     # Get student
-    student = db.query(User).filter(User.user_id == student_id, User.role == "student").first()
+    student = (
+        db.query(User)
+        .filter(User.user_id == student_id, User.role == "student")
+        .first()
+    )
     if not student:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -70,19 +80,31 @@ def get_student_profile(db: Session, student_id: str) -> Dict:
     )
 
     # Get progress summary
-    total_started = db.query(StudentProgress).filter(
-        StudentProgress.student_id == student_id,
-        StudentProgress.status.in_([ProgressStatus.IN_PROGRESS, ProgressStatus.COMPLETED]),
-    ).count()
+    total_started = (
+        db.query(StudentProgress)
+        .filter(
+            StudentProgress.student_id == student_id,
+            StudentProgress.status.in_(
+                [ProgressStatus.IN_PROGRESS, ProgressStatus.COMPLETED]
+            ),
+        )
+        .count()
+    )
 
-    total_completed = db.query(StudentProgress).filter(
-        StudentProgress.student_id == student_id,
-        StudentProgress.status == ProgressStatus.COMPLETED,
-    ).count()
+    total_completed = (
+        db.query(StudentProgress)
+        .filter(
+            StudentProgress.student_id == student_id,
+            StudentProgress.status == ProgressStatus.COMPLETED,
+        )
+        .count()
+    )
 
-    total_watch_time = db.query(StudentProgress.total_watch_time_seconds).filter(
-        StudentProgress.student_id == student_id
-    ).all()
+    total_watch_time = (
+        db.query(StudentProgress.total_watch_time_seconds)
+        .filter(StudentProgress.student_id == student_id)
+        .all()
+    )
     total_watch_seconds = sum([t[0] or 0 for t in total_watch_time])
 
     return {
@@ -123,7 +145,9 @@ def get_student_profile(db: Session, student_id: str) -> Dict:
     }
 
 
-def update_student_profile(db: Session, student_id: str, profile_data: StudentProfileUpdate) -> User:
+def update_student_profile(
+    db: Session, student_id: str, profile_data: StudentProfileUpdate
+) -> User:
     """
     Update student profile (name, grade level only).
 
@@ -138,7 +162,11 @@ def update_student_profile(db: Session, student_id: str, profile_data: StudentPr
     Raises:
         HTTPException: 404 if student not found
     """
-    student = db.query(User).filter(User.user_id == student_id, User.role == "student").first()
+    student = (
+        db.query(User)
+        .filter(User.user_id == student_id, User.role == "student")
+        .first()
+    )
     if not student:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -187,7 +215,9 @@ def get_student_interests(db: Session, student_id: str) -> List[Interest]:
     return interests
 
 
-def update_student_interests(db: Session, student_id: str, interests_data: StudentInterestsUpdate) -> List[Interest]:
+def update_student_interests(
+    db: Session, student_id: str, interests_data: StudentInterestsUpdate
+) -> List[Interest]:
     """
     Update student's interests (1-5 interests).
 
@@ -203,7 +233,11 @@ def update_student_interests(db: Session, student_id: str, interests_data: Stude
         HTTPException: 400 if validation fails, 404 if interest not found
     """
     # Validate student exists
-    student = db.query(User).filter(User.user_id == student_id, User.role == "student").first()
+    student = (
+        db.query(User)
+        .filter(User.user_id == student_id, User.role == "student")
+        .first()
+    )
     if not student:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -211,7 +245,11 @@ def update_student_interests(db: Session, student_id: str, interests_data: Stude
         )
 
     # Validate interests exist
-    interests = db.query(Interest).filter(Interest.interest_id.in_(interests_data.interest_ids)).all()
+    interests = (
+        db.query(Interest)
+        .filter(Interest.interest_id.in_(interests_data.interest_ids))
+        .all()
+    )
     if len(interests) != len(interests_data.interest_ids):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -257,7 +295,11 @@ def get_learning_progress(db: Session, student_id: str) -> LearningProgress:
         HTTPException: 404 if student not found
     """
     # Validate student exists
-    student = db.query(User).filter(User.user_id == student_id, User.role == "student").first()
+    student = (
+        db.query(User)
+        .filter(User.user_id == student_id, User.role == "student")
+        .first()
+    )
     if not student:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -390,7 +432,11 @@ def join_class(db: Session, student_id: str, class_code: str) -> Class:
         HTTPException: 404 if class not found, 400 if already enrolled or class archived
     """
     # Validate student exists
-    student = db.query(User).filter(User.user_id == student_id, User.role == "student").first()
+    student = (
+        db.query(User)
+        .filter(User.user_id == student_id, User.role == "student")
+        .first()
+    )
     if not student:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -415,7 +461,10 @@ def join_class(db: Session, student_id: str, class_code: str) -> Class:
     # Check if already enrolled
     existing_enrollment = (
         db.query(ClassStudent)
-        .filter(ClassStudent.class_id == class_obj.class_id, ClassStudent.student_id == student_id)
+        .filter(
+            ClassStudent.class_id == class_obj.class_id,
+            ClassStudent.student_id == student_id,
+        )
         .first()
     )
     if existing_enrollment:

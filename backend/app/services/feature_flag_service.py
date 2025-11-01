@@ -189,7 +189,9 @@ class FeatureFlagService:
         # Clear cache
         self._clear_flag_cache(key, organization_id)
 
-        logger.info(f"Created feature flag: {key} (enabled={enabled}, rollout={rollout_percentage}%)")
+        logger.info(
+            f"Created feature flag: {key} (enabled={enabled}, rollout={rollout_percentage}%)"
+        )
         return flag
 
     def update_flag(
@@ -327,7 +329,9 @@ class FeatureFlagService:
         logger.info(f"Set override for {flag_key}, user {user_id}: {enabled}")
         return override
 
-    def remove_user_override(self, flag_key: str, user_id: str, organization_id: Optional[str] = None) -> bool:
+    def remove_user_override(
+        self, flag_key: str, user_id: str, organization_id: Optional[str] = None
+    ) -> bool:
         """
         Remove user-specific feature flag override.
 
@@ -394,7 +398,9 @@ class FeatureFlagService:
 
     # Private helper methods
 
-    def _get_flag(self, flag_key: str, organization_id: Optional[str] = None) -> Optional[FeatureFlag]:
+    def _get_flag(
+        self, flag_key: str, organization_id: Optional[str] = None
+    ) -> Optional[FeatureFlag]:
         """Get feature flag, preferring org-specific over global."""
         # Try org-specific first
         if organization_id:
@@ -440,7 +446,9 @@ class FeatureFlagService:
 
         return override.enabled if override else None
 
-    def _check_rollout(self, flag_key: str, user_id: str, rollout_percentage: int) -> bool:
+    def _check_rollout(
+        self, flag_key: str, user_id: str, rollout_percentage: int
+    ) -> bool:
         """
         Check if user is in rollout percentage using consistent hashing.
 

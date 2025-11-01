@@ -23,7 +23,9 @@ from app.models import User
 # Configuration
 JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-key-CHANGE-IN-PRODUCTION")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # 24 hours
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(
+    os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "1440")
+)  # 24 hours
 
 # Security scheme
 security = HTTPBearer()
@@ -32,6 +34,7 @@ security = HTTPBearer()
 # ============================================================================
 # Password Hashing
 # ============================================================================
+
 
 def hash_password(password: str) -> str:
     """
@@ -44,8 +47,8 @@ def hash_password(password: str) -> str:
         Hashed password string
     """
     salt = bcrypt.gensalt(rounds=12)
-    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
-    return hashed.decode('utf-8')
+    hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+    return hashed.decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -61,8 +64,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     try:
         return bcrypt.checkpw(
-            plain_password.encode('utf-8'),
-            hashed_password.encode('utf-8')
+            plain_password.encode("utf-8"), hashed_password.encode("utf-8")
         )
     except Exception:
         return False
@@ -72,8 +74,10 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 # JWT Token Management
 # ============================================================================
 
+
 class TokenPayload(BaseModel):
     """JWT token payload schema."""
+
     sub: str  # user_id
     email: str
     role: str
@@ -105,7 +109,7 @@ def create_access_token(user_id: str, email: str, role: str, org_id: str) -> str
         "org_id": org_id,
         "exp": expire,
         "iat": now,
-        "type": "access"
+        "type": "access",
     }
 
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
@@ -131,21 +135,18 @@ def decode_access_token(token: str) -> TokenPayload:
         # Validate token type
         if payload.get("type") != "access":
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token type"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token type"
             )
 
         return TokenPayload(**payload)
 
     except jwt.ExpiredSignatureError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired"
         )
     except jwt.InvalidTokenError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
         )
 
 
@@ -153,9 +154,10 @@ def decode_access_token(token: str) -> TokenPayload:
 # Authentication Dependencies
 # ============================================================================
 
+
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ) -> User:
     """
     FastAPI dependency to get current authenticated user.
@@ -180,21 +182,19 @@ async def get_current_user(
 
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found"
         )
 
     if user.status != "active":
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Account is {user.status}"
+            status_code=status.HTTP_403_FORBIDDEN, detail=f"Account is {user.status}"
         )
 
     return user
 
 
 async def get_current_active_user(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ) -> User:
     """
     FastAPI dependency to get current active user.
@@ -212,8 +212,7 @@ async def get_current_active_user(
     """
     if not current_user.status == "active":
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is not active"
+            status_code=status.HTTP_403_FORBIDDEN, detail="User account is not active"
         )
 
     return current_user
@@ -222,6 +221,7 @@ async def get_current_active_user(
 # ============================================================================
 # Role-Based Access Control (RBAC)
 # ============================================================================
+
 
 class RoleChecker:
     """
@@ -261,7 +261,7 @@ class RoleChecker:
         if current_user.role not in self.allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Insufficient permissions. Required roles: {', '.join(self.allowed_roles)}"
+                detail=f"Insufficient permissions. Required roles: {', '.join(self.allowed_roles)}",
             )
 
         return current_user
@@ -300,7 +300,9 @@ def check_organization_access(user: User, target_org_id: str) -> bool:
     return False
 
 
-def check_student_access(current_user: User, target_student_id: str, db: Session) -> bool:
+def check_student_access(
+    current_user: User, target_student_id: str, db: Session
+) -> bool:
     """
     Check if user has permission to access target student data.
 
@@ -334,11 +336,17 @@ def check_student_access(current_user: User, target_student_id: str, db: Session
     if current_user.role == "teacher":
         # Check if student is in any of teacher's classes
         from app.models import ClassStudent, Class
-        is_in_class = db.query(ClassStudent).join(Class).filter(
-            ClassStudent.student_id == target_student_id,
-            Class.teacher_id == current_user.id,
-            ClassStudent.status == "active"
-        ).first()
+
+        is_in_class = (
+            db.query(ClassStudent)
+            .join(Class)
+            .filter(
+                ClassStudent.student_id == target_student_id,
+                Class.teacher_id == current_user.id,
+                ClassStudent.status == "active",
+            )
+            .first()
+        )
 
         return is_in_class is not None
 
@@ -348,6 +356,7 @@ def check_student_access(current_user: User, target_student_id: str, db: Session
 # ============================================================================
 # Login Attempt Tracking (Anti-Brute Force)
 # ============================================================================
+
 
 class LoginAttemptTracker:
     """
@@ -420,6 +429,7 @@ class LoginAttemptTracker:
 # Session Management
 # ============================================================================
 
+
 async def revoke_user_sessions(user_id: str, redis_client):
     """
     Revoke all active sessions for a user.
@@ -456,6 +466,7 @@ async def is_session_revoked(user_id: str, redis_client) -> bool:
 # ============================================================================
 # Utility Functions
 # ============================================================================
+
 
 def get_client_ip(request: Request) -> str:
     """
@@ -496,7 +507,7 @@ def generate_password_reset_token(user_id: str, email: str) -> str:
         "email": email,
         "exp": expire,
         "iat": now,
-        "type": "password_reset"
+        "type": "password_reset",
     }
 
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)

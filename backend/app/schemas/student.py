@@ -10,6 +10,7 @@ from datetime import datetime
 
 class StudentProfileUpdate(BaseModel):
     """Student profile update request."""
+
     first_name: Optional[str] = Field(None, min_length=1, max_length=100)
     last_name: Optional[str] = Field(None, min_length=1, max_length=100)
     grade_level: Optional[int] = Field(None, ge=9, le=12)
@@ -17,6 +18,7 @@ class StudentProfileUpdate(BaseModel):
 
 class StudentProfile(BaseModel):
     """Complete student profile."""
+
     user_id: str
     email: str
     first_name: str
@@ -38,6 +40,7 @@ class StudentProfile(BaseModel):
 
 class InterestBase(BaseModel):
     """Base interest schema."""
+
     interest_id: str
     name: str
     category: str
@@ -45,19 +48,21 @@ class InterestBase(BaseModel):
 
 class StudentInterestsUpdate(BaseModel):
     """Update student interests (1-5 interests)."""
+
     interest_ids: List[str] = Field(..., min_length=1, max_length=5)
 
-    @field_validator('interest_ids', mode='after')
+    @field_validator("interest_ids", mode="after")
     @classmethod
     def validate_unique_interests(cls, v: List[str]) -> List[str]:
         """Ensure interest IDs are unique."""
         if len(v) != len(set(v)):
-            raise ValueError('Interest IDs must be unique')
+            raise ValueError("Interest IDs must be unique")
         return v
 
 
 class TopicProgress(BaseModel):
     """Topic progress details."""
+
     topic_id: str
     topic_name: str
     subject: str
@@ -71,6 +76,7 @@ class TopicProgress(BaseModel):
 
 class StudentActivity(BaseModel):
     """Student activity log entry."""
+
     activity_id: str
     activity_type: str
     created_at: datetime
@@ -80,6 +86,7 @@ class StudentActivity(BaseModel):
 
 class LearningProgress(BaseModel):
     """Complete learning progress."""
+
     topics: List[TopicProgress] = []
     recent_activity: List[StudentActivity] = []
     total_topics_started: int = 0
@@ -90,4 +97,5 @@ class LearningProgress(BaseModel):
 
 class JoinClassRequest(BaseModel):
     """Join class by code request."""
+
     class_code: str = Field(..., min_length=1, max_length=50)

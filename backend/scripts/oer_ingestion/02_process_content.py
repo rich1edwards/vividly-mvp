@@ -18,18 +18,9 @@ from utils.xml_parser import CNXMLParser
 
 # Book configurations
 BOOKS = {
-    'physics-2e': {
-        'subject': 'physics',
-        'title': 'College Physics 2e'
-    },
-    'chemistry-2e': {
-        'subject': 'chemistry',
-        'title': 'Chemistry 2e'
-    },
-    'biology-2e': {
-        'subject': 'biology',
-        'title': 'Biology 2e'
-    }
+    "physics-2e": {"subject": "physics", "title": "College Physics 2e"},
+    "chemistry-2e": {"subject": "chemistry", "title": "Chemistry 2e"},
+    "biology-2e": {"subject": "biology", "title": "Biology 2e"},
 }
 
 
@@ -53,19 +44,19 @@ def process_book(book_id: str, raw_dir: Path, output_dir: Path) -> dict:
 
     if not book_dir.exists():
         print(f"  ✗ Error: Directory not found: {book_dir}")
-        return {'error': 'Directory not found'}
+        return {"error": "Directory not found"}
 
     # Parse book
     parser = CNXMLParser()
     try:
-        book_data = parser.parse_book(str(book_dir), book_config['subject'])
+        book_data = parser.parse_book(str(book_dir), book_config["subject"])
     except Exception as e:
         print(f"  ✗ Error parsing book: {e}")
-        return {'error': str(e)}
+        return {"error": str(e)}
 
     # Count content
-    total_chapters = len(book_data['chapters'])
-    total_blocks = sum(len(ch['content_blocks']) for ch in book_data['chapters'])
+    total_chapters = len(book_data["chapters"])
+    total_blocks = sum(len(ch["content_blocks"]) for ch in book_data["chapters"])
 
     print(f"  Title: {book_data['title']}")
     print(f"  Subject: {book_data['subject']}")
@@ -74,7 +65,7 @@ def process_book(book_id: str, raw_dir: Path, output_dir: Path) -> dict:
 
     # Save to JSON
     output_file = output_dir / f"{book_id}.json"
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         json.dump(book_data, f, indent=2, ensure_ascii=False)
 
     file_size_mb = output_file.stat().st_size / (1024 * 1024)
@@ -82,21 +73,21 @@ def process_book(book_id: str, raw_dir: Path, output_dir: Path) -> dict:
     print("")
 
     return {
-        'book_id': book_id,
-        'title': book_data['title'],
-        'chapters': total_chapters,
-        'content_blocks': total_blocks,
-        'output_file': str(output_file),
-        'size_mb': file_size_mb
+        "book_id": book_id,
+        "title": book_data["title"],
+        "chapters": total_chapters,
+        "content_blocks": total_blocks,
+        "output_file": str(output_file),
+        "size_mb": file_size_mb,
     }
 
 
 def main():
     """Main processing function."""
     script_dir = Path(__file__).parent
-    data_dir = script_dir / 'data'
-    raw_dir = data_dir / 'raw'
-    processed_dir = data_dir / 'processed'
+    data_dir = script_dir / "data"
+    raw_dir = data_dir / "raw"
+    processed_dir = data_dir / "processed"
 
     # Create output directory
     processed_dir.mkdir(parents=True, exist_ok=True)
@@ -118,8 +109,8 @@ def main():
     print("=" * 60)
     print("")
 
-    successful = [r for r in results if 'error' not in r]
-    failed = [r for r in results if 'error' in r]
+    successful = [r for r in results if "error" not in r]
+    failed = [r for r in results if "error" in r]
 
     if successful:
         print("Successfully processed:")
@@ -134,9 +125,9 @@ def main():
             print(f"      Size: {result['size_mb']:.2f} MB")
             print("")
 
-            total_chapters += result['chapters']
-            total_blocks += result['content_blocks']
-            total_size += result['size_mb']
+            total_chapters += result["chapters"]
+            total_blocks += result["content_blocks"]
+            total_size += result["size_mb"]
 
         print(f"Totals:")
         print(f"  Books: {len(successful)}")
@@ -154,5 +145,5 @@ def main():
     print("Next step: python 03_chunk_content.py")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

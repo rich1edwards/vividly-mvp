@@ -57,7 +57,7 @@ class NLUService:
         grade_level: int,
         student_id: Optional[str] = None,
         recent_topics: Optional[List[str]] = None,
-        subject_context: Optional[str] = None
+        subject_context: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Extract topic from student natural language query.
@@ -108,7 +108,7 @@ class NLUService:
                 topics=topics,
                 grade_level=grade_level,
                 recent_topics=recent_topics or [],
-                subject_context=subject_context
+                subject_context=subject_context,
             )
 
             # Call Gemini with retry
@@ -120,8 +120,7 @@ class NLUService:
             # Validate topic_id if present
             if result.get("topic_id"):
                 is_valid = await self._validate_topic_id(
-                    result["topic_id"],
-                    grade_level
+                    result["topic_id"], grade_level
                 )
                 if not is_valid:
                     logger.warning(f"Invalid topic_id: {result['topic_id']}")
@@ -129,7 +128,7 @@ class NLUService:
                     result["clarification_needed"] = True
                     result["clarifying_questions"] = [
                         "Could you rephrase your question?",
-                        "Which subject are you studying?"
+                        "Which subject are you studying?",
                     ]
 
             return result
@@ -144,7 +143,7 @@ class NLUService:
         topics: List[Dict],
         grade_level: int,
         recent_topics: List[str],
-        subject_context: Optional[str]
+        subject_context: Optional[str],
     ) -> str:
         """Build prompt for Gemini topic extraction."""
 
@@ -206,11 +205,7 @@ Respond with JSON only:"""
 
         return prompt
 
-    async def _call_gemini_with_retry(
-        self,
-        prompt: str,
-        max_retries: int = 3
-    ) -> str:
+    async def _call_gemini_with_retry(self, prompt: str, max_retries: int = 3) -> str:
         """
         Call Gemini API with exponential backoff retry.
 
@@ -230,7 +225,7 @@ Respond with JSON only:"""
                         "top_p": 0.8,
                         "top_k": 40,
                         "max_output_tokens": 512,
-                    }
+                    },
                 )
                 return response.text
 
@@ -238,8 +233,10 @@ Respond with JSON only:"""
                 if attempt == max_retries - 1:
                     raise
 
-                wait_time = 2 ** attempt  # Exponential backoff
-                logger.warning(f"Gemini API error (attempt {attempt + 1}/{max_retries}): {e}")
+                wait_time = 2**attempt  # Exponential backoff
+                logger.warning(
+                    f"Gemini API error (attempt {attempt + 1}/{max_retries}): {e}"
+                )
                 await asyncio.sleep(wait_time)
 
     def _parse_gemini_response(self, response_text: str) -> Dict:
@@ -260,8 +257,8 @@ Respond with JSON only:"""
         text = text.strip()
 
         # Find JSON boundaries
-        json_start = text.find('{')
-        json_end = text.rfind('}') + 1
+        json_start = text.find("{")
+        json_end = text.rfind("}") + 1
 
         if json_start == -1 or json_end == 0:
             raise ValueError(f"No JSON found in response: {response_text[:200]}")
@@ -272,7 +269,12 @@ Respond with JSON only:"""
             result = json.loads(json_str)
 
             # Validate required fields
-            required_fields = ["confidence", "topic_id", "clarification_needed", "out_of_scope"]
+            required_fields = [
+                "confidence",
+                "topic_id",
+                "clarification_needed",
+                "out_of_scope",
+            ]
             for field in required_fields:
                 if field not in result:
                     raise ValueError(f"Missing required field: {field}")
@@ -297,43 +299,40 @@ Respond with JSON only:"""
                 "name": "Newton's First Law",
                 "subject": "Physics",
                 "grade_levels": [9, 10, 11, 12],
-                "keywords": ["inertia", "motion", "force", "rest"]
+                "keywords": ["inertia", "motion", "force", "rest"],
             },
             {
                 "topic_id": "topic_phys_mech_newton_2",
                 "name": "Newton's Second Law",
                 "subject": "Physics",
                 "grade_levels": [9, 10, 11, 12],
-                "keywords": ["force", "mass", "acceleration", "F=ma"]
+                "keywords": ["force", "mass", "acceleration", "F=ma"],
             },
             {
                 "topic_id": "topic_phys_mech_newton_3",
                 "name": "Newton's Third Law",
                 "subject": "Physics",
                 "grade_levels": [9, 10, 11, 12],
-                "keywords": ["action", "reaction", "force pairs", "equal opposite"]
+                "keywords": ["action", "reaction", "force pairs", "equal opposite"],
             },
             {
                 "topic_id": "topic_phys_energy_kinetic",
                 "name": "Kinetic Energy",
                 "subject": "Physics",
                 "grade_levels": [10, 11, 12],
-                "keywords": ["KE", "energy", "motion", "velocity", "1/2mv²"]
+                "keywords": ["KE", "energy", "motion", "velocity", "1/2mv²"],
             },
             {
                 "topic_id": "topic_chem_atoms_structure",
                 "name": "Atomic Structure",
                 "subject": "Chemistry",
                 "grade_levels": [9, 10, 11, 12],
-                "keywords": ["protons", "neutrons", "electrons", "nucleus"]
-            }
+                "keywords": ["protons", "neutrons", "electrons", "nucleus"],
+            },
         ]
 
         # Filter by grade level
-        grade_topics = [
-            t for t in all_topics
-            if grade_level in t["grade_levels"]
-        ]
+        grade_topics = [t for t in all_topics if grade_level in t["grade_levels"]]
 
         return grade_topics
 
@@ -364,7 +363,7 @@ Respond with JSON only:"""
                 "clarification_needed": False,
                 "clarifying_questions": [],
                 "out_of_scope": False,
-                "reasoning": "Matched keywords: newton, third"
+                "reasoning": "Matched keywords: newton, third",
             }
         elif "newton" in query_lower and "second" in query_lower:
             return {
@@ -374,7 +373,7 @@ Respond with JSON only:"""
                 "clarification_needed": False,
                 "clarifying_questions": [],
                 "out_of_scope": False,
-                "reasoning": "Matched keywords: newton, second"
+                "reasoning": "Matched keywords: newton, second",
             }
         elif "newton" in query_lower:
             return {
@@ -384,10 +383,10 @@ Respond with JSON only:"""
                 "clarification_needed": True,
                 "clarifying_questions": [
                     "Which Newton's Law? First, Second, or Third?",
-                    "Or Newton's Law of Universal Gravitation?"
+                    "Or Newton's Law of Universal Gravitation?",
                 ],
                 "out_of_scope": False,
-                "reasoning": "Ambiguous - multiple Newton topics"
+                "reasoning": "Ambiguous - multiple Newton topics",
             }
         elif any(word in query_lower for word in ["pizza", "movie", "game", "music"]):
             return {
@@ -397,7 +396,7 @@ Respond with JSON only:"""
                 "clarification_needed": False,
                 "clarifying_questions": [],
                 "out_of_scope": True,
-                "reasoning": "Non-academic query"
+                "reasoning": "Non-academic query",
             }
         else:
             return {
@@ -407,10 +406,10 @@ Respond with JSON only:"""
                 "clarification_needed": True,
                 "clarifying_questions": [
                     "Could you be more specific about which topic you'd like to learn?",
-                    "Which subject are you studying? (Physics, Chemistry, Biology, Math)"
+                    "Which subject are you studying? (Physics, Chemistry, Biology, Math)",
                 ],
                 "out_of_scope": False,
-                "reasoning": "Unclear query - need more information"
+                "reasoning": "Unclear query - need more information",
             }
 
     def _fallback_response(self, student_query: str) -> Dict:
@@ -423,10 +422,10 @@ Respond with JSON only:"""
             "clarifying_questions": [
                 "I'm having trouble understanding your question.",
                 "Could you rephrase it or provide more details?",
-                "Which subject are you studying?"
+                "Which subject are you studying?",
             ],
             "out_of_scope": False,
-            "reasoning": "NLU service temporarily unavailable"
+            "reasoning": "NLU service temporarily unavailable",
         }
 
     def _error_response(self, error_message: str) -> Dict:
@@ -438,7 +437,7 @@ Respond with JSON only:"""
             "clarification_needed": True,
             "clarifying_questions": [error_message],
             "out_of_scope": False,
-            "reasoning": "Invalid input"
+            "reasoning": "Invalid input",
         }
 
 

@@ -23,12 +23,16 @@ class Interest(Base):
 
     # Interest details
     name = Column(String(255), nullable=False)
-    category = Column(String(100), nullable=True, index=True)  # sports, music, art, etc.
+    category = Column(
+        String(100), nullable=True, index=True
+    )  # sports, music, art, etc.
     description = Column(String(500), nullable=True)
     display_order = Column(Integer, nullable=True)
 
     # Relationships
-    student_interests = relationship("StudentInterest", back_populates="interest", cascade="all, delete-orphan")
+    student_interests = relationship(
+        "StudentInterest", back_populates="interest", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         return f"<Interest {self.name} ({self.category})>"
@@ -45,8 +49,12 @@ class StudentInterest(Base):
     __tablename__ = "student_interest"
 
     # Primary key (composite)
-    student_id = Column(String(100), ForeignKey('users.user_id'), primary_key=True, index=True)
-    interest_id = Column(String(100), ForeignKey('interests.interest_id'), primary_key=True, index=True)
+    student_id = Column(
+        String(100), ForeignKey("users.user_id"), primary_key=True, index=True
+    )
+    interest_id = Column(
+        String(100), ForeignKey("interests.interest_id"), primary_key=True, index=True
+    )
 
     # Timestamp
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
@@ -56,4 +64,6 @@ class StudentInterest(Base):
     interest = relationship("Interest", back_populates="student_interests")
 
     def __repr__(self) -> str:
-        return f"<StudentInterest student={self.student_id} interest={self.interest_id}>"
+        return (
+            f"<StudentInterest student={self.student_id} interest={self.interest_id}>"
+        )

@@ -8,9 +8,4 @@ from .xml_parser import CNXMLParser
 from .chunker import TextChunker
 from .vertex_ai_client import VertexAIEmbeddings, VertexVectorSearch
 
-__all__ = [
-    'CNXMLParser',
-    'TextChunker',
-    'VertexAIEmbeddings',
-    'VertexVectorSearch'
-]
+__all__ = ["CNXMLParser", "TextChunker", "VertexAIEmbeddings", "VertexVectorSearch"]

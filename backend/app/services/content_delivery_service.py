@@ -41,7 +41,7 @@ class ContentDeliveryService:
         cache_key: str,
         asset_type: str = "video",
         quality: str = "1080p",
-        ttl_minutes: int = 15
+        ttl_minutes: int = 15,
     ) -> Dict:
         """
         Generate signed URL for content asset.
@@ -83,7 +83,9 @@ class ContentDeliveryService:
         # Validate asset type
         valid_types = ["video", "audio", "script", "thumbnail"]
         if asset_type not in valid_types:
-            raise ValueError(f"Invalid asset_type: {asset_type}. Must be one of {valid_types}")
+            raise ValueError(
+                f"Invalid asset_type: {asset_type}. Must be one of {valid_types}"
+            )
 
         # Update access stats
         self.access_stats["total_requests"] += 1
@@ -96,9 +98,7 @@ class ContentDeliveryService:
 
         # Generate signed URL
         signed_url = await self._generate_gcs_signed_url(
-            bucket_name=self.content_bucket,
-            blob_path=gcs_path,
-            ttl_minutes=ttl_minutes
+            bucket_name=self.content_bucket, blob_path=gcs_path, ttl_minutes=ttl_minutes
         )
 
         # Calculate expiration
@@ -118,13 +118,10 @@ class ContentDeliveryService:
             "expires_in_seconds": expires_in_seconds,
             "cdn_cache_status": "BYPASS",  # Will be "HIT" or "MISS" when CDN is enabled
             "file_size_bytes": file_size,
-            "duration_seconds": duration
+            "duration_seconds": duration,
         }
 
-    async def generate_batch_urls(
-        self,
-        requests: List[Dict]
-    ) -> Dict:
+    async def generate_batch_urls(self, requests: List[Dict]) -> Dict:
         """
         Generate multiple signed URLs in batch.
 
@@ -153,7 +150,7 @@ class ContentDeliveryService:
             3
         """
         urls = []
-        min_ttl = float('inf')
+        min_ttl = float("inf")
 
         for req in requests:
             try:
@@ -161,7 +158,7 @@ class ContentDeliveryService:
                     cache_key=req["cache_key"],
                     asset_type=req["type"],
                     quality=req.get("quality", "1080p"),
-                    ttl_minutes=self.default_ttl_minutes
+                    ttl_minutes=self.default_ttl_minutes,
                 )
                 urls.append(url_result)
 
@@ -171,25 +168,22 @@ class ContentDeliveryService:
 
             except Exception as e:
                 logger.error(f"Failed to generate URL for {req}: {e}")
-                urls.append({
-                    "cache_key": req["cache_key"],
-                    "asset_type": req["type"],
-                    "error": str(e),
-                    "url": None
-                })
+                urls.append(
+                    {
+                        "cache_key": req["cache_key"],
+                        "asset_type": req["type"],
+                        "error": str(e),
+                        "url": None,
+                    }
+                )
 
         return {
             "urls": urls,
             "generated_at": datetime.utcnow().isoformat() + "Z",
-            "expires_in_seconds": int(min_ttl) if min_ttl != float('inf') else 0
+            "expires_in_seconds": int(min_ttl) if min_ttl != float("inf") else 0,
         }
 
-    def _build_gcs_path(
-        self,
-        cache_key: str,
-        asset_type: str,
-        quality: str
-    ) -> str:
+    def _build_gcs_path(self, cache_key: str, asset_type: str, quality: str) -> str:
         """
         Build GCS blob path for asset.
 
@@ -219,10 +213,7 @@ class ContentDeliveryService:
             raise ValueError(f"Unknown asset_type: {asset_type}")
 
     async def _generate_gcs_signed_url(
-        self,
-        bucket_name: str,
-        blob_path: str,
-        ttl_minutes: int = 15
+        self, bucket_name: str, blob_path: str, ttl_minutes: int = 15
     ) -> str:
         """
         Generate signed GCS URL with expiration.
@@ -253,9 +244,7 @@ class ContentDeliveryService:
 
             # Generate signed URL
             signed_url = blob.generate_signed_url(
-                version="v4",
-                expiration=timedelta(minutes=ttl_minutes),
-                method="GET"
+                version="v4", expiration=timedelta(minutes=ttl_minutes), method="GET"
             )
 
             return signed_url
@@ -264,11 +253,7 @@ class ContentDeliveryService:
             logger.error(f"Failed to generate signed URL for {blob_path}: {e}")
             raise
 
-    async def _get_file_size(
-        self,
-        bucket_name: str,
-        blob_path: str
-    ) -> Optional[int]:
+    async def _get_file_size(self, bucket_name: str, blob_path: str) -> Optional[int]:
         """
         Get file size in bytes.
 
@@ -296,11 +281,7 @@ class ContentDeliveryService:
             logger.error(f"Failed to get file size for {blob_path}: {e}")
             return None
 
-    async def _get_duration(
-        self,
-        cache_key: str,
-        asset_type: str
-    ) -> Optional[int]:
+    async def _get_duration(self, cache_key: str, asset_type: str) -> Optional[int]:
         """
         Get asset duration from metadata.
 
