@@ -21,6 +21,9 @@ jobs:
   backend-sast:
     name: Backend SAST (Bandit)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -63,6 +66,9 @@ jobs:
   semgrep-scan:
     name: Advanced SAST (Semgrep)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     container:
       image: returntocorp/semgrep
     steps:
@@ -216,6 +222,9 @@ jobs:
   container-security:
     name: Container Security (Trivy)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -254,6 +263,9 @@ jobs:
   infrastructure-security:
     name: Infrastructure Security
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     if: github.event_name != 'schedule'  # Skip on scheduled runs
     steps:
       - name: Checkout code
