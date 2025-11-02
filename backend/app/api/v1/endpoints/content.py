@@ -47,6 +47,8 @@ from app.services.request_monitoring_service import (
     get_monitoring_service,
     RequestMonitoringService,
 )
+from app.services.pubsub_service import get_pubsub_service
+from app.services.content_request_service import ContentRequestService
 from app.utils.dependencies import get_current_user
 from app.models.user import User
 
@@ -732,13 +734,13 @@ async def generate_content(
     ```
     """
     try:
-        # Generate unique request ID for monitoring
-        request_id = str(uuid.uuid4())
+        # Generate unique correlation ID for distributed tracing
+        correlation_id = f"req_{uuid.uuid4().hex[:16]}"
         monitoring_service = get_monitoring_service()
 
         # Track: Request Received
         monitoring_service.track_event(
-            request_id=request_id,
+            request_id=correlation_id,
             student_id=request.student_id,
             stage=RequestMonitoringService.STAGE_REQUEST_RECEIVED,
             status="completed",
@@ -748,9 +750,6 @@ async def generate_content(
             },
         )
 
-        # Initialize content generation service
-        content_gen_service = ContentGenerationService()
-
         # If interest not provided, use LLM to match student's interest to their request
         interest_to_use = request.interest
         if not interest_to_use and current_user.role == "student":
@@ -758,7 +757,7 @@ async def generate_content(
 
             # Track: Interest Matching Started
             monitoring_service.track_event(
-                request_id=request_id,
+                request_id=correlation_id,
                 student_id=request.student_id,
                 stage=RequestMonitoringService.STAGE_INTEREST_MATCH,
                 status="in_progress",
@@ -774,7 +773,7 @@ async def generate_content(
 
                 # Track: Interest Matching Completed
                 monitoring_service.track_event(
-                    request_id=request_id,
+                    request_id=correlation_id,
                     student_id=request.student_id,
                     stage=RequestMonitoringService.STAGE_INTEREST_MATCH,
                     status="completed",
@@ -798,7 +797,7 @@ async def generate_content(
 
                 # Track: Interest Matching Failed
                 monitoring_service.track_event(
-                    request_id=request_id,
+                    request_id=correlation_id,
                     student_id=request.student_id,
                     stage=RequestMonitoringService.STAGE_INTEREST_MATCH,
                     status="completed",
@@ -806,45 +805,191 @@ async def generate_content(
                     metadata={"no_match": True},
                 )
 
-        # Generate content asynchronously
-        result = await content_gen_service.generate_content_from_query(
-            student_query=request.student_query,
+        # ASYNC ARCHITECTURE: Create ContentRequest and publish to Pub/Sub
+        # This decouples the API from long-running video generation tasks
+
+        # 1. Create ContentRequest record in database
+        content_req_service = ContentRequestService()
+        content_request = content_req_service.create_request(
+            db=db,
             student_id=request.student_id,
+            topic=request.student_query,
+            learning_objective=None,
+            grade_level=str(request.grade_level),
+            duration_minutes=3,
+            correlation_id=correlation_id,
+        )
+
+        logger.info(
+            f"Created ContentRequest: id={content_request.id}, "
+            f"correlation_id={correlation_id}"
+        )
+
+        # 2. Publish request to Pub/Sub for async processing by worker
+        pubsub_service = get_pubsub_service()
+        publish_result = await pubsub_service.publish_content_request(
+            request_id=str(content_request.id),
+            correlation_id=correlation_id,
+            student_id=request.student_id,
+            student_query=request.student_query,
             grade_level=request.grade_level,
             interest=interest_to_use,
         )
 
-        # Return response based on result status
-        if result.get("status") == "completed":
-            return ContentGenerationResponse(
-                status="completed",
-                request_id=result.get("request_id"),
-                cache_key=result.get("cache_key"),
-                message="Content generation completed successfully",
-                content_url=result.get("video_url"),
-                estimated_completion_seconds=0,
-            )
-        elif result.get("status") == "cached":
-            return ContentGenerationResponse(
-                status="completed",
-                cache_key=result.get("cache_key"),
-                message="Content retrieved from cache",
-                content_url=result.get("video_url"),
-                estimated_completion_seconds=0,
-            )
-        else:
-            # Generation started or in progress
-            return ContentGenerationResponse(
-                status=result.get("status", "pending"),
-                request_id=result.get("request_id"),
-                cache_key=result.get("cache_key"),
-                message=f"Content generation {result.get('status', 'pending')}",
-                estimated_completion_seconds=result.get("estimated_seconds", 180),
-            )
+        logger.info(
+            f"Published to Pub/Sub: message_id={publish_result['message_id']}, "
+            f"request_id={content_request.id}"
+        )
+
+        # Track: Request Published
+        monitoring_service.track_event(
+            request_id=correlation_id,
+            student_id=request.student_id,
+            stage="request_published",
+            status="completed",
+            metadata={
+                "content_request_id": str(content_request.id),
+                "pubsub_message_id": publish_result["message_id"],
+                "topic": publish_result["topic"],
+            },
+        )
+
+        # 3. Return 202 Accepted immediately (no waiting for video generation)
+        return ContentGenerationResponse(
+            status="pending",
+            request_id=str(content_request.id),
+            cache_key=None,
+            message="Content generation request received. Poll /api/v1/content/request/{request_id}/status for progress.",
+            content_url=None,
+            estimated_completion_seconds=180,
+        )
 
     except Exception as e:
         logger.error(f"Content generation failed: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Content generation failed: {str(e)}",
+        )
+
+
+@router.get(
+    "/request/{request_id}/status",
+    response_model=dict,
+    status_code=status.HTTP_200_OK,
+)
+async def get_request_status(
+    request_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Get the status of a content generation request.
+
+    This endpoint enables long-polling for async content generation:
+    - Frontend polls this endpoint every 3 seconds
+    - Returns current status, progress percentage, and stage
+    - When completed: returns video_url, script_text, thumbnail_url
+    - When failed: returns error information
+
+    **Path Parameters**:
+    - request_id: UUID of the ContentRequest (returned from POST /generate)
+
+    **Returns**:
+    - request_id: UUID of the request
+    - correlation_id: Correlation ID for distributed tracing
+    - status: Current status (pending, validating, generating, completed, failed)
+    - progress_percentage: Progress from 0-100
+    - current_stage: Current processing stage (e.g., "Generating script", "Creating video")
+    - created_at: Request creation timestamp
+    - started_at: Processing start timestamp
+    - completed_at: Completion timestamp (if completed)
+    - video_url: Video URL (if completed)
+    - script_text: Script text (if completed)
+    - thumbnail_url: Thumbnail URL (if completed)
+    - error_message: Error message (if failed)
+    - error_stage: Stage where error occurred (if failed)
+    - failed_at: Failure timestamp (if failed)
+
+    **Status Values**:
+    - pending: Request created, waiting for worker to pick up
+    - validating: Worker validating request
+    - generating: Content generation in progress
+    - completed: Generation successful, video ready
+    - failed: Generation failed
+
+    **Example Response (In Progress)**:
+    ```json
+    {
+        "request_id": "550e8400-e29b-41d4-a716-446655440000",
+        "correlation_id": "req_abc123def456",
+        "status": "generating",
+        "progress_percentage": 65,
+        "current_stage": "Creating video from script and audio",
+        "created_at": "2024-01-15T10:30:00Z",
+        "started_at": "2024-01-15T10:30:05Z"
+    }
+    ```
+
+    **Example Response (Completed)**:
+    ```json
+    {
+        "request_id": "550e8400-e29b-41d4-a716-446655440000",
+        "correlation_id": "req_abc123def456",
+        "status": "completed",
+        "progress_percentage": 100,
+        "current_stage": "Upload complete",
+        "created_at": "2024-01-15T10:30:00Z",
+        "started_at": "2024-01-15T10:30:05Z",
+        "completed_at": "2024-01-15T10:33:45Z",
+        "video_url": "gs://vividly-dev-content/videos/abc123.mp4",
+        "script_text": "Welcome to photosynthesis...",
+        "thumbnail_url": "gs://vividly-dev-content/thumbnails/abc123.jpg"
+    }
+    ```
+    """
+    try:
+        # Get request status from service
+        content_req_service = ContentRequestService()
+        status_data = content_req_service.get_request_status(db, request_id)
+
+        if not status_data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Content request not found: {request_id}",
+            )
+
+        # Verify authorization: user must own this request
+        # Get the ContentRequest to check student_id
+        content_request = content_req_service.get_request_by_id(db, request_id)
+        if not content_request:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Content request not found: {request_id}",
+            )
+
+        # Authorization check: student can only view their own requests
+        # Teachers/admins can view any request
+        if current_user.role == "student":
+            if str(content_request.student_id) != str(current_user.user_id):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You do not have permission to view this request",
+                )
+
+        logger.info(
+            f"Request status retrieved: request_id={request_id}, "
+            f"status={status_data['status']}, "
+            f"progress={status_data['progress_percentage']}%"
+        )
+
+        return status_data
+
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get request status: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get request status: {str(e)}",
         )

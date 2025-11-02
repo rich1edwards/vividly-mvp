@@ -41,6 +41,7 @@ export const ENDPOINTS = {
   CONTENT_STATUS: (cacheKey: string) => `/content/status/${cacheKey}`,
   CONTENT_VIDEO: (cacheKey: string) => `/content/video/${cacheKey}`,
   CONTENT_HISTORY: '/content/history',
+  CONTENT_REQUEST_STATUS: (requestId: string) => `/content/request/${requestId}/status`,
 
   // Topics
   TOPICS_LIST: '/topics',

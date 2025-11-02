@@ -38,6 +38,9 @@ google-cloud-aiplatform==1.60.0
 # Google Cloud Text-to-Speech for audio generation
 google-cloud-texttospeech==2.16.3
 
+# Google Cloud Pub/Sub for async job processing
+google-cloud-pubsub==2.18.0
+
 # Vertex AI & ML
 redis==5.0.1
 

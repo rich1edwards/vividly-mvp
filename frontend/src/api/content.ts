@@ -6,7 +6,14 @@
 
 import apiClient from './client'
 import { ENDPOINTS } from './config'
-import type { Interest, ContentResponse, GeneratedContent } from '../types'
+import type {
+  Interest,
+  ContentResponse,
+  GeneratedContent,
+  AsyncContentRequest,
+  AsyncContentResponse,
+  ContentRequestStatus
+} from '../types'
 
 export const contentApi = {
   /**
@@ -90,6 +97,29 @@ export const contentApi = {
     const response = await apiClient.post<ContentResponse>(
       '/content/clarify',
       data
+    )
+    return response.data
+  },
+
+  /**
+   * Request async content generation (202 Accepted)
+   * Returns immediately with request_id for polling
+   */
+  async generateContentAsync(data: AsyncContentRequest): Promise<AsyncContentResponse> {
+    const response = await apiClient.post<AsyncContentResponse>(
+      ENDPOINTS.CONTENT_GENERATE,
+      data
+    )
+    return response.data
+  },
+
+  /**
+   * Poll content request status
+   * Use this to track progress of async content generation
+   */
+  async getRequestStatus(requestId: string): Promise<ContentRequestStatus> {
+    const response = await apiClient.get<ContentRequestStatus>(
+      ENDPOINTS.CONTENT_REQUEST_STATUS(requestId)
     )
     return response.data
   }

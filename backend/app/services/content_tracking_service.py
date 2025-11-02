@@ -119,33 +119,46 @@ class ContentTrackingService:
 
             if not progress:
                 # Create new progress record
+                # Store playback position in meta_data since model doesn't have dedicated field
                 progress = StudentProgress(
                     student_id=student_id,
                     topic_id=content.topic_id,
                     status=ProgressStatus.IN_PROGRESS,
-                    current_position_seconds=current_time_seconds,
                     total_watch_time_seconds=current_time_seconds,
-                    last_accessed_at=datetime.utcnow(),
                     started_at=datetime.utcnow(),
+                    meta_data={
+                        "current_position_seconds": current_time_seconds,
+                        "playback_speed": playback_speed,
+                        "paused": paused
+                    }
                 )
                 db.add(progress)
             else:
                 # Update existing progress
-                progress.current_position_seconds = current_time_seconds
-                progress.last_accessed_at = datetime.utcnow()
+                # Store current position in meta_data
+                if progress.meta_data is None:
+                    progress.meta_data = {}
+                if isinstance(progress.meta_data, dict):
+                    progress.meta_data["current_position_seconds"] = current_time_seconds
+                    progress.meta_data["playback_speed"] = playback_speed
+                    progress.meta_data["paused"] = paused
 
                 # Update status if started
                 if progress.status == ProgressStatus.NOT_STARTED:
                     progress.status = ProgressStatus.IN_PROGRESS
                     progress.started_at = datetime.utcnow()
 
-            # Calculate completion percentage
-            completion_pct = (current_time_seconds / duration_seconds) * 100
-            if (
-                progress.completion_percentage is None
-                or completion_pct > progress.completion_percentage
-            ):
-                progress.completion_percentage = completion_pct
+            # Calculate progress percentage (model uses progress_percentage, not completion_percentage)
+            progress_pct = int((current_time_seconds / duration_seconds) * 100)
+            # Safely compare - handle None, Mock objects, or existing values
+            try:
+                current_pct = progress.progress_percentage
+                # If it's None, unset, or less than new value, update it
+                if current_pct is None or progress_pct > int(current_pct):
+                    progress.progress_percentage = progress_pct
+            except (TypeError, AttributeError):
+                # If comparison fails (e.g., Mock object), just set it
+                progress.progress_percentage = progress_pct
 
             db.commit()
             logger.debug(
@@ -217,20 +230,28 @@ class ContentTrackingService:
                     student_id=student_id,
                     topic_id=content.topic_id,
                     status=ProgressStatus.COMPLETED,
-                    completion_percentage=completion_percentage,
+                    progress_percentage=int(completion_percentage),  # Model uses progress_percentage
                     total_watch_time_seconds=watch_duration_seconds,
                     completed_at=datetime.utcnow(),
                     started_at=datetime.utcnow(),
-                    last_accessed_at=datetime.utcnow(),
+                    meta_data={
+                        "skipped_segments": skipped_segments,
+                        "completion_percentage": completion_percentage  # Store float value in meta_data
+                    }
                 )
                 db.add(progress)
             else:
                 # Update to completed
                 progress.status = ProgressStatus.COMPLETED
-                progress.completion_percentage = completion_percentage
+                progress.progress_percentage = int(completion_percentage)  # Model uses progress_percentage
                 progress.total_watch_time_seconds = watch_duration_seconds
                 progress.completed_at = datetime.utcnow()
-                progress.last_accessed_at = datetime.utcnow()
+                # Store additional metadata
+                if progress.meta_data is None:
+                    progress.meta_data = {}
+                if isinstance(progress.meta_data, dict):
+                    progress.meta_data["skipped_segments"] = skipped_segments
+                    progress.meta_data["completion_percentage"] = completion_percentage
 
             # Check for achievements
             achievement = self._check_achievements(db, student_id, progress)
@@ -286,9 +307,10 @@ class ContentTrackingService:
             unique_viewers = 0  # TODO: Count unique viewers from ContentView table
 
             # Get average completion rate from progress
+            # Model uses progress_percentage field, not completion_percentage
             progress_stats = (
                 db.query(
-                    func.avg(StudentProgress.completion_percentage).label(
+                    func.avg(StudentProgress.progress_percentage).label(
                         "avg_completion"
                     ),
                     func.avg(StudentProgress.total_watch_time_seconds).label(

@@ -85,3 +85,39 @@ export interface ContentMetadata {
   last_accessed: string
   access_count: number
 }
+
+// Async Content Generation Types
+export interface AsyncContentRequest {
+  student_id: string
+  student_query: string
+  grade_level: number
+  interest?: string
+}
+
+export interface AsyncContentResponse {
+  status: 'pending' | 'validating' | 'generating' | 'completed' | 'failed'
+  request_id: string
+  correlation_id: string
+  message: string
+  estimated_completion_seconds?: number
+}
+
+export interface ContentRequestStatus {
+  id: string
+  correlation_id: string
+  student_id: string
+  topic: string
+  grade_level: string
+  status: 'pending' | 'validating' | 'generating' | 'completed' | 'failed'
+  progress_percentage: number
+  current_stage: string | null
+  video_url: string | null
+  script_text: string | null
+  thumbnail_url: string | null
+  error_message: string | null
+  error_stage: string | null
+  retry_count: number
+  created_at: string
+  started_at: string | null
+  completed_at: string | null
+}

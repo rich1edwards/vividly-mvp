@@ -1,0 +1,275 @@
+/**
+ * Content Request Form Component
+ *
+ * Form for students to request async video content generation.
+ * - Submits request to backend (returns 202 Accepted)
+ * - Navigates to status tracker for polling
+ * - Supports grade level selection and optional interest override
+ */
+
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { contentApi } from '../api/content'
+import { interestsApi } from '../api/interests'
+import type { User, Interest, AsyncContentRequest } from '../types'
+import { Button } from './ui/Button'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './ui/Card'
+
+interface ContentRequestFormProps {
+  user: User
+  onRequestSubmitted?: (requestId: string) => void
+}
+
+export const ContentRequestForm: React.FC<ContentRequestFormProps> = ({
+  user,
+  onRequestSubmitted
+}) => {
+  const navigate = useNavigate()
+
+  // Form state
+  const [query, setQuery] = useState('')
+  const [gradeLevel, setGradeLevel] = useState<number>(user.grade_level || 9)
+  const [selectedInterest, setSelectedInterest] = useState<string>('')
+
+  // UI state
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Interests
+  const [interests, setInterests] = useState<Interest[]>([])
+  const [isLoadingInterests, setIsLoadingInterests] = useState(false)
+
+  // Load student's interests on mount
+  useEffect(() => {
+    fetchStudentInterests()
+  }, [])
+
+  const fetchStudentInterests = async () => {
+    try {
+      setIsLoadingInterests(true)
+      const data = await interestsApi.getMy()
+      setInterests(data)
+
+      // Auto-select first interest if available
+      if (data.length > 0 && !selectedInterest) {
+        setSelectedInterest(data[0].name)
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch interests:', err)
+      // Non-critical error, don't block form
+    } finally {
+      setIsLoadingInterests(false)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    // Validation
+    if (!query.trim()) {
+      setError('Please enter a question or topic')
+      return
+    }
+
+    if (query.trim().length < 10) {
+      setError('Please enter a more detailed question (at least 10 characters)')
+      return
+    }
+
+    if (query.trim().length > 500) {
+      setError('Question is too long (max 500 characters)')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+      setError(null)
+
+      // Build request
+      const request: AsyncContentRequest = {
+        student_id: user.user_id,
+        student_query: query.trim(),
+        grade_level: gradeLevel,
+        ...(selectedInterest && { interest: selectedInterest })
+      }
+
+      // Submit async content request
+      const response = await contentApi.generateContentAsync(request)
+
+      // Callback for parent component
+      if (onRequestSubmitted) {
+        onRequestSubmitted(response.request_id)
+      }
+
+      // Navigate to status tracker
+      navigate(`/content/request/${response.request_id}`)
+
+    } catch (err: any) {
+      console.error('Failed to submit content request:', err)
+
+      // Handle specific error cases
+      if (err.response?.status === 401) {
+        setError('Session expired. Please log in again.')
+      } else if (err.response?.status === 429) {
+        setError('Too many requests. Please wait a moment and try again.')
+      } else if (err.response?.data?.detail) {
+        setError(err.response.data.detail)
+      } else {
+        setError('Failed to submit request. Please try again.')
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const characterCount = query.length
+  const isQueryValid = characterCount >= 10 && characterCount <= 500
+
+  return (
+    <Card variant="elevated" padding="lg">
+      <CardHeader>
+        <CardTitle>Generate Personalized Learning Video</CardTitle>
+        <CardDescription>
+          Ask any question or enter a topic you'd like to learn about.
+          We'll create a personalized video tailored to your interests.
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Query Input */}
+          <div>
+            <label htmlFor="query" className="block text-sm font-medium mb-2">
+              What would you like to learn?
+            </label>
+            <textarea
+              id="query"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="e.g., Explain photosynthesis using basketball metaphors, or How do rockets work?"
+              className={`
+                w-full px-4 py-3 rounded-lg border resize-none
+                focus:outline-none focus:ring-2 focus:ring-vividly-blue
+                ${isQueryValid || query.length === 0
+                  ? 'border-border'
+                  : 'border-vividly-red'
+                }
+              `}
+              rows={4}
+              disabled={isSubmitting}
+              maxLength={500}
+            />
+            <div className="flex justify-between items-center mt-1">
+              <p className="text-xs text-muted-foreground">
+                {characterCount < 10 && characterCount > 0 && (
+                  <span className="text-vividly-red">At least 10 characters required</span>
+                )}
+                {characterCount >= 10 && (
+                  <span className="text-green-600">Good length</span>
+                )}
+              </p>
+              <p className={`text-xs ${characterCount > 500 ? 'text-vividly-red' : 'text-muted-foreground'}`}>
+                {characterCount} / 500
+              </p>
+            </div>
+          </div>
+
+          {/* Grade Level Selector */}
+          <div>
+            <label htmlFor="gradeLevel" className="block text-sm font-medium mb-2">
+              Grade Level
+            </label>
+            <select
+              id="gradeLevel"
+              value={gradeLevel}
+              onChange={(e) => setGradeLevel(Number(e.target.value))}
+              className="w-full px-4 py-3 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-vividly-blue"
+              disabled={isSubmitting}
+            >
+              <option value={9}>9th Grade (Freshman)</option>
+              <option value={10}>10th Grade (Sophomore)</option>
+              <option value={11}>11th Grade (Junior)</option>
+              <option value={12}>12th Grade (Senior)</option>
+            </select>
+            <p className="text-xs text-muted-foreground mt-1">
+              Content will be tailored to this grade level
+            </p>
+          </div>
+
+          {/* Interest Selector */}
+          {interests.length > 0 && (
+            <div>
+              <label htmlFor="interest" className="block text-sm font-medium mb-2">
+                Connect to Your Interest (Optional)
+              </label>
+              <select
+                id="interest"
+                value={selectedInterest}
+                onChange={(e) => setSelectedInterest(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-vividly-blue"
+                disabled={isSubmitting || isLoadingInterests}
+              >
+                <option value="">None (Auto-select)</option>
+                {interests.map((interest) => (
+                  <option key={interest.interest_id} value={interest.name}>
+                    {interest.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground mt-1">
+                We'll use analogies and examples related to your selected interest
+              </p>
+            </div>
+          )}
+
+          {/* Error Display */}
+          {error && (
+            <div className="bg-vividly-red/10 border border-vividly-red rounded-lg p-4">
+              <p className="text-sm text-vividly-red">{error}</p>
+            </div>
+          )}
+
+          {/* Estimated Time Notice */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <svg
+                className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-900">
+                  Video generation takes 2-3 minutes
+                </p>
+                <p className="text-xs text-blue-700 mt-1">
+                  You'll be able to track progress in real-time. We'll notify you when it's ready!
+                </p>
+              </div>
+            </div>
+          </div>
+        </form>
+      </CardContent>
+
+      <CardFooter>
+        <Button
+          variant="primary"
+          size="lg"
+          fullWidth
+          onClick={handleSubmit}
+          isLoading={isSubmitting}
+          disabled={!isQueryValid || isSubmitting}
+        >
+          {isSubmitting ? 'Submitting...' : 'Generate My Video'}
+        </Button>
+      </CardFooter>
+    </Card>
+  )
+}

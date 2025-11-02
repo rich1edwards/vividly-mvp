@@ -110,10 +110,11 @@ class TestTrackProgress:
         mock_content.cache_key = "test_key"
 
         mock_progress = Mock()
-        mock_progress.current_position_seconds = 100
+        # Initialize meta_data as a real dict so it can be modified
+        mock_progress.meta_data = {}
         mock_progress.total_watch_time_seconds = 200
         mock_progress.status = ProgressStatus.IN_PROGRESS
-        mock_progress.completion_percentage = 33.3
+        mock_progress.progress_percentage = 33
 
         mock_db.query.return_value.filter.return_value.first.side_effect = [
             mock_content,  # First query: content
@@ -131,7 +132,12 @@ class TestTrackProgress:
         )
 
         assert result is True
-        assert mock_progress.current_position_seconds == 150
+        # Check that current_position_seconds is stored in meta_data
+        assert mock_progress.meta_data["current_position_seconds"] == 150
+        assert mock_progress.meta_data["playback_speed"] == 1.0
+        assert mock_progress.meta_data["paused"] is False
+        # Check that progress_percentage is updated
+        assert mock_progress.progress_percentage == 50  # 150/300 * 100
         mock_db.commit.assert_called_once()
 
     def test_track_progress_new_record(self):
