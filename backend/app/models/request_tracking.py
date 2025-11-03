@@ -67,8 +67,8 @@ class ContentRequest(Base):
 
     # Request details
     student_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("users.id", ondelete="CASCADE"),
+        String(100),
+        ForeignKey("users.user_id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
@@ -100,19 +100,18 @@ class ContentRequest(Base):
     retry_count = Column(Integer, default=0)
 
     # Metadata
-    request_meta_data = Column(JSON)
+    request_metadata = Column(JSON)
 
     # Performance metrics
     total_duration_seconds = Column(Integer)
 
     # Organization context
     organization_id = Column(
-        UUID(as_uuid=True), ForeignKey("organizations.id"), index=True
+        String(100), ForeignKey("organizations.organization_id"), index=True
     )
 
     # Relationships
     student = relationship("User", foreign_keys=[student_id])
-    organization = relationship("Organization")
     stages = relationship(
         "RequestStage", back_populates="request", cascade="all, delete-orphan"
     )
