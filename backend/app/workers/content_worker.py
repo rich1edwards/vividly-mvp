@@ -282,7 +282,9 @@ class ContentWorker:
                 "student_query": "Explain photosynthesis with basketball",
                 "grade_level": 10,
                 "interest": "basketball",
-                "environment": "dev"
+                "environment": "dev",
+                "requested_modalities": ["video"],  # Phase 1A: Dual Modality
+                "preferred_modality": "video"       # Phase 1A: Dual Modality
             }
         """
         request_id = None
@@ -352,6 +354,10 @@ class ContentWorker:
             grade_level = message_data["grade_level"]
             interest = message_data.get("interest")
 
+            # Phase 1A: Dual Modality Support
+            requested_modalities = message_data.get("requested_modalities", ["video"])
+            preferred_modality = message_data.get("preferred_modality", "video")
+
             # Update status: generating
             self.request_service.update_status(
                 db=db,
@@ -363,11 +369,14 @@ class ContentWorker:
 
             # Generate content through the AI pipeline
             # This calls: NLU → RAG → Script Generation → TTS → Video Assembly
+            # Phase 1A: Conditionally skip video if requested_modalities doesn't include it
             result = await self.content_service.generate_content_from_query(
                 student_query=student_query,
                 student_id=student_id,
                 grade_level=grade_level,
                 interest=interest,
+                # Phase 1A: Dual Modality Support
+                requested_modalities=requested_modalities,
             )
 
             # Update progress during generation

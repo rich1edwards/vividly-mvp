@@ -12,7 +12,7 @@ Architecture:
 import os
 import json
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from google.cloud import pubsub_v1
 from google.api_core import retry
 
@@ -32,9 +32,28 @@ class PubSubService:
 
         Args:
             project_id: GCP project ID (defaults to env var)
+
+        Raises:
+            EnvironmentError: If required environment variables are missing
         """
-        self.project_id = project_id or os.getenv("GCP_PROJECT_ID", "vividly-dev-rich")
-        self.environment = os.getenv("ENVIRONMENT", "dev")
+        # Validate environment variables FIRST (fail-fast)
+        self.project_id = project_id or os.getenv("GCP_PROJECT_ID")
+        if not self.project_id:
+            error_msg = "GCP_PROJECT_ID environment variable is required for Pub/Sub service"
+            logger.error(error_msg)
+            raise EnvironmentError(error_msg)
+
+        self.environment = os.getenv("ENVIRONMENT")
+        if not self.environment:
+            error_msg = "ENVIRONMENT environment variable is required for Pub/Sub service"
+            logger.error(error_msg)
+            raise EnvironmentError(error_msg)
+
+        # Validate ENVIRONMENT value
+        if self.environment not in ["dev", "staging", "prod"]:
+            error_msg = f"Invalid ENVIRONMENT value: {self.environment} (must be dev, staging, or prod)"
+            logger.error(error_msg)
+            raise EnvironmentError(error_msg)
 
         # Topic name includes environment for isolation
         self.topic_name = f"content-requests-{self.environment}"
@@ -43,7 +62,10 @@ class PubSubService:
         # Initialize publisher client
         try:
             self.publisher = pubsub_v1.PublisherClient()
-            logger.info(f"Pub/Sub publisher initialized: {self.topic_path}")
+            logger.info(
+                f"Pub/Sub publisher initialized: {self.topic_path} "
+                f"(project={self.project_id}, env={self.environment})"
+            )
         except Exception as e:
             logger.error(f"Failed to initialize Pub/Sub publisher: {e}")
             self.publisher = None
@@ -56,6 +78,9 @@ class PubSubService:
         student_query: str,
         grade_level: int,
         interest: Optional[str] = None,
+        # Phase 1A: Dual Modality Support
+        requested_modalities: Optional[List[str]] = None,
+        preferred_modality: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Publish content generation request to Pub/Sub.
@@ -67,6 +92,8 @@ class PubSubService:
             student_query: Natural language query
             grade_level: Student's grade level (9-12)
             interest: Optional interest override
+            requested_modalities: List of requested output formats (defaults to ["video"])
+            preferred_modality: Primary modality type (defaults to "video")
 
         Returns:
             Dict with:
@@ -89,6 +116,9 @@ class PubSubService:
             "grade_level": grade_level,
             "interest": interest,
             "environment": self.environment,
+            # Phase 1A: Dual Modality Support (defaults handled by worker if None)
+            "requested_modalities": requested_modalities or ["video"],
+            "preferred_modality": preferred_modality or "video",
         }
 
         try:

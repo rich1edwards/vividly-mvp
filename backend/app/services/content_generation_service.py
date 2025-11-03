@@ -6,11 +6,11 @@ Orchestrates the full AI content generation pipeline:
 2. RAG: Retrieve educational content
 3. Script: Generate personalized script
 4. TTS: Generate audio
-5. Video: Render video with visuals
+5. Video: Render video with visuals (Phase 1A: conditional based on modality)
 6. Cache: Store results
 """
 import logging
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, List
 from datetime import datetime
 
 from app.services.nlu_service import get_nlu_service
@@ -45,6 +45,8 @@ class ContentGenerationService:
         student_id: str,
         grade_level: int,
         interest: Optional[str] = None,
+        # Phase 1A: Dual Modality Support
+        requested_modalities: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
         Generate complete educational content from natural language query.
@@ -55,7 +57,7 @@ class ContentGenerationService:
         3. RAG: Retrieve educational content
         4. Generate script
         5. Generate audio (TTS)
-        6. Generate video
+        6. Generate video (Phase 1A: conditional based on requested_modalities)
         7. Cache results
 
         Args:
@@ -63,10 +65,14 @@ class ContentGenerationService:
             student_id: Student ID
             grade_level: Student's grade (9-12)
             interest: Optional interest override
+            requested_modalities: List of requested output formats (defaults to ["video"])
 
         Returns:
             Dict with generation status and content URLs
         """
+        # Phase 1A: Default to video for backward compatibility
+        if requested_modalities is None:
+            requested_modalities = ["video"]
         generation_id = self._generate_id()
 
         try:
@@ -155,18 +161,30 @@ class ContentGenerationService:
                 script=script, voice_type="female_professional", output_format="mp3"
             )
 
-            # Step 6: Generate video
-            logger.info(f"[{generation_id}] Step 6: Video generation")
-            video = await self.video_service.generate_video(
-                script=script,
-                audio_url=audio["audio_url"],
-                interest=interest_value,
-                subject=self._infer_subject(topic_id),
-            )
+            # Step 6: Generate video (Phase 1A: CONDITIONAL based on requested_modalities)
+            # This is where 12x cost savings occurs for text-only requests
+            video = None
+            if "video" in requested_modalities:
+                logger.info(f"[{generation_id}] Step 6: Video generation (requested)")
+                video = await self.video_service.generate_video(
+                    script=script,
+                    audio_url=audio["audio_url"],
+                    interest=interest_value,
+                    subject=self._infer_subject(topic_id),
+                )
+            else:
+                logger.info(
+                    f"[{generation_id}] Step 6: Video generation SKIPPED "
+                    f"(not in requested_modalities={requested_modalities}) "
+                    f"- COST SAVINGS: $0.183 saved per request"
+                )
 
             # Step 7: Cache the complete content
             logger.info(f"[{generation_id}] Step 7: Caching content")
-            content = {"script": script, "audio": audio, "video": video}
+            content = {"script": script, "audio": audio}
+            if video:
+                content["video"] = video
+
             await self.cache_service.cache_content(
                 topic_id=topic_id,
                 interest=interest_value,
@@ -182,6 +200,7 @@ class ContentGenerationService:
                 "topic_id": topic_id,
                 "topic_name": topic_name,
                 "content": content,
+                "requested_modalities": requested_modalities,  # For tracking
                 "message": "Content generation complete!",
             }
 

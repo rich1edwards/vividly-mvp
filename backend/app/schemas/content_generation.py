@@ -4,7 +4,7 @@ Content Generation Request/Response Schemas.
 Schemas for content generation API endpoints.
 """
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 
 
 class ContentGenerationRequest(BaseModel):
@@ -28,6 +28,21 @@ class ContentGenerationRequest(BaseModel):
         description="Interest to personalize content with",
         max_length=100,
         examples=["basketball", "video games", "cooking"],
+    )
+
+    # Phase 1A: Dual Modality Support
+    requested_modalities: List[str] = Field(
+        default=["video"],
+        description="Requested output formats: text, audio, video, images",
+        examples=[["video"], ["text"], ["text", "video"], ["text", "audio", "video"]],
+        min_length=1,
+        max_length=4,
+    )
+    preferred_modality: str = Field(
+        default="video",
+        description="Primary modality type for content generation",
+        examples=["video", "text", "audio"],
+        pattern="^(text|audio|video|images)$",
     )
 
 

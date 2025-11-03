@@ -818,6 +818,9 @@ async def generate_content(
             grade_level=str(request.grade_level),
             duration_minutes=3,
             correlation_id=correlation_id,
+            # Phase 1A: Dual Modality Support
+            requested_modalities=request.requested_modalities,
+            preferred_modality=request.preferred_modality,
         )
 
         logger.info(
@@ -834,6 +837,9 @@ async def generate_content(
             student_query=request.student_query,
             grade_level=request.grade_level,
             interest=interest_to_use,
+            # Phase 1A: Dual Modality Support
+            requested_modalities=request.requested_modalities,
+            preferred_modality=request.preferred_modality,
         )
 
         logger.info(

@@ -6,7 +6,7 @@ Provides CRUD operations and status queries for the request_tracking system.
 """
 import logging
 import uuid
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -36,6 +36,10 @@ class ContentRequestService:
         grade_level: str,
         duration_minutes: Optional[int] = 3,
         correlation_id: Optional[str] = None,
+        # Phase 1A: Dual Modality Support
+        requested_modalities: Optional[List[str]] = None,
+        preferred_modality: Optional[str] = None,
+        modality_preferences: Optional[Dict] = None,
     ) -> ContentRequest:
         """
         Create a new content generation request.
@@ -48,6 +52,9 @@ class ContentRequestService:
             grade_level: Student's grade level
             duration_minutes: Target video duration in minutes
             correlation_id: Optional correlation ID for tracing
+            requested_modalities: List of requested output formats (text, audio, video, images)
+            preferred_modality: Primary modality type
+            modality_preferences: Additional modality preferences (JSON)
 
         Returns:
             Created ContentRequest record
@@ -71,6 +78,10 @@ class ContentRequestService:
                 status="pending",
                 progress_percentage=0,
                 retry_count=0,
+                # Phase 1A: Dual Modality Support (model defaults handle None)
+                requested_modalities=requested_modalities,
+                preferred_modality=preferred_modality,
+                modality_preferences=modality_preferences,
             )
 
             db.add(request)
@@ -80,7 +91,7 @@ class ContentRequestService:
             logger.info(
                 f"Created content request: "
                 f"id={request.id}, correlation_id={correlation_id}, "
-                f"student_id={student_id}"
+                f"student_id={student_id}, modalities={requested_modalities or ['video']}"
             )
 
             return request
@@ -299,6 +310,51 @@ class ContentRequestService:
         except SQLAlchemyError as e:
             db.rollback()
             logger.error(f"Failed to set results: {e}", exc_info=True)
+            return False
+
+    @staticmethod
+    def increment_retry_count(
+        db: Session,
+        request_id: str
+    ) -> bool:
+        """
+        Increment the retry count for a request.
+
+        This is called by the worker when a message processing fails
+        and is nacked for retry. Enables debugging of retry behavior
+        and identifying requests stuck in retry loops.
+
+        Args:
+            db: Database session
+            request_id: Request ID (UUID)
+
+        Returns:
+            True if incremented successfully, False otherwise
+        """
+        try:
+            request = db.query(ContentRequest).filter(
+                ContentRequest.id == request_id
+            ).first()
+
+            if not request:
+                logger.warning(f"Request not found for retry increment: {request_id}")
+                return False
+
+            # Increment retry count
+            request.retry_count = (request.retry_count or 0) + 1
+
+            db.commit()
+
+            logger.info(
+                f"Incremented retry count: "
+                f"id={request_id}, retry_count={request.retry_count}"
+            )
+
+            return True
+
+        except SQLAlchemyError as e:
+            db.rollback()
+            logger.error(f"Failed to increment retry count: {e}", exc_info=True)
             return False
 
     @staticmethod
