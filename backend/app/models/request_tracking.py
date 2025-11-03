@@ -20,9 +20,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID, ENUM
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
+from app.core.database import Base
 
 # Enums
 REQUEST_STATUS_ENUM = ENUM(
@@ -322,9 +321,6 @@ class RequestMetrics(Base):
 
     # Metadata
     updated_at = Column(TIMESTAMP, default=datetime.utcnow)
-
-    # Relationships
-    organization = relationship("Organization")
 
     def __repr__(self):
         return f"<RequestMetrics(time_bucket={self.time_bucket}, total={self.total_requests})>"
