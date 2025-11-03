@@ -19,6 +19,7 @@ import signal
 import sys
 import time
 import threading
+import uuid
 from typing import Dict, Any, Optional
 from datetime import datetime
 from concurrent.futures import TimeoutError
@@ -308,6 +309,21 @@ class ContentWorker:
             if missing_fields:
                 logger.error(f"Missing required fields: {missing_fields}")
                 # Don't retry messages with missing fields - send to DLQ
+                return False
+
+            # CRITICAL FIX: Validate UUID format before database operations
+            # This prevents infinite retry loops from invalid request IDs
+            try:
+                uuid.UUID(str(request_id))
+            except (ValueError, TypeError, AttributeError) as e:
+                logger.error(
+                    f"Invalid request_id format: '{request_id}' is not a valid UUID "
+                    f"(type: {type(request_id).__name__}). "
+                    f"Message will be rejected to prevent retry loop. "
+                    f"Error: {e}"
+                )
+                # DON'T RETRY - invalid UUID will always fail
+                # Return False to trigger DLQ routing
                 return False
 
             # IDEMPOTENCY CHECK: Check if request is already completed or failed
