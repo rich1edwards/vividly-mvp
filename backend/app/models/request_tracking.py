@@ -105,9 +105,9 @@ class ContentRequest(Base):
     total_duration_seconds = Column(Integer)
 
     # Organization context
-    organization_id = Column(
-        String(100), ForeignKey("organizations.organization_id"), index=True
-    )
+    # NOTE: FK constraint removed - organizations table doesn't exist yet
+    # Will restore FK when organizations table is created
+    organization_id = Column(String(100), nullable=True, index=True)
 
     # Relationships
     student = relationship("User", foreign_keys=[student_id])
