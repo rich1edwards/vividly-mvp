@@ -112,7 +112,8 @@ class Organization(Base):
     archived_at = Column(DateTime(timezone=True), nullable=True)
 
     # Relationships
-    # TEMPORARY: Commented out schools relationship - School model doesn't exist yet
+    # TEMPORARY: Commented out incomplete relationships - Organization model is WIP
+    # TODO: Fix Organization.users relationship - should use foreign_keys=[organization_id] not string
     # TODO: Implement School model or reference Class model properly
     # schools = relationship(
     #     "School",
@@ -120,13 +121,12 @@ class Organization(Base):
     #     cascade="all, delete-orphan",
     #     lazy="dynamic"
     # )
-
-    users = relationship(
-        "User",
-        back_populates="organization",
-        foreign_keys="User.organization_id",
-        lazy="dynamic"
-    )
+    # users = relationship(
+    #     "User",
+    #     back_populates="organization",
+    #     foreign_keys="User.organization_id",  # WRONG: Should be foreign_keys=[organization_id]
+    #     lazy="dynamic"
+    # )
 
     feature_flags = relationship(
         "FeatureFlag",

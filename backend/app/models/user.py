@@ -59,6 +59,11 @@ class User(Base):
     # User settings (JSON)
     settings = Column(JSON, nullable=True, default={})
 
+    # Modality preferences (Phase 1A: Dual Modality Support)
+    content_modality_preferences = Column(JSON, nullable=False, default=dict, server_default='{"default": "video"}')
+    accessibility_settings = Column(JSON, nullable=False, default=dict, server_default='{}')
+    language_preference = Column(String(10), nullable=False, default="en")
+
     # Timestamps
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
@@ -69,6 +74,13 @@ class User(Base):
     archived_at = Column(TIMESTAMP, nullable=True)
 
     # Relationships
+    # TEMPORARY: Commented out Organization relationship - Organization.users is commented out (WIP model)
+    # TODO: Uncomment when Organization model relationships are fixed
+    # organization = relationship(
+    #     "Organization",
+    #     back_populates="users",
+    #     foreign_keys=[organization_id]
+    # )
     sessions = relationship(
         "Session", back_populates="user", cascade="all, delete-orphan"
     )
