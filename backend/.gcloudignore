@@ -1,0 +1,59 @@
+# .gcloudignore - Files to exclude from Cloud Build uploads
+#
+# This helps reduce build times and ensures clean builds
+
+# Git files
+.git/
+.gitignore
+.github/
+
+# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+venv_test/
+env/
+ENV/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.claude/
+
+# Test files and coverage
+tests/
+pytest.ini
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Documentation (exclude Markdown docs from build)
+*.md
+docs/
+
+# Migration scripts (not needed in runtime container)
+migrations/
+
+# Scripts (not needed in runtime container)
+scripts/
+
+# Data directories
+data/
+*.sqlite
+*.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp

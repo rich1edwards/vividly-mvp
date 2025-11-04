@@ -1,0 +1,94 @@
+# This file specifies files that are *not* uploaded to Google Cloud
+# using gcloud. It follows the same syntax as .gitignore, with the addition of
+# "#!include" directives (which insert the entries of the given .gitignore-style
+# file at that point).
+#
+# For more information, run:
+#   $ gcloud topic gcloudignore
+#
+.gcloudignore
+# If you would like to upload your .git directory, .gitignore file or files
+# from your .gitignore file, remove the corresponding line
+# below:
+.git
+.gitignore
+
+# Python pycache:
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Python virtual environments
+venv/
+venv_test/
+ENV/
+env/
+.venv
+
+# Node modules
+node_modules/
+tests/e2e/node_modules/
+
+# Playwright artifacts
+tests/e2e/playwright-report/
+tests/e2e/test-results/
+tests/e2e/.playwright/
+
+# Downloaded OER content (embeddings are in git, but not downloads)
+backend/scripts/oer_ingestion/downloads/
+backend/scripts/oer_ingestion/*.pdf
+backend/scripts/oer_ingestion/*.json
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+*.whl
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# Documentation (not needed for builds)
+*.md
+!README.md
+
+# Local configuration
+.env.local
+.claude/
+
+# Frontend build artifacts (will be rebuilt)
+frontend/dist/
+frontend/build/
+frontend/.next/
