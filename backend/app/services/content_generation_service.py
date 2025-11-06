@@ -181,16 +181,17 @@ class ContentGenerationService:
 
             # Step 7: Cache the complete content
             logger.info(f"[{generation_id}] Step 7: Caching content")
-            content = {"script": script, "audio": audio}
-            if video:
-                content["video"] = video
-
-            await self.cache_service.cache_content(
-                topic_id=topic_id,
-                interest=interest_value,
-                style="standard",
-                content=content,
-            )
+            # TODO: Implement content caching - cache_content method doesn't exist yet
+            # For MVP, skipping caching to unblock content generation
+            # content = {"script": script, "audio": audio}
+            # if video:
+            #     content["video"] = video
+            # await self.cache_service.cache_content(
+            #     topic_id=topic_id,
+            #     interest=interest_value,
+            #     style="standard",
+            #     content=content,
+            # )
 
             # Return complete content
             return {
