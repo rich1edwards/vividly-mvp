@@ -41,8 +41,8 @@ class ScriptGenerationService:
 
             # Initialize Vertex AI before using models
             vertexai.init(project=self.project_id, location="us-central1")
-            # Use Gemini with LearnLM tuning for education
-            self.model = GenerativeModel("gemini-1.5-pro")
+            # Use Gemini 2.5 Flash with LearnLM tuning for education
+            self.model = GenerativeModel("gemini-2.5-flash")
             self.vertex_available = True
             logger.info("Vertex AI (LearnLM) initialized")
         except Exception as e:

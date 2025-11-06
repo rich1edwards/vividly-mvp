@@ -199,7 +199,7 @@ async def match_interest_to_request(
 
             # Initialize Vertex AI before using models
             vertexai.init(project=project_id, location=location)
-            model = GenerativeModel("gemini-1.5-pro")
+            model = GenerativeModel("gemini-2.5-flash")
             vertex_available = True
         except Exception as e:
             logger.warning(f"Vertex AI not available: {e}. Using fallback matching.")
