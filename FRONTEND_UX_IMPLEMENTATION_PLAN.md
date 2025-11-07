@@ -310,17 +310,6 @@
 - Smooth scroll animation on pagination
 - Fully mobile-responsive design
 
-#### 1.3.2 Video Library Backend Integration
-- [ ] Create API client method for filtered video list
-- [ ] Implement query param serialization
-- [ ] Add caching layer (React Query or SWR)
-- [ ] Handle loading/error states
-
-**Acceptance Criteria**:
-- API calls optimized (debounced, deduplicated)
-- Cached data fresh for 5 minutes
-- Error boundaries handle failures gracefully
-
 ### 1.4 WebSocket Push Notifications (Week 2-3)
 
 #### 1.4.1 WebSocket Hook
@@ -773,6 +762,28 @@
 - API calls deduplicated
 - Cached data fresh for 5 minutes
 - Offline support (basic)
+
+#### 4.3.4 Video Library Backend Integration & Optimization
+**Note**: Moved from Phase 1.3.2 - This is an optimization task that should be implemented after core features are complete. Current client-side filtering with useMemo is already efficient for MVP.
+
+- [ ] Create API client method for filtered video list with query params
+- [ ] Implement query param serialization for server-side filtering
+- [ ] Add caching layer integration (React Query or SWR) specific to video library
+- [ ] Implement debouncing and deduplication for filter changes
+- [ ] Handle loading/error states with proper error boundaries
+
+**Acceptance Criteria**:
+- API calls optimized (debounced, deduplicated)
+- Server-side filtering reduces client-side data processing
+- Cached data fresh for 5 minutes
+- Error boundaries handle failures gracefully
+- Pagination works with server-side filtering
+
+**Implementation Notes**:
+- This builds on Phase 1.3.1's client-side filtering implementation
+- Requires backend API changes to support query parameters
+- Should be implemented when video library grows large enough to justify server-side filtering
+- Consider implementing when video count exceeds ~1000 items per user
 
 ### 4.4 Testing (Week 2)
 
