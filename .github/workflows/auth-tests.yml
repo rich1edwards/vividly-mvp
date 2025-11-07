@@ -1,0 +1,147 @@
+name: Authentication Tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'backend/**/*.py'
+      - 'backend/requirements*.txt'
+      - '.github/workflows/auth-tests.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'backend/**/*.py'
+      - 'backend/requirements*.txt'
+      - '.github/workflows/auth-tests.yml'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  auth-tests:
+    name: Run Authentication Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+
+    env:
+      # Test environment variables
+      DATABASE_URL: "sqlite:///:memory:"
+      SECRET_KEY: "test_secret_key_12345_github_actions"
+      ALGORITHM: "HS256"
+      DEBUG: "True"
+      CORS_ORIGINS: "http://localhost"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov
+
+      - name: Run authentication tests with coverage
+        working-directory: backend
+        run: |
+          PYTHONPATH=$PWD python -m pytest tests/test_auth_token_refresh.py \
+            -v \
+            --cov=app/services/auth_service \
+            --cov=app/api/v1/endpoints/auth \
+            --cov=app/utils/security \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --cov-report=html \
+            --junit-xml=test-results-auth.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.python-version }}
+          path: backend/test-results-auth.xml
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-${{ matrix.python-version }}
+          path: |
+            backend/coverage.xml
+            backend/htmlcov/
+
+      - name: Comment test results on PR
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: github.event_name == 'pull_request'
+        with:
+          check_name: Authentication Tests (Python ${{ matrix.python-version }})
+          files: backend/test-results-auth.xml
+
+      - name: Check test coverage threshold
+        working-directory: backend
+        run: |
+          # Fail if authentication code coverage is below 80%
+          COVERAGE=$(python -m pytest tests/test_auth_token_refresh.py \
+            --cov=app/services/auth_service \
+            --cov=app/api/v1/endpoints/auth \
+            --cov=app/utils/security \
+            --cov-report=term | grep "TOTAL" | awk '{print $4}' | sed 's/%//')
+          echo "Coverage: ${COVERAGE}%"
+          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+            echo "Coverage ${COVERAGE}% is below 80% threshold"
+            exit 1
+          fi
+
+  security-check:
+    name: Security Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install bandit safety
+
+      - name: Run Bandit security analysis
+        working-directory: backend
+        run: |
+          bandit -r app/services/auth_service.py \
+                    app/utils/security.py \
+                    app/api/v1/endpoints/auth.py \
+                 -f json -o bandit-results.json || true
+
+      - name: Run Safety vulnerability check
+        working-directory: backend
+        run: |
+          safety check --json --output safety-results.json || true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            backend/bandit-results.json
+            backend/safety-results.json
