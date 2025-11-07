@@ -1,0 +1,438 @@
+{
+  "displayName": "Vividly Platform - Metrics Overview",
+  "mosaicLayout": {
+    "columns": 12,
+    "tiles": [
+      {
+        "width": 12,
+        "height": 2,
+        "widget": {
+          "title": "System Health Overview",
+          "text": {
+            "content": "# Vividly Platform Monitoring\n\n**Real-time metrics for API health, rate limiting, authentication, and content generation**\n\nColor Legend: 🟢 Healthy | 🟡 Warning | 🔴 Critical\n\n---",
+            "format": "MARKDOWN"
+          }
+        }
+      },
+      {
+        "xPos": 0,
+        "yPos": 2,
+        "width": 4,
+        "height": 4,
+        "widget": {
+          "title": "🚦 Rate Limiting - Total Hits",
+          "xyChart": {
+            "dataSets": [{
+              "timeSeriesQuery": {
+                "timeSeriesFilter": {
+                  "filter": "metric.type=\"custom.googleapis.com/vividly/rate_limit_hits_total\" resource.type=\"generic_task\"",
+                  "aggregation": {
+                    "alignmentPeriod": "60s",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM",
+                    "groupByFields": ["metric.label.endpoint"]
+                  }
+                }
+              },
+              "plotType": "LINE",
+              "targetAxis": "Y1"
+            }],
+            "yAxis": {
+              "label": "Hits per second",
+              "scale": "LINEAR"
+            },
+            "chartOptions": {
+              "mode": "COLOR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 4,
+        "yPos": 2,
+        "width": 4,
+        "height": 4,
+        "widget": {
+          "title": "🔴 Rate Limiting - Exceeded",
+          "xyChart": {
+            "dataSets": [{
+              "timeSeriesQuery": {
+                "timeSeriesFilter": {
+                  "filter": "metric.type=\"custom.googleapis.com/vividly/rate_limit_exceeded_total\" resource.type=\"generic_task\"",
+                  "aggregation": {
+                    "alignmentPeriod": "60s",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM",
+                    "groupByFields": ["metric.label.endpoint"]
+                  }
+                }
+              },
+              "plotType": "LINE",
+              "targetAxis": "Y1"
+            }],
+            "yAxis": {
+              "label": "Exceeded per second",
+              "scale": "LINEAR"
+            },
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "thresholds": [{
+              "value": 10.0,
+              "color": "YELLOW",
+              "direction": "ABOVE"
+            }, {
+              "value": 50.0,
+              "color": "RED",
+              "direction": "ABOVE"
+            }]
+          }
+        }
+      },
+      {
+        "xPos": 8,
+        "yPos": 2,
+        "width": 4,
+        "height": 4,
+        "widget": {
+          "title": "⏱️ Rate Limit Middleware Latency",
+          "xyChart": {
+            "dataSets": [{
+              "timeSeriesQuery": {
+                "timeSeriesFilter": {
+                  "filter": "metric.type=\"custom.googleapis.com/vividly/rate_limit_middleware_latency_ms\" resource.type=\"generic_task\"",
+                  "aggregation": {
+                    "alignmentPeriod": "60s",
+                    "perSeriesAligner": "ALIGN_MEAN",
+                    "crossSeriesReducer": "REDUCE_PERCENTILE_95",
+                    "groupByFields": ["metric.label.endpoint"]
+                  }
+                }
+              },
+              "plotType": "LINE",
+              "targetAxis": "Y1"
+            }],
+            "yAxis": {
+              "label": "Latency (ms) - p95",
+              "scale": "LINEAR"
+            },
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "thresholds": [{
+              "value": 50.0,
+              "color": "YELLOW",
+              "direction": "ABOVE"
+            }, {
+              "value": 100.0,
+              "color": "RED",
+              "direction": "ABOVE"
+            }]
+          }
+        }
+      },
+      {
+        "xPos": 0,
+        "yPos": 6,
+        "width": 6,
+        "height": 4,
+        "widget": {
+          "title": "🔐 Authentication - Login Attempts",
+          "xyChart": {
+            "dataSets": [{
+              "timeSeriesQuery": {
+                "timeSeriesFilter": {
+                  "filter": "metric.type=\"custom.googleapis.com/vividly/auth_login_attempts_total\" resource.type=\"generic_task\"",
+                  "aggregation": {
+                    "alignmentPeriod": "60s",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM",
+                    "groupByFields": ["metric.label.status"]
+                  }
+                }
+              },
+              "plotType": "STACKED_AREA",
+              "targetAxis": "Y1"
+            }],
+            "yAxis": {
+              "label": "Attempts per second",
+              "scale": "LINEAR"
+            },
+            "chartOptions": {
+              "mode": "COLOR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 6,
+        "yPos": 6,
+        "width": 6,
+        "height": 4,
+        "widget": {
+          "title": "❌ Authentication - Failed Logins",
+          "xyChart": {
+            "dataSets": [{
+              "timeSeriesQuery": {
+                "timeSeriesFilter": {
+                  "filter": "metric.type=\"custom.googleapis.com/vividly/auth_login_failures_total\" resource.type=\"generic_task\"",
+                  "aggregation": {
+                    "alignmentPeriod": "60s",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM",
+                    "groupByFields": ["metric.label.reason"]
+                  }
+                }
+              },
+              "plotType": "LINE",
+              "targetAxis": "Y1"
+            }],
+            "yAxis": {
+              "label": "Failures per second",
+              "scale": "LINEAR"
+            },
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "thresholds": [{
+              "value": 5.0,
+              "color": "YELLOW",
+              "direction": "ABOVE"
+            }, {
+              "value": 20.0,
+              "color": "RED",
+              "direction": "ABOVE"
+            }]
+          }
+        }
+      },
+      {
+        "xPos": 0,
+        "yPos": 10,
+        "width": 4,
+        "height": 4,
+        "widget": {
+          "title": "🔄 Token Refresh Activity",
+          "xyChart": {
+            "dataSets": [{
+              "timeSeriesQuery": {
+                "timeSeriesFilter": {
+                  "filter": "metric.type=\"custom.googleapis.com/vividly/auth_token_refresh_total\" resource.type=\"generic_task\"",
+                  "aggregation": {
+                    "alignmentPeriod": "60s",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM",
+                    "groupByFields": ["metric.label.status"]
+                  }
+                }
+              },
+              "plotType": "LINE",
+              "targetAxis": "Y1"
+            }],
+            "yAxis": {
+              "label": "Refreshes per second",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 4,
+        "yPos": 10,
+        "width": 4,
+        "height": 4,
+        "widget": {
+          "title": "⏳ Session Duration (avg)",
+          "xyChart": {
+            "dataSets": [{
+              "timeSeriesQuery": {
+                "timeSeriesFilter": {
+                  "filter": "metric.type=\"custom.googleapis.com/vividly/auth_session_duration_seconds\" resource.type=\"generic_task\"",
+                  "aggregation": {
+                    "alignmentPeriod": "300s",
+                    "perSeriesAligner": "ALIGN_MEAN"
+                  }
+                }
+              },
+              "plotType": "LINE",
+              "targetAxis": "Y1"
+            }],
+            "yAxis": {
+              "label": "Duration (seconds)",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 8,
+        "yPos": 10,
+        "width": 4,
+        "height": 4,
+        "widget": {
+          "title": "👥 Active Sessions",
+          "xyChart": {
+            "dataSets": [{
+              "timeSeriesQuery": {
+                "timeSeriesFilter": {
+                  "filter": "metric.type=\"custom.googleapis.com/vividly/auth_active_sessions\" resource.type=\"generic_task\"",
+                  "aggregation": {
+                    "alignmentPeriod": "60s",
+                    "perSeriesAligner": "ALIGN_MEAN"
+                  }
+                }
+              },
+              "plotType": "LINE",
+              "targetAxis": "Y1"
+            }],
+            "yAxis": {
+              "label": "Active sessions",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 0,
+        "yPos": 14,
+        "width": 6,
+        "height": 4,
+        "widget": {
+          "title": "🌐 HTTP Requests (by endpoint)",
+          "xyChart": {
+            "dataSets": [{
+              "timeSeriesQuery": {
+                "timeSeriesFilter": {
+                  "filter": "metric.type=\"custom.googleapis.com/vividly/http_request_total\" resource.type=\"generic_task\"",
+                  "aggregation": {
+                    "alignmentPeriod": "60s",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM",
+                    "groupByFields": ["metric.label.method", "metric.label.endpoint"]
+                  }
+                }
+              },
+              "plotType": "STACKED_AREA",
+              "targetAxis": "Y1"
+            }],
+            "yAxis": {
+              "label": "Requests per second",
+              "scale": "LINEAR"
+            },
+            "chartOptions": {
+              "mode": "COLOR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 6,
+        "yPos": 14,
+        "width": 6,
+        "height": 4,
+        "widget": {
+          "title": "⚡ HTTP Request Duration (p95)",
+          "xyChart": {
+            "dataSets": [{
+              "timeSeriesQuery": {
+                "timeSeriesFilter": {
+                  "filter": "metric.type=\"custom.googleapis.com/vividly/http_request_duration_seconds\" resource.type=\"generic_task\"",
+                  "aggregation": {
+                    "alignmentPeriod": "60s",
+                    "perSeriesAligner": "ALIGN_MEAN",
+                    "crossSeriesReducer": "REDUCE_PERCENTILE_95",
+                    "groupByFields": ["metric.label.endpoint"]
+                  }
+                }
+              },
+              "plotType": "LINE",
+              "targetAxis": "Y1"
+            }],
+            "yAxis": {
+              "label": "Duration (seconds) - p95",
+              "scale": "LINEAR"
+            },
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "thresholds": [{
+              "value": 1.0,
+              "color": "YELLOW",
+              "direction": "ABOVE"
+            }, {
+              "value": 3.0,
+              "color": "RED",
+              "direction": "ABOVE"
+            }]
+          }
+        }
+      },
+      {
+        "xPos": 0,
+        "yPos": 18,
+        "width": 6,
+        "height": 4,
+        "widget": {
+          "title": "🎬 Content Generation Requests",
+          "xyChart": {
+            "dataSets": [{
+              "timeSeriesQuery": {
+                "timeSeriesFilter": {
+                  "filter": "metric.type=\"custom.googleapis.com/vividly/content_generation_requests_total\" resource.type=\"generic_task\"",
+                  "aggregation": {
+                    "alignmentPeriod": "60s",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM",
+                    "groupByFields": ["metric.label.status"]
+                  }
+                }
+              },
+              "plotType": "STACKED_BAR",
+              "targetAxis": "Y1"
+            }],
+            "yAxis": {
+              "label": "Requests per second",
+              "scale": "LINEAR"
+            },
+            "chartOptions": {
+              "mode": "COLOR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 6,
+        "yPos": 18,
+        "width": 6,
+        "height": 4,
+        "widget": {
+          "title": "⏲️ Content Generation Duration (by stage)",
+          "xyChart": {
+            "dataSets": [{
+              "timeSeriesQuery": {
+                "timeSeriesFilter": {
+                  "filter": "metric.type=\"custom.googleapis.com/vividly/content_generation_duration_seconds\" resource.type=\"generic_task\"",
+                  "aggregation": {
+                    "alignmentPeriod": "60s",
+                    "perSeriesAligner": "ALIGN_MEAN",
+                    "crossSeriesReducer": "REDUCE_MEAN",
+                    "groupByFields": ["metric.label.stage"]
+                  }
+                }
+              },
+              "plotType": "STACKED_AREA",
+              "targetAxis": "Y1"
+            }],
+            "yAxis": {
+              "label": "Duration (seconds)",
+              "scale": "LINEAR"
+            },
+            "chartOptions": {
+              "mode": "COLOR"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

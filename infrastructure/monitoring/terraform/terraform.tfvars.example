@@ -1,0 +1,22 @@
+# Sprint 3 Phase 4: Monitoring Dashboard Configuration
+# Copy this file to terraform.tfvars and update with your values
+
+# GCP Project Configuration
+project_id = "vividly-dev-rich"
+
+# Environment (dev, staging, prod)
+environment = "dev"
+
+# Example configurations for different environments:
+#
+# Development:
+# project_id  = "vividly-dev-rich"
+# environment = "dev"
+#
+# Staging:
+# project_id  = "vividly-staging"
+# environment = "staging"
+#
+# Production:
+# project_id  = "vividly-prod"
+# environment = "prod"
