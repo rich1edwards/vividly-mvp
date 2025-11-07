@@ -3,13 +3,23 @@ NLU Service for Topic Extraction (Phase 3 Sprint 1)
 
 Uses Vertex AI Gemini to extract topics from student natural language queries.
 Implements intelligent disambiguation and grade-level awareness.
+
+Updated Session 11 Part 14: Added configurable prompt template system
 """
 import os
 import json
 import logging
 import asyncio
+import time
 from typing import Dict, List, Optional, Any
 from datetime import datetime
+
+from app.core.prompt_templates import (
+    render_template,
+    get_model_config,
+    log_prompt_execution,
+    calculate_gemini_cost,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +45,14 @@ class NLUService:
         """
         self.project_id = project_id or os.getenv("GCP_PROJECT_ID", "vividly-dev-rich")
         self.location = location
-        self.model_name = "gemini-1.5-pro"
+
+        # Get model configuration from template system
+        model_config = get_model_config("nlu_extraction_gemini_25")
+        self.model_name = model_config["model_name"]
+        self.temperature = model_config["temperature"]
+        self.top_p = model_config["top_p"]
+        self.top_k = model_config["top_k"]
+        self.max_output_tokens = model_config["max_output_tokens"]
 
         # Try to initialize Vertex AI (will fail gracefully in test env)
         try:
@@ -47,7 +64,7 @@ class NLUService:
             vertexai.init(project=self.project_id, location=self.location)
             self.model = GenerativeModel(self.model_name)
             self.vertex_available = True
-            logger.info(f"Vertex AI initialized: {self.project_id}/{self.location}")
+            logger.info(f"Vertex AI initialized: {self.project_id}/{self.location} with {self.model_name}")
         except Exception as e:
             logger.warning(f"Vertex AI not available: {e}. Running in mock mode.")
             self.model = None
@@ -147,7 +164,11 @@ class NLUService:
         recent_topics: List[str],
         subject_context: Optional[str],
     ) -> str:
-        """Build prompt for Gemini topic extraction."""
+        """
+        Build prompt for Gemini topic extraction using configurable template.
+
+        Uses the prompt template system (app.core.prompt_templates) for flexibility.
+        """
 
         # Format topics as JSON for prompt
         topics_json = json.dumps(topics, indent=2)
@@ -158,58 +179,26 @@ class NLUService:
         # Subject context
         subject_str = subject_context if subject_context else "Any STEM subject"
 
-        prompt = f"""You are an educational AI assistant specializing in high school STEM subjects.
-
-Your task is to analyze student queries and map them to standardized educational topics.
-
-Available Topics (Grade {grade_level}):
-{topics_json}
-
-Student Information:
-- Grade Level: {grade_level}
-- Subject Context: {subject_str}
-- Previous Topics: {recent_str}
-
-Instructions:
-1. Identify the primary academic concept in the query
-2. Map to ONE of the available topic_ids above
-3. If ambiguous, set clarification_needed=true and provide questions
-4. If completely off-topic (non-academic), set out_of_scope=true
-5. Consider grade-appropriateness (Grade {grade_level})
-6. Respond ONLY with valid JSON (no markdown, no explanation)
-
-Output Format (JSON only):
-{{
-  "confidence": 0.95,
-  "topic_id": "topic_phys_mech_newton_3",
-  "topic_name": "Newton's Third Law",
-  "clarification_needed": false,
-  "clarifying_questions": [],
-  "out_of_scope": false,
-  "reasoning": "Clear reference to Newton's Third Law"
-}}
-
-Few-Shot Examples:
-
-Query: "Explain Newton's Third Law using basketball"
-Response: {{"confidence": 0.98, "topic_id": "topic_phys_mech_newton_3", "topic_name": "Newton's Third Law", "clarification_needed": false, "clarifying_questions": [], "out_of_scope": false, "reasoning": "Clear reference to Newton's Third Law in physics"}}
-
-Query: "Tell me about gravity"
-Response: {{"confidence": 0.65, "topic_id": null, "topic_name": null, "clarification_needed": true, "clarifying_questions": ["Are you interested in Newton's Law of Universal Gravitation?", "Or gravitational acceleration on Earth?"], "out_of_scope": false, "reasoning": "Multiple valid interpretations"}}
-
-Query: "What's the best pizza place?"
-Response: {{"confidence": 0.99, "topic_id": null, "topic_name": null, "clarification_needed": false, "clarifying_questions": [], "out_of_scope": true, "reasoning": "Not related to STEM education"}}
-
-Now analyze this student query:
-Query: "{student_query}"
-
-Respond with JSON only:"""
+        # Render from template (configurable via environment or database in future)
+        prompt = render_template(
+            template_key="nlu_extraction_gemini_25",
+            variables={
+                "student_query": student_query,
+                "grade_level": grade_level,
+                "topics_json": topics_json,
+                "recent_topics": recent_str,
+                "subject_context": subject_str,
+            }
+        )
 
         return prompt
 
     async def _call_gemini_with_retry(self, prompt: str, max_retries: int = 3) -> str:
         """
-        Call Gemini API with exponential backoff retry.
+        Call Gemini API with exponential backoff retry and comprehensive logging.
+
+        Uses configuration from prompt template system for model parameters.
+        Logs all executions to database for analytics and cost tracking.
 
         Args:
             prompt: Prompt text
@@ -217,27 +206,104 @@ Respond with JSON only:"""
 
         Returns:
             Response text from Gemini
+
+        Following Andrew Ng's methodology:
+        - Build it right: Comprehensive error handling and retry logic
+        - Test everything: Detailed logging for monitoring and debugging
+        - Think about the future: Analytics data for optimization
         """
+        start_time = time.time()
+        last_error = None
+
         for attempt in range(max_retries):
             try:
+                # Call Gemini API
                 response = self.model.generate_content(
                     prompt,
                     generation_config={
-                        "temperature": 0.2,  # Low for consistency
-                        "top_p": 0.8,
-                        "top_k": 40,
-                        "max_output_tokens": 512,
+                        "temperature": self.temperature,
+                        "top_p": self.top_p,
+                        "top_k": self.top_k,
+                        "max_output_tokens": self.max_output_tokens,
                     },
                 )
+
+                # Calculate metrics
+                response_time_ms = (time.time() - start_time) * 1000
+
+                # Extract token counts from response metadata
+                usage_metadata = getattr(response, "usage_metadata", None)
+                input_tokens = None
+                output_tokens = None
+                cost_usd = None
+
+                if usage_metadata:
+                    input_tokens = getattr(usage_metadata, "prompt_token_count", None)
+                    output_tokens = getattr(usage_metadata, "candidates_token_count", None)
+
+                    # Calculate cost if we have token counts
+                    if input_tokens and output_tokens:
+                        cost_usd = calculate_gemini_cost(
+                            input_tokens=input_tokens,
+                            output_tokens=output_tokens,
+                            model=self.model_name,
+                        )
+
+                # Log successful execution
+                execution_id = log_prompt_execution(
+                    template_key="nlu_extraction_gemini_25",
+                    success=True,
+                    response_time_ms=response_time_ms,
+                    input_token_count=input_tokens,
+                    output_token_count=output_tokens,
+                    cost_usd=cost_usd,
+                    metadata={
+                        "model": self.model_name,
+                        "temperature": self.temperature,
+                        "attempt": attempt + 1,
+                        "max_retries": max_retries,
+                    },
+                )
+
+                logger.info(
+                    f"NLU extraction successful: {response_time_ms:.0f}ms, "
+                    f"{input_tokens or 0} input tokens, {output_tokens or 0} output tokens, "
+                    f"${cost_usd:.6f if cost_usd else 0} cost [execution_id={execution_id}]"
+                )
+
                 return response.text
 
             except Exception as e:
+                last_error = e
+
                 if attempt == max_retries - 1:
+                    # All retries failed - log failure
+                    response_time_ms = (time.time() - start_time) * 1000
+
+                    execution_id = log_prompt_execution(
+                        template_key="nlu_extraction_gemini_25",
+                        success=False,
+                        response_time_ms=response_time_ms,
+                        error_message=str(e),
+                        metadata={
+                            "model": self.model_name,
+                            "temperature": self.temperature,
+                            "total_attempts": max_retries,
+                        },
+                    )
+
+                    logger.error(
+                        f"NLU extraction failed after {max_retries} attempts: {e} "
+                        f"[execution_id={execution_id}]"
+                    )
+
                     raise
 
-                wait_time = 2**attempt  # Exponential backoff
+                # Retry with exponential backoff
+                wait_time = 2**attempt
                 logger.warning(
-                    f"Gemini API error (attempt {attempt + 1}/{max_retries}): {e}"
+                    f"Gemini API error (attempt {attempt + 1}/{max_retries}): {e}. "
+                    f"Retrying in {wait_time}s..."
                 )
                 await asyncio.sleep(wait_time)
 
@@ -295,6 +361,7 @@ Respond with JSON only:"""
         For now, returns sample topics.
         """
         # Sample topics for demonstration
+        # NOTE: These must match the topics in prompt_templates.py few-shot examples
         all_topics = [
             {
                 "topic_id": "topic_phys_mech_newton_1",
@@ -330,6 +397,20 @@ Respond with JSON only:"""
                 "subject": "Chemistry",
                 "grade_levels": [9, 10, 11, 12],
                 "keywords": ["protons", "neutrons", "electrons", "nucleus"],
+            },
+            {
+                "topic_id": "topic_sci_method",
+                "name": "Scientific Method",
+                "subject": "General Science",
+                "grade_levels": [9, 10, 11, 12],
+                "keywords": ["hypothesis", "experiment", "observation", "conclusion", "scientific process"],
+            },
+            {
+                "topic_id": "topic_bio_photosynthesis",
+                "name": "Photosynthesis",
+                "subject": "Biology",
+                "grade_levels": [9, 10, 11, 12],
+                "keywords": ["chlorophyll", "light reaction", "dark reaction", "glucose", "plants green"],
             },
         ]
 

@@ -60,9 +60,11 @@ class User(Base):
     settings = Column(JSON, nullable=True, default={})
 
     # Modality preferences (Phase 1A: Dual Modality Support)
-    content_modality_preferences = Column(JSON, nullable=False, default=dict, server_default='{"default": "video"}')
-    accessibility_settings = Column(JSON, nullable=False, default=dict, server_default='{}')
-    language_preference = Column(String(10), nullable=False, default="en")
+    # NOTE: Temporarily commented out until database migration is run
+    # TODO: Run add_dual_modality_phase1.sql migration to add these columns
+    # content_modality_preferences = Column(JSON, nullable=True, default=dict)
+    # accessibility_settings = Column(JSON, nullable=True, default=dict)
+    # language_preference = Column(String(10), nullable=True, default="en")
 
     # Timestamps
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)

@@ -78,10 +78,12 @@ class ContentRequestService:
                 status="pending",
                 progress_percentage=0,
                 retry_count=0,
-                # Phase 1A: Dual Modality Support (model defaults handle None)
-                requested_modalities=requested_modalities,
-                preferred_modality=preferred_modality,
-                modality_preferences=modality_preferences,
+                # Phase 1A: Dual Modality Support
+                # NOTE: Temporarily commented out until database migration is run
+                # TODO: Run add_dual_modality_phase1.sql migration to add these columns
+                # requested_modalities=requested_modalities,
+                # preferred_modality=preferred_modality,
+                # modality_preferences=modality_preferences,
             )
 
             db.add(request)
@@ -261,6 +263,64 @@ class ContentRequestService:
         except SQLAlchemyError as e:
             db.rollback()
             logger.error(f"Failed to set error: {e}", exc_info=True)
+            return False
+
+    @staticmethod
+    def set_clarification_needed(
+        db: Session,
+        request_id: str,
+        clarifying_questions: List[str],
+        reasoning: Optional[str] = None,
+    ) -> bool:
+        """
+        Mark request as needing clarification from user.
+
+        This is NOT an error state - it's a valid workflow where
+        the system needs additional input from the user to proceed.
+
+        Args:
+            db: Database session
+            request_id: Request ID (UUID)
+            clarifying_questions: List of questions to ask user
+            reasoning: Why clarification is needed
+
+        Returns:
+            True if updated successfully
+        """
+        try:
+            request = db.query(ContentRequest).filter(
+                ContentRequest.id == request_id
+            ).first()
+
+            if not request:
+                return False
+
+            # Set status to clarification_needed
+            request.status = "clarification_needed"
+            request.current_stage = "Awaiting user clarification"
+
+            # Store clarification data in metadata
+            if not request.request_metadata:
+                request.request_metadata = {}
+
+            request.request_metadata["clarification"] = {
+                "questions": clarifying_questions,
+                "reasoning": reasoning,
+                "requested_at": datetime.utcnow().isoformat()
+            }
+
+            db.commit()
+
+            logger.info(
+                f"Request requires clarification: "
+                f"id={request_id}, questions={len(clarifying_questions)}"
+            )
+
+            return True
+
+        except SQLAlchemyError as e:
+            db.rollback()
+            logger.error(f"Failed to set clarification: {e}", exc_info=True)
             return False
 
     @staticmethod

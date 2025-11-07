@@ -18,7 +18,9 @@ from app.api.v1.endpoints import (
     nlu,
     interests,
     monitoring,
+    health,
 )
+from app.api.v1.admin import prompts
 
 
 api_router = APIRouter()
@@ -54,3 +56,9 @@ api_router.include_router(nlu.router, tags=["NLU & Topic Extraction"])
 
 # Monitoring endpoints (Super Admin only)
 api_router.include_router(monitoring.router, prefix="/monitoring", tags=["Monitoring"])
+
+# Health check endpoints (public)
+api_router.include_router(health.router, tags=["Health Checks"])
+
+# Enterprise Prompt Management (Super Admin only)
+api_router.include_router(prompts.router, tags=["Prompt Management"])

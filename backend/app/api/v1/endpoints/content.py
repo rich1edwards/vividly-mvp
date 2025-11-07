@@ -49,6 +49,7 @@ from app.services.request_monitoring_service import (
 )
 from app.services.pubsub_service import get_pubsub_service
 from app.services.content_request_service import ContentRequestService
+from app.services.clarification_service import get_clarification_service
 from app.utils.dependencies import get_current_user
 from app.models.user import User
 
@@ -804,6 +805,29 @@ async def generate_content(
                     confidence_score=0.0,
                     metadata={"no_match": True},
                 )
+
+        # FAST-PATH CLARIFICATION: Check for obvious clarification needs BEFORE async processing
+        # This provides immediate UX feedback for vague queries (Andrew Ng: "Measure and optimize UX")
+        clarification_service = get_clarification_service()
+        clarification_check = clarification_service.check_clarification_needed(
+            student_query=request.student_query,
+            grade_level=request.grade_level,
+        )
+
+        if clarification_check["needs_clarification"]:
+            logger.info(
+                f"Fast-path clarification triggered: {clarification_check['reasoning']}"
+            )
+            # Return immediately with clarification questions (no async processing)
+            return ContentGenerationResponse(
+                status="clarification_needed",
+                request_id=None,  # No request created yet
+                cache_key=None,
+                message=f"Please provide more details. {clarification_check['reasoning']}",
+                content_url=None,
+                estimated_completion_seconds=None,
+                clarifying_questions=clarification_check["clarifying_questions"],
+            )
 
         # ASYNC ARCHITECTURE: Create ContentRequest and publish to Pub/Sub
         # This decouples the API from long-running video generation tasks

@@ -298,16 +298,34 @@ class ContentWorker:
             request_id = message_data.get("request_id")
             correlation_id = message_data.get("correlation_id", "unknown")
 
+            # POISON PILL DETECTION: Check delivery attempts
+            # If a message has been delivered multiple times, it's likely a poisoned message
+            # The DLQ configuration (max_delivery_attempts=5) will automatically move it to DLQ
+            # But we log this explicitly for monitoring and alerting
+            delivery_attempt = getattr(message, 'delivery_attempt', None)
+            if delivery_attempt and delivery_attempt > 3:
+                logger.warning(
+                    f"Message on delivery attempt {delivery_attempt}: "
+                    f"request_id={request_id}, correlation_id={correlation_id}. "
+                    f"If failures continue, DLQ will capture at attempt 5."
+                )
+
             logger.info(
                 f"Processing message: request_id={request_id}, "
-                f"correlation_id={correlation_id}"
+                f"correlation_id={correlation_id}, "
+                f"delivery_attempt={delivery_attempt or 1}"
             )
 
             # Validate required fields
             required_fields = ["request_id", "student_id", "student_query", "grade_level"]
             missing_fields = [f for f in required_fields if not message_data.get(f)]
             if missing_fields:
-                logger.error(f"Missing required fields: {missing_fields}")
+                logger.error(
+                    f"Missing required fields: {missing_fields}, "
+                    f"request_id={request_id}, "
+                    f"delivery_attempt={delivery_attempt or 1}. "
+                    f"Message will be rejected to trigger DLQ routing."
+                )
                 # Don't retry messages with missing fields - send to DLQ
                 return False
 
@@ -481,6 +499,36 @@ class ContentWorker:
                 )
 
                 return True
+
+            elif result.get("status") == "clarification_needed":
+                # Valid response requiring user interaction
+                # This is NOT an error - it's a workflow state where system needs user input
+                clarifying_questions = result.get("clarifying_questions", [])
+                reasoning = result.get("reasoning", "")
+
+                logger.info(
+                    f"Request requires clarification: request_id={request_id}, "
+                    f"questions={len(clarifying_questions)}"
+                )
+
+                # Store clarification in database
+                self.request_service.set_clarification_needed(
+                    db=db,
+                    request_id=request_id,
+                    clarifying_questions=clarifying_questions,
+                    reasoning=reasoning
+                )
+
+                # Record as success (message processed correctly, just needs user input)
+                duration = time.time() - start_time
+                self.metrics.record_message_processed(
+                    success=True,  # Not a failure - valid workflow state
+                    duration_seconds=duration,
+                    retry_count=0,
+                    request_id=request_id
+                )
+
+                return True  # Acknowledge message
 
             else:
                 # Unexpected status

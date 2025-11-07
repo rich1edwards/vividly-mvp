@@ -14,6 +14,12 @@ from app.models.progress import (
     ActivityType,
 )
 from app.models.student_request import StudentRequest, RequestStatus
+from app.models.prompt_template import (
+    PromptTemplate,
+    PromptExecution,
+    PromptGuardrail,
+    ABTestExperiment,
+)
 
 
 __all__ = [
@@ -32,4 +38,8 @@ __all__ = [
     "ActivityType",
     "StudentRequest",
     "RequestStatus",
+    "PromptTemplate",
+    "PromptExecution",
+    "PromptGuardrail",
+    "ABTestExperiment",
 ]

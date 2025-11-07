@@ -51,8 +51,8 @@ class ContentGenerationResponse(BaseModel):
 
     status: str = Field(
         ...,
-        description="Generation status: pending, generating, completed, failed",
-        examples=["pending", "generating", "completed"],
+        description="Generation status: pending, clarification_needed, generating, completed, failed",
+        examples=["pending", "clarification_needed", "generating", "completed"],
     )
     request_id: Optional[str] = Field(
         None, description="Unique request ID for tracking generation progress"
@@ -63,11 +63,18 @@ class ContentGenerationResponse(BaseModel):
     message: str = Field(
         ...,
         description="Human-readable status message",
-        examples=["Content generation started", "Content generation completed"],
+        examples=["Content generation started", "Clarification needed", "Content generation completed"],
     )
     content_url: Optional[str] = Field(
         None, description="URL to access generated content (if completed)"
     )
     estimated_completion_seconds: Optional[int] = Field(
         None, description="Estimated seconds until content generation completes", ge=0
+    )
+    clarifying_questions: Optional[List[str]] = Field(
+        None,
+        description="List of clarifying questions if status is clarification_needed",
+        examples=[
+            ["What specific aspect of science interests you?", "What grade level are you studying?"]
+        ],
     )

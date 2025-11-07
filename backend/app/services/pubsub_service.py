@@ -55,8 +55,9 @@ class PubSubService:
             logger.error(error_msg)
             raise EnvironmentError(error_msg)
 
-        # Topic name includes environment for isolation
-        self.topic_name = f"content-requests-{self.environment}"
+        # Topic name (actual infrastructure uses content-generation-requests without environment suffix)
+        # TODO: Align infrastructure naming - either rename topic or use environment-specific names
+        self.topic_name = "content-generation-requests"
         self.topic_path = f"projects/{self.project_id}/topics/{self.topic_name}"
 
         # Initialize publisher client
