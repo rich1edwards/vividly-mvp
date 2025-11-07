@@ -79,11 +79,9 @@
             },
             "thresholds": [{
               "value": 10.0,
-              "color": "YELLOW",
               "direction": "ABOVE"
             }, {
               "value": 50.0,
-              "color": "RED",
               "direction": "ABOVE"
             }]
           }
@@ -121,11 +119,9 @@
             },
             "thresholds": [{
               "value": 50.0,
-              "color": "YELLOW",
               "direction": "ABOVE"
             }, {
               "value": 100.0,
-              "color": "RED",
               "direction": "ABOVE"
             }]
           }
@@ -196,11 +192,9 @@
             },
             "thresholds": [{
               "value": 5.0,
-              "color": "YELLOW",
               "direction": "ABOVE"
             }, {
               "value": 20.0,
-              "color": "RED",
               "direction": "ABOVE"
             }]
           }
@@ -357,11 +351,9 @@
             },
             "thresholds": [{
               "value": 1.0,
-              "color": "YELLOW",
               "direction": "ABOVE"
             }, {
               "value": 3.0,
-              "color": "RED",
               "direction": "ABOVE"
             }]
           }
