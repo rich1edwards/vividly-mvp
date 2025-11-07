@@ -94,6 +94,22 @@ export const LoginPage: React.FC = () => {
     }
   }
 
+  // Test user quick login (only in development mode)
+  const quickLogin = async (testEmail: string, testPassword: string, roleName: string) => {
+    setEmail(testEmail)
+    setPassword(testPassword)
+    // Auto-submit after state updates
+    setTimeout(async () => {
+      try {
+        await login({ email: testEmail, password: testPassword })
+        success('Test login successful', `Logged in as ${roleName}`)
+      } catch (error: any) {
+        const errorMessage = error.response?.data?.detail || 'Test login failed.'
+        showError('Test login failed', errorMessage)
+      }
+    }, 100)
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-vividly-blue-50 via-vividly-purple-50 to-vividly-coral-50 p-4">
       <Card variant="elevated" padding="none" className="w-full max-w-md">
@@ -193,6 +209,54 @@ export const LoginPage: React.FC = () => {
               <span className="bg-card px-2 text-muted-foreground">Or</span>
             </div>
           </div>
+
+          {/* Test User Quick Login (Development Mode Only) */}
+          {import.meta.env.MODE === 'development' && (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-xs font-semibold text-yellow-800 mb-3 flex items-center gap-1">
+                <span>🧪</span>
+                <span>Test Mode - Quick Login</span>
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="tertiary"
+                  size="sm"
+                  onClick={() => quickLogin('student@vividly-test.com', 'Test123!Student', 'Student')}
+                  disabled={isLoading}
+                >
+                  Student
+                </Button>
+                <Button
+                  type="button"
+                  variant="tertiary"
+                  size="sm"
+                  onClick={() => quickLogin('teacher@vividly-test.com', 'Test123!Teacher', 'Teacher')}
+                  disabled={isLoading}
+                >
+                  Teacher
+                </Button>
+                <Button
+                  type="button"
+                  variant="tertiary"
+                  size="sm"
+                  onClick={() => quickLogin('admin@vividly-test.com', 'Test123!Admin', 'Admin')}
+                  disabled={isLoading}
+                >
+                  Admin
+                </Button>
+                <Button
+                  type="button"
+                  variant="tertiary"
+                  size="sm"
+                  onClick={() => quickLogin('superadmin@vividly-test.com', 'Test123!SuperAdmin', 'Super Admin')}
+                  disabled={isLoading}
+                >
+                  Super Admin
+                </Button>
+              </div>
+            </div>
+          )}
 
           <div className="text-center text-sm">
             <span className="text-muted-foreground">Don't have an account? </span>

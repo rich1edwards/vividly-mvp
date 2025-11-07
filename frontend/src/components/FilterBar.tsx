@@ -15,8 +15,8 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Input } from './ui/input'
-import { Button } from './ui/button'
+import { Input } from './ui/Input'
+import { Button } from './ui/Button'
 import {
   Select,
   SelectContent,
@@ -28,11 +28,9 @@ import { Badge } from './ui/badge'
 import { cn } from '@/lib/utils'
 import {
   Search,
-  Filter,
   X,
   ChevronDown,
   SlidersHorizontal,
-  Calendar as CalendarIcon,
 } from 'lucide-react'
 import {
   Popover,
