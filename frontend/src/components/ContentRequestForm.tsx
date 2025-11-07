@@ -14,6 +14,7 @@ import { interestsApi } from '../api/interests'
 import type { User, Interest, AsyncContentRequest } from '../types'
 import { Button } from './ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './ui/Card'
+import { InterestTagGrid } from './InterestTag'
 
 interface ContentRequestFormProps {
   user: User
@@ -29,7 +30,7 @@ export const ContentRequestForm: React.FC<ContentRequestFormProps> = ({
   // Form state
   const [query, setQuery] = useState('')
   const [gradeLevel, setGradeLevel] = useState<number>(user.grade_level || 9)
-  const [selectedInterest, setSelectedInterest] = useState<string>('')
+  const [selectedInterest, setSelectedInterest] = useState<Interest | null>(null)
 
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -52,7 +53,7 @@ export const ContentRequestForm: React.FC<ContentRequestFormProps> = ({
 
       // Auto-select first interest if available
       if (response.interests.length > 0 && !selectedInterest) {
-        setSelectedInterest(response.interests[0].name)
+        setSelectedInterest(response.interests[0])
       }
     } catch (err: any) {
       console.error('Failed to fetch interests:', err)
@@ -90,7 +91,7 @@ export const ContentRequestForm: React.FC<ContentRequestFormProps> = ({
         student_id: user.user_id,
         student_query: query.trim(),
         grade_level: gradeLevel,
-        ...(selectedInterest && { interest: selectedInterest })
+        ...(selectedInterest && { interest: selectedInterest.name })
       }
 
       // Submit async content request
@@ -196,28 +197,44 @@ export const ContentRequestForm: React.FC<ContentRequestFormProps> = ({
             </p>
           </div>
 
-          {/* Interest Selector */}
+          {/* Interest Selector - Phase 1.2.3: Visual Interest Tags */}
           {interests.length > 0 && (
             <div>
-              <label htmlFor="interest" className="block text-sm font-medium mb-2">
-                Connect to Your Interest (Optional)
-              </label>
-              <select
-                id="interest"
-                value={selectedInterest}
-                onChange={(e) => setSelectedInterest(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-vividly-blue"
-                disabled={isSubmitting || isLoadingInterests}
-              >
-                <option value="">None (Auto-select)</option>
-                {interests.map((interest) => (
-                  <option key={interest.interest_id} value={interest.name}>
-                    {interest.name}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-muted-foreground mt-1">
-                We'll use analogies and examples related to your selected interest
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-medium">
+                  Connect to Your Interest (Optional)
+                </label>
+                {selectedInterest && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedInterest(null)}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
+                    disabled={isSubmitting || isLoadingInterests}
+                  >
+                    Clear selection
+                  </button>
+                )}
+              </div>
+
+              {isLoadingInterests ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-vividly-blue" />
+                </div>
+              ) : (
+                <InterestTagGrid
+                  interests={interests}
+                  selectedInterest={selectedInterest}
+                  onInterestSelect={(interest) => setSelectedInterest(interest)}
+                  disabled={isSubmitting}
+                  size="md"
+                  maxColumns={3}
+                />
+              )}
+
+              <p className="text-xs text-muted-foreground mt-3">
+                {selectedInterest
+                  ? `We'll use analogies and examples related to ${selectedInterest.name}`
+                  : "Select an interest or we'll auto-select based on your profile"}
               </p>
             </div>
           )}

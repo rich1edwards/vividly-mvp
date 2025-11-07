@@ -158,6 +158,7 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         display: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace'],
       },
       fontSize: {
         // Type scale with 1.250 ratio
@@ -202,6 +203,21 @@ export default {
         'md': '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
         'lg': '0 8px 24px 0 rgba(0, 0, 0, 0.15)',
         'xl': '0 16px 48px 0 rgba(0, 0, 0, 0.2)',
+      },
+      zIndex: {
+        '0': '0',
+        '10': '10',
+        '20': '20',
+        '30': '30',
+        '40': '40',
+        '50': '50',
+        'dropdown': '1000',
+        'sticky': '1020',
+        'fixed': '1030',
+        'modal-backdrop': '1040',
+        'modal': '1050',
+        'popover': '1060',
+        'tooltip': '1070',
       },
       keyframes: {
         "accordion-down": {
