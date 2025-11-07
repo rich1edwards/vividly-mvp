@@ -15,7 +15,6 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Input } from './ui/Input'
 import { Button } from './ui/Button'
 import {
   Select,
@@ -140,7 +139,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   )
   const [searchInput, setSearchInput] = useState(filters.search)
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false)
-  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null)
+  const [debounceTimer, setDebounceTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
 
   // Count active filters
   const activeFilterCount = useMemo(() => countActiveFilters(filters), [filters])

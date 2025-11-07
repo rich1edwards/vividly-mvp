@@ -47,12 +47,12 @@ export const ContentRequestForm: React.FC<ContentRequestFormProps> = ({
   const fetchStudentInterests = async () => {
     try {
       setIsLoadingInterests(true)
-      const data = await interestsApi.getMy()
-      setInterests(data)
+      const response = await interestsApi.getMy()
+      setInterests(response.interests)
 
       // Auto-select first interest if available
-      if (data.length > 0 && !selectedInterest) {
-        setSelectedInterest(data[0].name)
+      if (response.interests.length > 0 && !selectedInterest) {
+        setSelectedInterest(response.interests[0].name)
       }
     } catch (err: any) {
       console.error('Failed to fetch interests:', err)

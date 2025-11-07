@@ -25,12 +25,12 @@ export interface ContentRequest {
   query: string
   topic?: string
   interests: string[]
-  status: ContentRequestStatus
+  status: ContentStatus
   created_at: string
   updated_at: string
 }
 
-export enum ContentRequestStatus {
+export enum ContentStatus {
   PENDING = 'pending',
   PROCESSING = 'processing',
   COMPLETED = 'completed',

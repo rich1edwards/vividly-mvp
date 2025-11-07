@@ -89,7 +89,7 @@ export const ContentStatusTracker: React.FC = () => {
   const [pollCount, setPollCount] = useState(0)
 
   // Polling control
-  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const mountedRef = useRef(true)
 
   // Fetch status
