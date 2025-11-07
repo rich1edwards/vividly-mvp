@@ -7,8 +7,9 @@
 export interface Interest {
   interest_id: string
   name: string
-  category: string
-  description?: string
+  category: string | null
+  description?: string | null
+  display_order?: number | null
 }
 
 export interface Topic {

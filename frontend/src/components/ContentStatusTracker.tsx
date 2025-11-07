@@ -338,9 +338,16 @@ export const ContentStatusTracker: React.FC = () => {
           </CardHeader>
           <CardContent>
             <VideoPlayer
-              videoUrl={status.video_url}
-              thumbnailUrl={status.thumbnail_url || undefined}
-              title={status.topic}
+              sources={[
+                {
+                  src: status.video_url,
+                  type: 'video/mp4',
+                  size: 720
+                }
+              ]}
+              poster={status.thumbnail_url || undefined}
+              contentId={status.id}
+              studentId={status.student_id}
             />
 
             {/* Script Display */}
