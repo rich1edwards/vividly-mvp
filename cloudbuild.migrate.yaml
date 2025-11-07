@@ -1,0 +1,81 @@
+# Cloud Build Configuration for Database Migrations
+#
+# This configuration uses the PROVEN WORKING PATTERN from cloudbuild.yaml:
+# - Uses the backend Docker image with Python and psycopg2
+# - Gets DATABASE_URL from Secret Manager (database-url-dev)
+# - Uses VPC connector for Cloud SQL access
+# - Uses service account with proper permissions
+#
+# Usage:
+#   gcloud builds submit --config=cloudbuild.migrate.yaml \
+#     --substitutions=_MIGRATION_FILE=backend/migrations/enterprise_prompt_system_phase1.sql
+
+substitutions:
+  _MIGRATION_FILE: 'migrations/enterprise_prompt_system_phase1.sql'
+  _ENVIRONMENT: 'dev'
+  _REGION: 'us-central1'
+  _REPOSITORY: 'vividly'
+  _IMAGE_NAME: 'backend-api'
+
+steps:
+  # Step 1: Build the backend image (contains Python, psycopg2, etc.)
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-image'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE_NAME}:migration'
+      - '-f'
+      - 'backend/Dockerfile'
+      - 'backend'
+    dir: '.'
+
+  # Step 2: Push the image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-image'
+    args:
+      - 'push'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE_NAME}:migration'
+    dir: '.'
+
+  # Step 3: Run the migration using Cloud Run Jobs (proven pattern)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'run-migration'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'jobs'
+      - 'create'
+      - '${_ENVIRONMENT}-prompt-migration-${BUILD_ID}'
+      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE_NAME}:migration'
+      - '--region=${_REGION}'
+      - '--command=python'
+      - '--args=run_migration.py,${_MIGRATION_FILE}'
+      - '--set-env-vars=ENVIRONMENT=${_ENVIRONMENT}'
+      - '--set-secrets=DATABASE_URL=database-url-${_ENVIRONMENT}:latest'
+      - '--vpc-connector=projects/${PROJECT_ID}/locations/${_REGION}/connectors/${_ENVIRONMENT}-cloud-run-connector'
+      - '--service-account=${_ENVIRONMENT}-cloud-run-sa@${PROJECT_ID}.iam.gserviceaccount.com'
+      - '--execute-now'
+      - '--wait'
+    dir: '.'
+
+  # Step 4: Clean up the migration job
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'cleanup-migration-job'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'jobs'
+      - 'delete'
+      - '${_ENVIRONMENT}-prompt-migration-${BUILD_ID}'
+      - '--region=${_REGION}'
+      - '--quiet'
+    dir: '.'
+
+# Timeout: 10 minutes
+timeout: '600s'
+
+# Build options
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY

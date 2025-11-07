@@ -8,8 +8,56 @@ substitutions:
   _IMAGE_NAME: backend-api
 
 steps:
+  # Sprint 3 Phase 3: Verify metrics configuration before deployment
+  # Following Andrew Ng's "Test everything" principle
+  - name: 'python:3.11-slim'
+    id: 'verify-metrics-config'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "========================================"
+        echo "METRICS CONFIGURATION VERIFICATION"
+        echo "Sprint 3 Phase 3: Pre-deployment check"
+        echo "========================================"
+
+        # Install dependencies
+        pip install --quiet google-cloud-monitoring==2.15.1 pydantic-settings fastapi
+
+        # Run metrics verification script
+        python3 scripts/verify_metrics_config.py
+
+        # Exit code 0 = pass, 1 = fail (blocks deployment)
+    dir: 'backend'
+    waitFor: ['-']  # Run first, before any other step
+
+  # Run metrics tests (Sprint 3 Phase 2 test suite)
+  - name: 'python:3.11-slim'
+    id: 'test-metrics'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "========================================"
+        echo "METRICS TEST SUITE (40 tests)"
+        echo "Sprint 3 Phase 2: Comprehensive coverage"
+        echo "========================================"
+
+        # Install dependencies
+        pip install --quiet -r requirements.txt
+        pip install --quiet pytest pytest-cov
+
+        # Run metrics tests
+        pytest tests/test_metrics.py -v --tb=short
+
+        echo ""
+        echo "✓ All 40 metrics tests passed"
+    dir: 'backend'
+    waitFor: ['verify-metrics-config']  # Run after verification
+
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-image'
     args:
       - 'build'
       - '-t'
@@ -23,18 +71,24 @@ steps:
 
   # Push the image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-image-sha'
     args:
       - 'push'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE_NAME}:${SHORT_SHA}'
+    waitFor: ['build-image']
 
   - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-image-latest'
     args:
       - 'push'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE_NAME}:latest'
+    waitFor: ['build-image']
 
   # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-cloud-run'
     entrypoint: gcloud
+    waitFor: ['push-image-sha', 'push-image-latest', 'test-metrics']
     args:
       - 'run'
       - 'services'

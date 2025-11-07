@@ -1,0 +1,888 @@
+{
+  "title": "Precalculus 2e",
+  "subject": "mathematics",
+  "grade_level": "9-12",
+  "chapters": [
+    {
+      "id": "ch01",
+      "title": "Chapter 1: Try It",
+      "number": 1,
+      "content_blocks": [
+        {
+          "type": "paragraph",
+          "text": "Answer Key\nChapter 1\nTry It\n1.1 Functions and Function Notation\nⓐyes\nⓑyes. (Note: If two players\nhad been tied for, say, 4th\nplace, then the name would\nnot have been a function of\nrank.)\n1.\n2.\n3. yes\n4.\n5.\n6.\n7.\n8.\nor\nⓐyes, because each bank\naccount has a single balance\nat any given time\nⓑno, because several\nbank account numbers may\nhave the same balance\nⓒno, because the same\noutput may correspond to\nmore than one input.\n9.\nⓐYes, letter grade is a\nfunction of percent grade;\nⓑNo, it is not one-to-one.\nThere are 100 different\npercent numbers we could\nget but only about five\npossible letter grades, so\nthere cannot be only one\npercent number that\ncorresponds to each letter\ngrade.\n10.\n11. yes\n12. No, because it does not\npass the horizontal line\ntest.\n1.2 Domain and Range\n1.\n2.\n∞∞\n3.\n∞\n∞\n4.\n∞\nⓐvalues that are less than\nor equal to –2, or values that\nare greater than or equal to\n–1 and less than 3;\nⓑ\n;\nⓒ\n∞\n5.\n6. domain =[1950,2002] range\n= [47,000,000,89,000,000]\n1287",
+          "page_number": 1297
+        },
+        {
+          "type": "paragraph",
+          "text": "7. domain:\n∞\nrange:\n∞\n8.\n1.3 Rates of Change and Behavior of Graphs\n1.\nper year.\n2.\n3.\n4. The local maximum appears to\noccur at\nand the local\nminimum occurs at\nThe function is increasing on\n∞\n∞\nand\ndecreasing on\n1.4 Composition of Functions\n1.\nNo, the functions are not the same.\n2. A gravitational force is still a\nforce, so\nmakes\nsense as the acceleration of\na planet at a distance r from\nthe Sun (due to gravity), but\ndoes not make\nsense.\n3.\nand\n4.\nⓐ8 ⓑ20\n5.\n6.\n∞\n7. Possible answer:\n1288\nAccess for free at openstax.org",
+          "page_number": 1298
+        },
+        {
+          "type": "paragraph",
+          "text": "1.5 Transformation of Functions\n1.\n2. The graphs of\nand\nare\nshown below. The\ntransformation is a horizontal\nshift. The function is shifted to\nthe left by 2 units.\n3.\n4.\n5.\na.\nb.\nⓐ\n-2\n0\n2\n4\nⓑ\n-2\n0\n2\n4\n15\n10\n5\nunknown\n6.\n7.\nNotice:\nlooks the\nsame as\n.\n8. even\n9.\n2\n4\n6\n8\n9\n12\n15\n0\n10.\n11.\nso using the\nsquare root function we\nget\n1289",
+          "page_number": 1299
+        },
+        {
+          "type": "paragraph",
+          "text": "1.6 Absolute Value Functions\n1.\n2. using the variable\nfor\npassing,\n3.\n4.\nor\n5.\nso the graph\nintersects the vertical axis at\nwhen\nand\nso the\ngraph intersects the\nhorizontal axis at\nand\n6.\n7.\nor\nin interval\nnotation, this would be\n∞\n∞\n1.7 Inverse Functions\n1.\n2. No\n3. Yes\n4. The domain of function\nis\n∞\nand the range\nof function\nis\n∞\n5.\na.\nIn 60\nminutes, 50 miles are\ntraveled.\nb.\nTo travel\n60 miles, it will take 70\nminutes.\n6. a. 3; b. 5.6\n7.\n8.\n∞\n∞\n9.\n1.1 Section Exercises\n1. A relation is a set of ordered\npairs. A function is a special\nkind of relation in which no\ntwo ordered pairs have the\nsame first coordinate.\n3. When a vertical line\nintersects the graph of a\nrelation more than once,\nthat indicates that for that\ninput there is more than one\noutput. At any particular\ninput value, there can be\nonly one output if the\nrelation is to be a function.\n5. When a horizontal line\nintersects the graph of a\nfunction more than once,\nthat indicates that for that\noutput there is more than\none input. A function is one-\nto-one if each output\ncorresponds to only one\ninput.\n7. function\n9. function\n11. function\n1290\nAccess for free at openstax.org",
+          "page_number": 1300
+        },
+        {
+          "type": "paragraph",
+          "text": "13. function\n15. function\n17. function\n19. function\n21. function\n23. function\n25. not a function\n27.\n29.\n31.\n33.\nⓐ\nⓑ\n35.\nⓐ\nⓑ\nor\n37.\nⓐ\nⓑ\nⓒ\n39.\n41. not a function\n43. function\n45. function\n47. function\n49. function\n51. function\nⓐ\nⓑ\nor\n53.\n55. not a function so it is also\nnot a one-to-one function\n57. one-to-one function\n59. function, but not one-to-\none\n61. function\n63. function\n65. not a function\n67.\n69.\n71.",
+          "page_number": 1301
+        },
+        {
+          "type": "paragraph",
+          "text": "77.\n79.\n81.\n83.\n85.\n87.\nⓐ\nⓑThe number of cubic\nyards of dirt required for a\ngarden of 100 square feet\nis 1.\n89.\nⓐThe height of a rocket\nabove ground after 1\nsecond is 200 ft.\nⓑthe height of a rocket\nabove ground after 2\nseconds is 350 ft.\n91.\n1.2 Section Exercises\n1. The domain of a function\ndepends upon what values\nof the independent variable\nmake the function\nundefined or imaginary.\n3. There is no restriction on\nfor\nbecause you\ncan take the cube root of\nany real number. So the\ndomain is all real numbers,\n∞∞\nWhen dealing with\nthe set of real numbers, you\ncannot take the square root\nof negative numbers. So\n-values are restricted for\nto nonnegative\nnumbers and the domain is\n∞\n5. Graph each formula of the\npiecewise function over its\ncorresponding domain. Use\nthe same scale for the\n-axis\nand\n-axis for each graph.\nIndicate inclusive endpoints\nwith a solid circle and\nexclusive endpoints with an\nopen circle. Use an arrow to\nindicate\n∞or ∞Combine\nthe graphs to find the graph\nof the piecewise function.\n1292\nAccess for free at openstax.org",
+          "page_number": 1302
+        },
+        {
+          "type": "paragraph",
+          "text": "7.\n∞∞\n9.\n∞\n11.\n∞∞\n13.\n∞∞\n15.\n∞\n∞\n17.\n∞\n∞\n19.\n∞\n∞\n21.\n∞\n23.\n∞\n25.\n∞\n∞\n27. domain:\nrange\n29. domain:\nrange:\n31. domain:\nrange:\n33. domain:\n∞\nrange:\n∞\n35. domain:\nrange:\n37. domain:\n∞\nrange:\n∞\n39. domain:\n∞∞\n41. domain:\n∞∞\n43. domain:\n∞∞\n45. domain:\n∞∞\n47.\n49.\n51.\n53. domain:\n∞\n∞\n1293",
+          "page_number": 1303
+        },
+        {
+          "type": "paragraph",
+          "text": "55.\nwindow:\nrange:\nwindow:\nrange:\n57.\n59. Many answers. One\nfunction is\n1.3 Section Exercises\n1. Yes, the average rate of\nchange of all linear\nfunctions is constant.\n3. The absolute maximum and\nminimum relate to the\nentire graph, whereas the\nlocal extrema relate only to\na specific region around an\nopen interval.\n5.\n7. 3\n9.\n11.\n13.\n15.\n17.\n19. increasing on\n∞\n∞\ndecreasing on\n21. increasing on\n∞\ndecreasing on\n∞\n23. local maximum:\nlocal minimum:\n1294\nAccess for free at openstax.org",
+          "page_number": 1304
+        },
+        {
+          "type": "paragraph",
+          "text": "25. absolute maximum at\napproximately\nabsolute minimum at\napproximately\n27. a. –3000; b. –1250\n29. -4\n31. 27\n33. –0.167\n35. Local minimum at\ndecreasing on\n∞\nincreasing on\n∞\n37. Local minimum at\ndecreasing on\nincreasing on\n∞\n39. Local maximum at\nlocal minima\nat\nand\ndecreasing on\n∞\nincreasing on\n∞\n41. A\n43.\n45. 2.7 gallons per minute\n47. approximately –0.6\nmilligrams per day\n1.4 Section Exercises\n1. Find the numbers that make\nthe function in the\ndenominator\nequal to\nzero, and check for any\nother domain restrictions on\nand\nsuch as an even-\nindexed root or zeros in the\ndenominator.\n3. Yes. Sample answer: Let\nThen\nand\nSo\n5.\ndomain:\n∞∞\ndomain:\n∞∞\ndomain:\n∞∞\ndomain:\n∞\n∞\n7.\ndomain:\n∞\n∞\ndomain:\n∞\n∞\ndomain:\n∞\n∞\ndomain:\n∞\n∞\n9.\ndomain:\n∞\ndomain:\n∞\ndomain:\n∞\ndomain:\n∞\n1295",
+          "page_number": 1305
+        },
+        {
+          "type": "paragraph",
+          "text": "ⓐ3 ⓑ\nⓒ\nⓓ\nⓔ\n11.\n13.\n15.\n17.\n19.\n21.\n•\nⓐText\n•\nⓑ\n∞\nⓐ\n∞\nⓑ\n∞\n∞\nc.\n∞\n23.\n25.\n∞\n27. sample:\n29. sample:\n31. sample:\n33. sample:\n35. sample:\n37. sample:\n39. sample:\n41. sample:\n43. 2\n45. 5\n47. 4\n49. 0\n51. 2\n53. 1\n55. 4\n57. 4\n59. 9\n61. 4\n63. 2\n65. 3\n67. 11\n69. 0\n71. 7\n73.\n75.\n77.\n79.\n81. 2\n83.\n∞∞\n85. False\n87.\n;\n89.\n91. c\n93.\nand\nsquare inches\n95.\nsquare units\n1296\nAccess for free at openstax.org",
+          "page_number": 1306
+        },
+        {
+          "type": "paragraph",
+          "text": "97.\n•\nⓐ\n•\nⓑ3.38 hours\n1.5 Section Exercises\n1. A horizontal shift results\nwhen a constant is added to\nor subtracted from the\ninput. A vertical shifts results\nwhen a constant is added to\nor subtracted from the\noutput.\n3. A horizontal compression\nresults when a constant\ngreater than 1 is multiplied\nby the input. A vertical\ncompression results when a\nconstant between 0 and 1 is\nmultiplied by the output.\n5. For a function\nsubstitute\nfor\nin\nSimplify. If the resulting\nfunction is the same as the\noriginal function,\nthen the\nfunction is even. If the\nresulting function is the\nopposite of the original\nfunction,\nthen the original function is\nodd. If the function is not\nthe same or the opposite,\nthen the function is neither\nodd nor even.\n7.\n9.\n11. The graph of\nis a\nhorizontal shift to the left\n43 units of the graph of\n13. The graph of\nis a\nhorizontal shift to the right\n4 units of the graph of\n15. The graph of\nis a\nvertical shift up 8 units of\nthe graph of\n17. The graph of\nis a\nvertical shift down 7 units\nof the graph of\n19. The graph of\nis a horizontal shift to the\nleft 4 units and a vertical\nshift down 1 unit of the\ngraph of\n21. decreasing on\n∞\nand increasing on\n∞\n23. decreasing on\n∞\n1297",
+          "page_number": 1307
+        },
+        {
+          "type": "paragraph",
+          "text": "25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47. even\n49. odd\n51. even\n53. The graph of\nis a vertical\nreflection (across the\n-axis) of the graph of\n55. The graph of\nis a vertical\nstretch by a factor of 4 of\nthe graph of\n57. The graph of\nis a\nhorizontal compression by\na factor of\nof the graph\nof\n59. The graph of\nis a\nhorizontal stretch by a\nfactor of 3 of the graph of\n61. The graph of\nis a\nhorizontal reflection across\nthe\n-axis and a vertical\nstretch by a factor of 3 of\nthe graph of\n63.\n65.\n1298\nAccess for free at openstax.org",
+          "page_number": 1308
+        },
+        {
+          "type": "paragraph",
+          "text": "67.\n69. The graph of the function\nis shifted to the left 1\nunit, stretched vertically by a\nfactor of 4, and shifted down 5\nunits.\n71. The graph of\nis\nstretched vertically by a factor\nof 2, shifted horizontally 4 units\nto the right, reflected across the\nhorizontal axis, and then\nshifted vertically 3 units up.\n73. The graph of the function\nis compressed\nvertically by a factor of\n75. The graph of the function is\nstretched horizontally by a\nfactor of 3 and then shifted\nvertically downward by 3 units.\n77. The graph of\nis\nshifted right 4 units and then\nreflected across the vertical line\n1299",
+          "page_number": 1309
+        },
+        {
+          "type": "paragraph",
+          "text": "79.\n81.\n1.6 Section Exercises\n1. Isolate the absolute value\nterm so that the equation is\nof the form\nForm\none equation by setting the\nexpression inside the\nabsolute value symbol,\nequal to the expression on\nthe other side of the\nequation,\nForm a second\nequation by setting\nequal\nto the opposite of the\nexpression on the other side\nof the equation,\nSolve\neach equation for the\nvariable.\n3. The graph of the absolute\nvalue function does not\ncross the\n-axis, so the\ngraph is either completely\nabove or completely below\nthe\n-axis.\n5. First determine the\nboundary points by finding\nthe solution(s) of the\nequation. Use the boundary\npoints to form possible\nsolution intervals. Choose a\ntest value in each interval to\ndetermine which values\nsatisfy the inequality.\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21. No solution\n23.\n25.\n27.\nno\n-intercepts\n29.\n∞\n∞\n31.\n33.\n∞\n∞\n35.\n∞\n∞\n37.\n39.\n41.\n1300\nAccess for free at openstax.org",
+          "page_number": 1310
+        },
+        {
+          "type": "paragraph",
+          "text": "43.\n45.\n47.\n49.\n51.\n53. range:\n55.\nintercepts:\n57.\n∞∞\n59. There is no solution for\nthat will keep the function\nfrom having a\n-intercept.\nThe absolute value\nfunction always crosses the\n-intercept when\n61.\n63.\n1301",
+          "page_number": 1311
+        },
+        {
+          "type": "paragraph",
+          "text": "1.7 Section Exercises\n1. Each output of a function\nmust have exactly one\noutput for the function to be\none-to-one. If any horizontal\nline crosses the graph of a\nfunction more than once,\nthat means that\n-values\nrepeat and the function is\nnot one-to-one. If no\nhorizontal line crosses the\ngraph of the function more\nthan once, then no\n-values\nrepeat and the function is\none-to-one.\n3. Yes. For example,\nis its own inverse.\n5. Given a function\nsolve for\nin terms of\nInterchange the\nand\nSolve the new equation for\nThe expression for\nis the\ninverse,\n7.\n9.\n11.\n13. domain of\n∞\n15. domain of\n∞\nⓐ\nand\nⓑThis tells us that\nand\nare inverse functions\n16.\n17.\n19. one-to-one\n21. one-to-one\n23. not one-to-one\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n1\n4\n7\n12\n16\n3\n6\n9\n13\n14\n43.\n45.\nGiven the Fahrenheit\ntemperature,\nthis\nformula allows you to\ncalculate the Celsius\ntemperature.\n1302\nAccess for free at openstax.org",
+          "page_number": 1312
+        },
+        {
+          "type": "paragraph",
+          "text": "47.\nThe time for the car to\ntravel 180 miles is 3.6\nhours.\nReview Exercises\n1. function\n3. not a function\n5.\n7. one-to-one\n9. function\n11. function\n13.\n15.\n17.\nor\n19.\n21.\n∞\n∞\n23.\n25.\n27. increasing\n∞\ndecreasing\n∞\n29. increasing\nconstant\n∞\n∞\n31. local minimum\nlocal maximum\n33. Absolute Maximum: 10\n35.\n37.\n39.\n41.\n43. sample:\n1303",
+          "page_number": 1313
+        },
+        {
+          "type": "paragraph",
+          "text": "45.\n47.\n49.\n51.\n53.\n55.\n57. even\n59. odd\n61. even\n63.\n65.\n67.\n69.\n71.\n73.\n1304\nAccess for free at openstax.org",
+          "page_number": 1314
+        },
+        {
+          "type": "paragraph",
+          "text": "77. The function is one-to-one.\n78. The function is not one-to-one.\n79.\nPractice Test\n1. The relation is a function.\n3. −16\n5. The graph is a parabola and\nthe graph fails the\nhorizontal line test.\n7.\n9.\n11.\n13.\n15.\n17.\n19.\nand\n21.\n23.\n∞\n∞\n25.\n27.\n29.\n31.\n33. yes\n35.\nChapter 2\nTry It\n2.1 Linear Functions\n1.\n;\ndecreasing because\n2.\n1305",
+          "page_number": 1315
+        },
+        {
+          "type": "paragraph",
+          "text": "3.\n;\n4.\n;\n5.\n6.\n2.2 Graphs of Linear Functions\n1.\n2. Possible answers include\nor\n3.\n4.\nⓐ\nⓑ\n5.\n6.\nⓐ\nⓑ\nⓒSlope -1\nⓓNeither parallel nor\nperpendicular\nⓔDecreasing function\nⓕGiven the identity\nfunction, perform a vertical\nflip (over the t-axis) and shift\nup 5 units.\n7.\n2.3 Modeling with Linear Functions\nⓐ\nⓑThe y-intercept is\nIf the company\ndoes not produce a single\ndoughnut, they still incur a\ncost of $25,000.\n1.\nⓐ41,100 ⓑ2020\n2.\n3. 21.57 miles\n2.4 Fitting Linear Models to Data\n1.\n2. 150.871 billion gallons;\nextrapolation\n1306\nAccess for free at openstax.org",
+          "page_number": 1316
+        },
+        {
+          "type": "paragraph",
+          "text": "2.1 Section Exercises\n1. Terry starts at an elevation\nof 3000 feet and descends\n70 feet per second.\n3. 3 miles per hour\n5.\n7. Yes.\n9. No.\n11. No.\n13. No.\n15. Increasing.\n17. Decreasing.\n19. Decreasing.\n21. Increasing.\n23. Decreasing.\n25. 3\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47. Linear,\n49. Linear,\n51. Linear,\n53. Linear,\n55.\n57.\n59. a.\n;\nb.\n61.\n63.\n65.\n1307",
+          "page_number": 1317
+        },
+        {
+          "type": "paragraph",
+          "text": "67.\n69. $45 per training session.\n71. The rate of change is 0.1.\nFor every additional minute\ntalked, the monthly charge\nincreases by $0.1 or 10\ncents. The initial value is\n24. When there are no\nminutes talked, initially the\ncharge is $24.\n73. The slope is\nThis\nmeans for every year\nbetween 1960 and 1989,\nthe population dropped by\n400 per year in the city.\n75. c.\n2.2 Section Exercises\n1. The slopes are equal;\ny-intercepts are not equal.\n3. The point of intersection is\nThis is because for\nthe horizontal line, all of the\ncoordinates are\nand for\nthe vertical line, all of the\ncoordinates are\nThe point\nof intersection will have\nthese two characteristics.\n5. First, find the slope of the\nlinear function. Then take\nthe negative reciprocal of\nthe slope; this is the slope of\nthe perpendicular line.\nSubstitute the slope of the\nperpendicular line and the\ncoordinate of the given\npoint into the equation\nand solve for\nThen write the equation of\nthe line in the form\nby substituting\nin\nand\n7. neither parallel or\nperpendicular\n9. perpendicular\n11. parallel\n13.\n;\n15.\n;\n17.\n;\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33. F\n35. C\n1308\nAccess for free at openstax.org",
+          "page_number": 1318
+        },
+        {
+          "type": "paragraph",
+          "text": "55.\n57.\nⓐ\nⓑ0.75 ⓒ\n59.\n61.\n63.\n65. no point of intersection\n67.\n69.\n71.\n73.\n75. Less than 3000 texts\n2.3 Section Exercises\n1. Determine the independent\nvariable. This is the variable\nupon which the output\ndepends.\n3. To determine the initial\nvalue, find the output when\nthe input is equal to zero.\n5. 6 square units\n7. 20.012 square units\n9. 2,300\n11. 64,170\n13.\n15. (–30, 0) Thirty years before\nthe start of this model, the\ntown had no citizens. (0,\n75,000) Initially, the town\nhad a population of 75,000.\n17. Ten years after the model\nbegan.\n19.\n21.\n: The x-intercept is\nnot a plausible set of data\nfor this model because it\nmeans the baby weighed 0\npounds 15 months prior to\nbirth.\n: The baby\nweighed 7.5 pounds at\nbirth.\n23. At age 5.8 months.\n1310\nAccess for free at openstax.org",
+          "page_number": 1320
+        },
+        {
+          "type": "paragraph",
+          "text": "25.\n27.\n: In roughly 59\nyears, the number of\npeople inflicted with the\ncommon cold would be 0.\n: Initially there\nwere 12,025 people\nafflicted by the common\ncold.\n29. 2064\n31.\n33. In 2070, the company’s\nprofit will be zero.\n35.\n37. (10, 0) In 1990, the profit\nearned zero profit.\n39. Hawaii\n41. During the year 1933\n43. $105,620\nⓐ696 people ⓑ4 years\nⓒ174 people per year\nⓓ305 people\nⓔ\nⓕ2,219 people\n45.\nⓐ\nⓑThe flat monthly fee is\n$10 and there is an\nadditional $0.15 fee for\neach additional minute\nused\nⓒ$113.05\n47.\nⓐ\nⓑ6,640 moose\n49.\nⓐ\nⓑ5.5 billion cubic feet\nⓒDuring the year 2017\n51.\n53. More than 133 minutes\n55. More than $42,857.14\nworth of jewelry\n57. $66,666.67\n2.4 Section Exercises\n1. When our model no longer\napplies, after some value in\nthe domain, the model itself\ndoesn’t hold.\n3. We predict a value outside\nthe domain and range of the\ndata.\n5. The closer the number is to\n1, the less scattered the\ndata, the closer the number\nis to 0, the more scattered\nthe data.\n7. 61.966 years\n9. No.\n11. No.\n13. Interpolation. About\n15. C\n17. B\n1311",
+          "page_number": 1321
+        },
+        {
+          "type": "paragraph",
+          "text": "19.\n21.\n23. Yes, trend appears linear\nbecause\nand will\nexceed 12,000 near\nmidyear, 2016, 24.6 years\nsince 1992.\n25.\n,\n27.\n29.\n;\n31.\n33.\n;\n35.\nIf 18,980 units\nare sold, the company will\nhave a profit of zero\ndollars.\n37.\n39.\n41.\nReview Exercises\n1. Yes\n3. Increasing.\n5.\n7. 3\n9.\n11. Not linear.\n13. parallel\n15.\n17. Line 1:\nLine 2:\nParallel\n19.\n21.\n23. 250.\n25. 118,000.\n27.\n29. a) 800; b) 100 students per\nyear; c)\n1312\nAccess for free at openstax.org",
+          "page_number": 1322
+        },
+        {
+          "type": "paragraph",
+          "text": "31. 18,500\n33. $91,625\n35. Extrapolation.\n37.\n39. Midway through 2024.\n41.\n43. Early in 2022\n45. 7,660\nPractice Test\n1. Yes.\n3. Increasing\n5.\n7.\n9. No.\n11. Perpendicular\n13.\n;\n15.\n17.\n19. 150\n21. 165,000\n23.\n1313",
+          "page_number": 1323
+        }
+      ]
+    },
+    {
+      "id": "ch03",
+      "title": "Chapter 3: Try It",
+      "number": 3,
+      "content_blocks": [
+        {
+          "type": "paragraph",
+          "text": "25. a) 375; b) dropped an\naverage of 46.875, or about\n47 people per year; c)\n27.\n29. Early in 2018\n31.\n33.\nChapter 3\nTry It\n3.1 Complex Numbers\n1.\n2.\n3.\n4.\n5.\n6.\n7.\n3.2 Quadratic Functions\n1. The path passes through the\norigin and has vertex at\nso\nTo\nmake the shot,\nwould need to be about 4\nbut\nhe\ndoesn’t make it.\n2.\nin\ngeneral form;\nin\nstandard form\n3. The domain is all real\nnumbers. The range is\nor\n∞\n4. y-intercept at (0, 13), No\nintercepts\nⓐ3 seconds ⓑ256 feet\nⓒ7 seconds\n5.\n1314\nAccess for free at openstax.org",
+          "page_number": 1324
+        },
+        {
+          "type": "paragraph",
+          "text": "3.3 Power Functions and Polynomial Functions\n1.\nis a power function\nbecause it can be written as\nThe other\nfunctions are not power\nfunctions.\n2. As\napproaches positive or\nnegative infinity,\ndecreases without bound: as\n∞,\n∞\nbecause of the negative\ncoefficient.\n3. The degree is 6. The leading\nterm is\nThe leading\ncoefficient is\n4. As\n∞\n∞\n∞\n∞\nIt has the shape of an even degree power function\nwith a negative coefficient.\n5. The leading term is\nso it is a degree 3\npolynomial. As\napproaches\npositive infinity,\nincreases without bound; as\napproaches negative\ninfinity,\ndecreases\nwithout bound.\n6. y-intercept\nx-intercepts\nand\n7. There are at most 12\nintercepts and at most 11\nturning points.\n8. The end behavior indicates\nan odd-degree polynomial\nfunction; there are 3\nintercepts and 2 turning\npoints, so the degree is odd\nand at least 3. Because of\nthe end behavior, we know\nthat the lead coefficient\nmust be negative.\n9. The\nintercepts are\nand\nthe\ny-intercept is\nand the\ngraph has at most 2 turning\npoints.\n3.4 Graphs of Polynomial Functions\n1. y-intercept\nx-intercepts\nand\n2. The graph has a zero of –5\nwith multiplicity 3, a zero of\n–1 with multiplicity 2, and a\nzero of 3 with multiplicity 2.\n3.\n4. Because\nis a polynomial\nfunction and since\nis\nnegative and\nis\npositive, there is at least one\nreal zero between\nand\n5.\n6. The minimum occurs at\napproximately the point\nand the maximum\noccurs at approximately the\npoint\n1315",
+          "page_number": 1325
+        },
+        {
+          "type": "paragraph",
+          "text": "3.5 Dividing Polynomials\n1.\n2.\n3.\n3.6 Zeros of Polynomial Functions\n1.\n2. The zeros are 2, –2, and –4.\n3. There are no rational zeros.\n4. The zeros are\n5.\n6. There must be 4, 2, or 0\npositive real roots and 0\nnegative real roots. The\ngraph shows that there are\n2 positive real zeros and 0\nnegative real zeros.\n7. 3 meters by 4 meters by 7\nmeters\n3.7 Rational Functions\n1. End behavior: as\n∞\nLocal\nbehavior: as\n∞(there\nare no x- or y-intercepts)\n2.\nThe function and the\nasymptotes are shifted 3 units\nright and 4 units down. As\n∞and as\n∞\nThe function is\n3.\n4. The domain is all real\nnumbers except\nand\n5. Removable discontinuity at\nVertical asymptotes:\n6. Vertical asymptotes at\nand\nhorizontal\nasymptote at\n1316\nAccess for free at openstax.org",
+          "page_number": 1326
+        },
+        {
+          "type": "paragraph",
+          "text": "7. For the transformed reciprocal squared function, we find the\nrational form.\nBecause the numerator is the same degree as the denominator\nwe know that as\n∞\nis the\nhorizontal asymptote. Next, we set the denominator equal to\nzero, and find that the vertical asymptote is\nbecause as\n∞We then set the numerator equal to 0 and\nfind the x-intercepts are at\nand\nFinally, we\nevaluate the function at 0 and find the y-intercept to be at\n8. Horizontal asymptote at\nVertical asymptotes at\ny-intercept at\nx-intercepts at\nis a\nzero with multiplicity 2, and the\ngraph bounces off the x-axis at\nthis point.\nis a single zero\nand the graph crosses the axis\nat this point.\n3.8 Inverses and Radical Functions\n1.\nand\n2.\n3.\n4.\n5.\n3.9 Modeling Using Variation\n1.\n2.\n3.\n3.1 Section Exercises\n1. Add the real parts together\nand the imaginary parts\ntogether.\n3.\ntimes\nequals –1, which is\nnot imaginary. (answers\nvary)\n5.\n7.\n9.\n11. 2 real and 0 nonreal\n1317",
+          "page_number": 1327
+        },
+        {
+          "type": "paragraph",
+          "text": "13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29. 25\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45. 128i\n47.\n49.\n51. 0\n53. 5 – 5i\n55.\n57.\n3.2 Section Exercises\n1. When written in that form,\nthe vertex can be easily\nidentified.\n3. If\nthen the function\nbecomes a linear function.\n5. If possible, we can use\nfactoring. Otherwise, we can\nuse the quadratic formula.\n7.\nVertex\n9.\nVertex\n11.\nVertex\n13.\nVertex\n15. Minimum is\nand\noccurs at\nAxis of\nsymmetry is\n17. Minimum is\nand\noccurs at\nAxis of\nsymmetry is\n19. Minimum is\nand occurs\nat\nAxis of symmetry is\n21. Domain is\n∞∞\nRange is\n∞\n23. Domain is\n∞∞\nRange is\n∞\n1318\nAccess for free at openstax.org",
+          "page_number": 1328
+        },
+        {
+          "type": "paragraph",
+          "text": "25. Domain is\n∞∞\nRange is\n∞\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n49.\n51.\n53.\nVertex\nAxis of\nsymmetry is\nIntercepts\nare\n55.\nVertex\nAxis of\nsymmetry is\nintercepts:\n57.\nVertex\nAxis of\nsymmetry is\nIntercepts are\n59.\n61.\n63.\n65.\n67.\n69.\n71. The graph is shifted up or\ndown (a vertical shift).\n1319",
+          "page_number": 1329
+        },
+        {
+          "type": "paragraph",
+          "text": "73. 50 feet\n75. Domain is\n∞∞\nRange\nis\n∞\n77. Domain is\n∞∞\nRange\nis\n∞\n79.\n81.\n83.\n85. 50 feet by 50 feet.\nMaximize\n87. 125 feet by 62.5 feet.\nMaximize\n89.\nand\nproduct is –36;\nmaximize\n91. 2909.56 meters\n93. $10.70\n3.3 Section Exercises\n1. The coefficient of the power\nfunction is the real number\nthat is multiplied by the\nvariable raised to a power.\nThe degree is the highest\npower appearing in the\nfunction.\n3. As\ndecreases without\nbound, so does\nAs\nincreases without bound, so\ndoes\n5. The polynomial function is\nof even degree and leading\ncoefficient is negative.\n7.\nis a power function\nbecause it contains a\nvariable base raised to a\nfixed power. It is also a\npolynomial, with all\ncoefficients except one\nequal to zero.\n9. Neither\n11. Neither\n13. Degree = 2, Coefficient = –2\n15. Degree =4, Coefficient = –2\n17. As\n∞,\n∞, as\n∞,\n∞\n19. As\n∞,\n∞,\nas\n∞,\n∞\n21. As\n∞,\n∞,as\n∞,\n∞\n23. As\n∞,\n∞, as\n∞,\n∞\n25. y-intercept is\nt-intercepts are\n27. y-intercept is\nx-intercepts are\nand\n29. y-intercept is\nx-intercepts are\nand\n31. 3\n33. 5\n35. 3\n37. 5\n39. Yes. Number of turning\npoints is 2. Least possible\ndegree is 3.\n41. Yes. Number of turning\npoints is 1. Least possible\ndegree is 2.\n1320\nAccess for free at openstax.org",
+          "page_number": 1330
+        },
+        {
+          "type": "paragraph",
+          "text": "43. Yes. Number of turning\npoints is 0. Least possible\ndegree is 1.\n44. No.\n45. Yes. Number of turning\npoints is 0. Least possible\ndegree is 1.\n47.\n10\n9,500\n100\n99,950,000\n–10\n9,500\n–100\n99,950,000\nas\n∞,\n∞, as\n∞,\n∞\n49.\n10\n–504\n100\n–941,094\n–10\n1,716\n–100\n1,061,106\nas\n∞,\n∞, as\n∞,\n∞\n51.\nThe\nintercept is\nThe\nintercepts are\nAs\n∞,\n∞, as\n∞,\n∞\n53.\nThe\nintercept is\n. The\nintercepts are\nAs\n∞,\n∞, as\n∞,\n∞\n55.\nThe\nintercept is\nThe\nintercept is\nAs\n∞,\n∞, as\n∞,\n∞\n57.\nThe\nintercept is\nThe\nintercept are\nAs\n∞,\n∞, as\n∞,\n∞\n59.\nThe\nintercept is\nThe\nintercepts are\nAs\n∞,\n∞, as\n∞,\n∞\n61.\n63.\n1321",
+          "page_number": 1331
+        },
+        {
+          "type": "paragraph",
+          "text": "65.\n67.\n69.\n3.4 Section Exercises\n1. The\nintercept is where the\ngraph of the function\ncrosses the\naxis, and the\nzero of the function is the\ninput value for which\n3. If we evaluate the function\nat\nand at\nand the sign of\nthe function value changes,\nthen we know a zero exists\nbetween\nand\n5. There will be a factor raised\nto an even power.\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21.\n23.\n,\n,\n,\n,\n25.\nand\nSign change confirms.\n27.\nand\nSign change confirms.\n29.\nand\nSign\nchange confirms.\n31. 0 with multiplicity 2,\nwith multiplicity 5, 4 with\nmultiplicity 2\n33. 0 with multiplicity 2, –2 with\nmultiplicity 2\n35.\nwith multiplicity\nwith multiplicity\n37.\nwith multiplicity\nwith\nmultiplicity\nwith\nmultiplicity\n39.\nwith multiplicity 2, 0 with\nmultiplicity 3\n41.\nwith multiplicity\nwith multiplicity\n43. x-intercepts,\nwith\nmultiplicity 2,\nwith\nmultiplicity 1,\nintercept\n. As\n∞,\n∞, as\n∞,\n∞.\n45. x-intercepts\nwith\nmultiplicity 3,\nwith\nmultiplicity 2,\nintercept\n. As\n∞,\n∞, as\n∞,\n∞\n47. x-intercepts\nwith\nmultiplicity 1,\n-intercept\nAs\n∞,\n∞, as\n∞,\n∞\n1322\nAccess for free at openstax.org",
+          "page_number": 1332
+        },
+        {
+          "type": "paragraph",
+          "text": "49.\n51.\n53. –4, –2, 1, 3 with multiplicity\n1\n55. –2, 3 each with multiplicity\n2\n57.\n59.\n61.\n63.\n65.\n67. local max\nlocal min\n69. global min\n71. global min\n73.\n75.\n77.\n79.\n3.5 Section Exercises\n1. The binomial is a factor of\nthe polynomial.\n3.\n, quotient:\n, remainder:\n5.\n, quotient:\n,\nremainder:\n7.\n, quotient:\n,\nremainder:\n9.\n, quotient:\n, remainder:\n11.\n, quotient:\n, remainder:\n13.\n, quotient:\n, remainder:\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39. Yes\n41. Yes\n43. No\n45.\n47.\n49. Quotient:\n,\nremainder:\n51. Quotient:\n,\nremainder:\n53. Quotient:\n,\nremainder:\n55.\n57.\n59.\n61.\n63.\n65.\n1323",
+          "page_number": 1333
+        },
+        {
+          "type": "paragraph",
+          "text": "67.\n69.\n71.\n73.\n3.6 Section Exercises\n1. The theorem can be used to\nevaluate a polynomial.\n3. Rational zeros can be\nexpressed as fractions\nwhereas real zeros include\nirrational numbers.\n5. Polynomial functions can\nhave repeated zeros, so the\nfact that number is a zero\ndoesn’t preclude it being a\nzero again.\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47. 1 positive, 1 negative\n49. 3 or 1 positive, 0 negative\n51. 0 positive, 3 or 1 negative\n53. 2 or 0 positive, 2 or 0 negative\n1324\nAccess for free at openstax.org",
+          "page_number": 1334
+        },
+        {
+          "type": "paragraph",
+          "text": "55. 2 or 0 positive, 2 or 0\nnegative\n57.\n59.\n61.\n63.\n65.\n67.\n69.\n71. 8 by 4 by 6 inches\n73. 5.5 by 4.5 by 3.5 inches\n75. 8 by 5 by 3 inches\n77. Radius = 6 meters, Height =\n2 meters\n79. Radius = 2.5 meters, Height\n= 4.5 meters\n3.7 Section Exercises\n1. The rational function will be\nrepresented by a quotient of\npolynomial functions.\n3. The numerator and\ndenominator must have a\ncommon factor.\n5. Yes. The numerator of the\nformula of the functions\nwould have only complex\nroots and/or factors\ncommon to both the\nnumerator and\ndenominator.\n7.\n9.\n11. V.A. at\nH.A. at\nDomain is all reals\n13. V.A. at\nH.A. at\nDomain is all reals\n15. V.A. at\nH.A.\nat\nDomain is all reals\n17. V.A. at\nH.A. at\nDomain is all reals\n19. V.A. at\nH.A. at\nDomain is all reals\n21. none\n23.\n1325",
+          "page_number": 1335
+        },
+        {
+          "type": "paragraph",
+          "text": "25. Local behavior:\n∞\n∞\nEnd behavior:\n∞\n27. Local behavior:\n∞\n∞\nEnd behavior:\n∞\n29. Local behavior:\n∞\n∞\n∞\n,\n∞\nEnd behavior:\n∞\n31.\n33.\n35.\n37.\n39.\n41.\n1326\nAccess for free at openstax.org",
+          "page_number": 1336
+        },
+        {
+          "type": "paragraph",
+          "text": "43.\n45.\n;\nremovable discontinuity (hole) at\n47.\n1327",
+          "page_number": 1337
+        },
+        {
+          "type": "paragraph",
+          "text": "49.\n51.\n53.\n55.\n57.\n59. 27(x - 2) / ((x - 3)² (x + 3))\n61.\n63.\n65.\n2.01\n2.001\n2.0001\n1.99\n1.999\n100\n1,000\n10,000\n–100\n–1,000\n10\n100\n1,000\n10,000\n100,000\n.125\n.0102\n.001\n.0001\n.00001\nVertical asymptote\nHorizontal\nasymptote\n67.\n–4.1\n–4.01\n–4.001\n–3.99\n–3.999\n82\n802\n8,002\n–798\n–7998\n10\n100\n1,000\n10,000\n100,000\n1.4286\n1.9331\n1.992\n1.9992\n1.999992\nVertical asymptote\nHorizontal\nasymptote\n69.\n–.9\n–.99\n–.999\n–1.1\n–1.01\n81\n9,801\n998,001\n121\n10,201\n10\n100\n1,000\n10,000\n100,000\n.82645\n.9803\n.998\n.9998\nVertical asymptote\nHorizontal\nasymptote\n71.\n∞\n1328\nAccess for free at openstax.org",
+          "page_number": 1338
+        },
+        {
+          "type": "paragraph",
+          "text": "73.\n∞\n75.\n77.\n79.\n81.\n83. After about 6.12 hours.\n85.\n2 by 2\nby 5 feet.\n87.\nRadius\n= 2.52 meters.\n3.8 Section Exercises\n1. It can be too difficult or\nimpossible to solve for\nin\nterms of\n3. We will need a restriction on\nthe domain of the answer.\n5.\n7.\n9.\n11.\n13.\n15.\n17.\n∞\n19.\n∞\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n1329",
+          "page_number": 1339
+        },
+        {
+          "type": "paragraph",
+          "text": "37.\n39.\n41.\n43.\n∞\n45.\n∞\n47.\n49.\n51.\n53.\n55.\n57.\n5.53\nseconds\n59.\n3.63 feet\n61.\n250 mL\n63.\n3.99 meters\n65.\n1.99 inches\n3.9 Section Exercises\n1. The graph will have the\nappearance of a power\nfunction.\n3. No. Multiple variables may\njointly vary.\n5.\n1330\nAccess for free at openstax.org",
+          "page_number": 1340
+        },
+        {
+          "type": "paragraph",
+          "text": "7.\n9.\n11.\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47. ≈ 1.89 years\n49. ≈ 0.61 years\n51. 3 seconds\n53. 48 inches\n55. ≈ 49.75 pounds\n57. ≈ 33.33 amperes\n59. ≈ 2.88 inches\nReview Exercises\n1.\n3.\n5.\n1331",
+          "page_number": 1341
+        },
+        {
+          "type": "paragraph",
+          "text": "7.\n9.\n11. 300 meters by 150 meters,\nthe longer side parallel to\nriver.\n13. Yes, degree = 5, leading\ncoefficient = 4\n15. Yes, degree = 4, leading\ncoefficient = 1\n17.\n∞\n∞\n∞\n∞\n19. –3 with multiplicity 2,\nwith multiplicity 1, –1 with\nmultiplicity 3\n21. 4 with multiplicity 1\n23.\nwith multiplicity 1, 3 with\nmultiplicity 3\n25.\nwith remainder 12\n27.\n29.\n, so factored\nform is\n31.\n33.\n35. 0 or 2 positive, 1 negative\n37. Intercepts\n,\nAsymptotes\nand\n1332\nAccess for free at openstax.org",
+          "page_number": 1342
+        },
+        {
+          "type": "paragraph",
+          "text": "39. Intercepts (3, 0), (-3, 0), and\n, Asymptotes\n41.\n43.\n45.\n47.\n49.\n51.\n53. 148.5 pounds\nPractice Test\n1.\n3.\n5.\n∞\n∞\n∞\n∞\n7.\n, vertex\n, intercepts\n9. 60,000 square feet\n11. 0 with multiplicity 4, 3 with\nmultiplicity 2\n13.\n15.\n. So factored\nform is\n17.\n(has multiplicity 2),\n19.\n(has multiplicity 3),\n1333",
+          "page_number": 1343
+        }
+      ]
+    },
+    {
+      "id": "ch04",
+      "title": "Chapter 4: Try It",
+      "number": 4,
+      "content_blocks": [
+        {
+          "type": "paragraph",
+          "text": "21.\n23. Intercepts\n,\nAsymptotes\n.\n25.\n27.\n29.\n31. 4 seconds\nChapter 4\nTry It\n4.1 Exponential Functions\n1.\nand\nrepresent\nexponential functions.\n2.\n3. About\nbillion people;\nby the year 2031, India’s\npopulation will exceed\nChina’s by about 0.001\nbillion, or 1 million people.\n4.\nand\n5.\n6.\nAnswers\nmay vary due to round-off\nerror. The answer should be\nvery close to\n7.\n8. about $3,644,675.88\n9. $13,693\n10.\n11. $3,659,823.44\n12. 3.77E-26 (This is calculator\nnotation for the number\nwritten as\nin\nscientific notation. While\nthe output of an\nexponential function is\nnever zero, this number is\nso close to zero that for all\npractical purposes we can\naccept zero as the answer.)\n1334\nAccess for free at openstax.org",
+          "page_number": 1344
+        },
+        {
+          "type": "paragraph",
+          "text": "4.2 Graphs of Exponential Functions\n1. The domain is\n∞∞\nthe\nrange is\n∞\nthe horizontal\nasymptote is\n2. The domain is\n∞∞\nthe\nrange is\n∞\nthe horizontal\nasymptote is\n3.\n4. The domain is\n∞∞\nthe\nrange is\n∞\nthe horizontal\nasymptote is\n5. The domain is\n∞∞\nthe\nrange is\n∞\nthe horizontal\nasymptote is\n6.\nthe\ndomain is\n∞∞\nthe\nrange is\n∞\nthe\nhorizontal asymptote is\n4.3 Logarithmic Functions\nⓐ\nis\nequivalent to\nⓑ\nis\nequivalent to\n1.\nⓐ\nis equivalent to\nⓑ\nis equivalent\nto\nⓒ\nis equivalent to\n2.\n3.\n(recalling\nthat\n)\n4.\n5.\n6.\n7. The difference in\nmagnitudes was about\n8. It is not possible to take the\nlogarithm of a negative\nnumber in the set of real\nnumbers.\n1335",
+          "page_number": 1345
+        },
+        {
+          "type": "paragraph",
+          "text": "4.4 Graphs of Logarithmic Functions\n1.\n∞\n2.\n∞\n3.\nThe domain is\n∞\nthe\nrange is\n∞∞\nand the\nvertical asymptote is\n4.\nThe domain is\n∞\nthe\nrange\n∞∞\nand the\nasymptote\n5.\nThe domain is\n∞\nthe\nrange is\n∞∞\nand the\nvertical asymptote is\n6.\nThe domain is\n∞\nthe\nrange is\n∞∞\nand the\nvertical asymptote is\n7.\nThe domain is\n∞\nthe\nrange is\n∞∞\nand the\nvertical asymptote is\n8.\nThe domain is\n∞\nthe\nrange is\n∞∞\nand the\nvertical asymptote is\n9.\n10.\n11.\n1336\nAccess for free at openstax.org",
+          "page_number": 1346
+        },
+        {
+          "type": "paragraph",
+          "text": "4.5 Logarithmic Properties\n1.\n2.\n3.\n4.\n5.\n6.\n7.\n8.\n9.\ncan also be\nwritten\nby reducing\nthe fraction to lowest terms.\n10.\n11.\nthis answer\ncould also be written\n12. The pH increases by about\n0.301.\n13.\n14.\n4.6 Exponential and Logarithmic Equations\n1.\n2.\n3.\n4. The equation has no\nsolution.\n5.\n6.\nor\n7.\n8.\n9.\n10.\n11.\n12.\nor\n13.\n4.7 Exponential and Logarithmic Models\n1.\n2. less than 230 years, 229.3157\nto be exact\n3.\n4. 6.026 hours\n5. 895 cases on day 15\n6. Exponential.\n7.\n1337",
+          "page_number": 1347
+        },
+        {
+          "type": "paragraph",
+          "text": "4.8 Fitting Exponential Models to Data\nⓐThe exponential regression\nmodel that fits these data is\nⓑIf spending continues at this\nrate, the graduate’s credit card\ndebt will be $4,499.38 after one\nyear.\n1.\nⓐThe logarithmic regression model\nthat fits these data is\nⓑIf sales continue at this rate, about\n171,000 games will be sold in the year\n2015.\n2.\nⓐThe logistic regression model\nthat fits these data is\nⓑIf the population continues\nto grow at this rate, there will be\nabout\nseals in 2020.\nⓒTo the nearest whole\nnumber, the carrying capacity is\n25,657.\n3.\n4.1 Section Exercises\n1. Linear functions have a\nconstant rate of change.\nExponential functions\nincrease based on a percent\nof the original.\n3. When interest is\ncompounded, the\npercentage of interest\nearned to principal ends up\nbeing greater than the\nannual percentage rate for\nthe investment account.\nThus, the annual percentage\nrate does not necessarily\ncorrespond to the real\ninterest earned, which is the\nvery definition of nominal.\n5. exponential; the population\ndecreases by a proportional\nrate. .\n7. not exponential; the charge\ndecreases by a constant\namount each visit, so the\nstatement represents a\nlinear function. .\n9. The forest represented by\nthe function\n11. After\nyears, forest A\nwill have\nmore trees\nthan forest B.\n1338\nAccess for free at openstax.org",
+          "page_number": 1348
+        },
+        {
+          "type": "paragraph",
+          "text": "13. Answers will vary. Sample\nresponse: For a number of\nyears, the population of\nforest A will increasingly\nexceed forest B, but\nbecause forest B actually\ngrows at a faster rate, the\npopulation will eventually\nbecome larger than forest\nA and will remain that way\nas long as the population\ngrowth models hold. Some\nfactors that might\ninfluence the long-term\nvalidity of the exponential\ngrowth model are drought,\nan epidemic that culls the\npopulation, and other\nenvironmental and\nbiological factors.\n15. exponential growth; The\ngrowth factor,\nis\ngreater than\n17. exponential decay; The\ndecay factor,\nis\nbetween\nand\n19.\n21.\n23. Linear\n25. Neither\n27. Linear\n29.\n31.\n33.\n35.\n37.\n39. continuous growth; the\ngrowth rate is greater than\n41. continuous decay; the\ngrowth rate is less than\n43.\n45.\n47.\n49.\n51.\n53.\n55.\n57.\n59. Let\nbe the exponential decay function\nsuch\nthat\nThen for some number\n61.\nfox\n63.\n65.\n67.\n1339",
+          "page_number": 1349
+        },
+        {
+          "type": "paragraph",
+          "text": "4.2 Section Exercises\n1. An asymptote is a line that\nthe graph of a function\napproaches, as\neither\nincreases or decreases\nwithout bound. The\nhorizontal asymptote of an\nexponential function tells us\nthe limit of the function’s\nvalues as the independent\nvariable gets either\nextremely large or\nextremely small.\n3.\ny-intercept:\nDomain: all real\nnumbers; Range: all real\nnumbers greater than\n5.\ny-intercept:\nDomain:\nall real numbers; Range: all\nreal numbers less than\n7.\ny-intercept:\nDomain: all real\nnumbers; Range: all real\nnumbers greater than\n9.\ny-intercept:\n11.\n13. B\n15. A\n17. E\n19. D\n21. C\n23.\n1340\nAccess for free at openstax.org",
+          "page_number": 1350
+        },
+        {
+          "type": "paragraph",
+          "text": "25.\n27.\nHorizontal asymptote:\nDomain: all real\nnumbers; Range: all real\nnumbers strictly greater than\n29. As\n∞,\n∞;\nAs\n∞,\n31. As\n∞,\n;\nAs\n∞,\n∞\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n49.\n51. The graph of\nis the refelction about the\ny-axis of the graph of\nFor any real\nnumber\nand function\nthe graph of\nis the the reflection\nabout the y-axis,\n53. The graphs of\nand\nare the same and are\na horizontal shift to the\nright of the graph of\nFor any real number n, real\nnumber\nand\nfunction\nthe\ngraph of\nis the\nhorizontal shift\n4.3 Section Exercises\n1. A logarithm is an exponent.\nSpecifically, it is the\nexponent to which a base\nis raised to produce a given\nvalue. In the expressions\ngiven, the base\nhas the\nsame value. The exponent,\nin the expression\ncan\nalso be written as the\nlogarithm,\nand the\nvalue of\nis the result of\nraising\nto the power of\n3. Since the equation of a\nlogarithm is equivalent to an\nexponential equation, the\nlogarithm can be converted\nto the exponential equation\nand then properties\nof exponents can be applied\nto solve for\n5. The natural logarithm is a\nspecial case of the logarithm\nwith base\nin that the\nnatural log always has base\nRather than notating the\nnatural logarithm as\nthe notation used\nis\n7.\n9.\n11.\n13.\n15.\n17.\n1341",
+          "page_number": 1351
+        },
+        {
+          "type": "paragraph",
+          "text": "19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n49.\n51.\n53.\n55.\n57.\n59. No, the function has no\ndefined value for\nTo\nverify, suppose\nis in\nthe domain of the function\nThen there\nis some number\nsuch\nthat\nRewriting\nas an exponential equation\ngives:\nwhich is\nimpossible since no such\nreal number\nexists.\nTherefore,\nis not the\ndomain of the function\n61. Yes. Suppose there exists a\nreal number\nsuch that\nRewriting as an\nexponential equation gives\nwhich is a real\nnumber. To verify, let\nThen, by definition,\n63. No;\nso\nis undefined.\n65.\n4.4 Section Exercises\n1. Since the functions are\ninverses, their graphs are\nmirror images about the line\nSo for every point\non the graph of a\nlogarithmic function, there\nis a corresponding point\non the graph of its\ninverse exponential\nfunction.\n3. Shifting the function right or\nleft and reflecting the\nfunction about the y-axis will\naffect its domain.\n5. No. A horizontal asymptote\nwould suggest a limit on the\nrange, and the range of any\nlogarithmic function in\ngeneral form is all real\nnumbers.\n1342\nAccess for free at openstax.org",
+          "page_number": 1352
+        },
+        {
+          "type": "paragraph",
+          "text": "7. Domain:\n∞\nRange:\n∞∞\n9. Domain:\n∞\nRange:\n∞∞\n11. Domain:\n∞\nVertical\nasymptote:\n13. Domain:\n∞\nVertical asymptote:\n15. Domain:\n∞\nVertical\nasymptote:\n17. Domain:\n∞\n;\nVertical asymptote:\n;\nEnd behavior: as\n∞\nand as\n∞\n∞\n19. Domain:\n∞\n; Vertical\nasymptote:\n;\nEnd behavior: as\n,\n∞and as\n∞,\n∞\n21. Domain:\n∞\nRange:\n∞∞\nVertical\nasymptote:\nx-intercept:\ny-intercept: DNE\n23. Domain:\n∞\nRange:\n∞∞\nVertical\nasymptote:\nx-intercept:\ny-intercept: DNE\n25. Domain:\n∞\nRange:\n∞∞\nVertical\nasymptote:\nx-intercept:\ny-intercept: DNE\n27. B\n29. C\n31. B\n33. C\n35.\n37.\n39. C\n41.\n1343",
+          "page_number": 1353
+        },
+        {
+          "type": "paragraph",
+          "text": "43.\n45.\n47.\n49.\n51.\n53.\n55.\n57. The graphs of\nand\nappear to\nbe the same; Conjecture:\nfor any positive base\n59. Recall that the argument of a\nlogarithmic function must be\npositive, so we determine\nwhere\n. From the\ngraph of the function\nnote that the\ngraph lies above the x-axis on\nthe interval\n∞\nand\nagain to the right of the vertical\nasymptote, that is\n∞\nTherefore, the domain is\n∞\n∞\n4.5 Section Exercises\n1. Any root expression can be\nrewritten as an expression\nwith a rational exponent so\nthat the power rule can be\napplied, making the\nlogarithm easier to\ncalculate. Thus,\n3.\n5.\n7.\n9.\n11.\n1344\nAccess for free at openstax.org",
+          "page_number": 1354
+        },
+        {
+          "type": "paragraph",
+          "text": "13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\nBy the quotient rule:\nRewriting as an exponential equation and\nsolving for\nChecking, we find that\nis defined, so\n41. Let\nand\nbe positive\nintegers greater than\nThen, by the change-of-\nbase formula,\n4.6 Section Exercises\n1. Determine first if the\nequation can be rewritten so\nthat each side uses the\nsame base. If so, the\nexponents can be set equal\nto each other. If the\nequation cannot be\nrewritten so that each side\nuses the same base, then\napply the logarithm to each\nside and use properties of\nlogarithms to solve.\n3. The one-to-one property can\nbe used if both sides of the\nequation can be rewritten as\na single logarithm with the\nsame base. If so, the\narguments can be set equal\nto each other, and the\nresulting equation can be\nsolved algebraically. The\none-to-one property cannot\nbe used when each side of\nthe equation cannot be\nrewritten as a single\nlogarithm with the same\nbase.\n5.\n7.\n9.\n11.\n1345",
+          "page_number": 1355
+        },
+        {
+          "type": "paragraph",
+          "text": "13. No solution\n15.\n17.\n19.\n21.\n23.\n25. no solution\n27.\n29.\n31.\n33.\n35.\n37.\n39. No solution\n41. No solution\n43.\n45.\n47.\n49.\n51.\n53.\n55.\n57.\n59. No solution\n1346\nAccess for free at openstax.org",
+          "page_number": 1356
+        },
+        {
+          "type": "paragraph",
+          "text": "61.\n63.\n65. about\n67. about 5 years\n69.\n71.\n73.\n75.\n77. about\n79.\n81.\n4.7 Section Exercises\n1. Half-life is a measure of\ndecay and is thus associated\nwith exponential decay\nmodels. The half-life of a\nsubstance or quantity is the\namount of time it takes for\nhalf of the initial amount of\nthat substance or quantity\nto decay.\n3. Doubling time is a measure\nof growth and is thus\nassociated with exponential\ngrowth models. The\ndoubling time of a\nsubstance or quantity is the\namount of time it takes for\nthe initial amount of that\nsubstance or quantity to\ndouble in size.\n5. An order of magnitude is the\nnearest power of ten by\nwhich a quantity\nexponentially grows. It is\nalso an approximate\nposition on a logarithmic\nscale; Sample response:\nOrders of magnitude are\nuseful when making\ncomparisons between\nnumbers that differ by a\ngreat amount. For example,\nthe mass of Saturn is 95\ntimes greater than the mass\nof Earth. This is the same as\nsaying that the mass of\nSaturn is about\ntimes, or\n2 orders of magnitude\ngreater, than the mass of\nEarth.\n1347",
+          "page_number": 1357
+        },
+        {
+          "type": "paragraph",
+          "text": "7.\nThe amount\ninitially present is about 16.7\nunits.\n9. 150\n11. exponential;\n13. logarithmic\n15. logarithmic\n17.\n19. about\nyears\n21. about\nyears\n23.\nhalf-lives;\nminutes\n25.\n27. Let\nfor some non-\nnegative real number\nsuch that\nThen,\n29.\nmg\n31. about\ndays\n33.\nhalf-life: about\nminutes\n35.\nSo the hourly\ndecay rate is about\n37.\nafter 3 hours:\n39.\ndoubling time: about\nminutes\n41. about\nminutes\n43.\nwhere\nis in minutes.\n45. about\nminutes\n47.\n49. MMS magnitude:\n51.\n53. C\n1348\nAccess for free at openstax.org",
+          "page_number": 1358
+        },
+        {
+          "type": "paragraph",
+          "text": "4.8 Section Exercises\n1. Logistic models are best\nused for situations that have\nlimited values. For example,\npopulations cannot grow\nindefinitely since resources\nsuch as food, water, and\nspace are limited, so a\nlogistic model best\ndescribes populations.\n3. Regression analysis is the\nprocess of finding an\nequation that best fits a\ngiven set of data points. To\nperform a regression\nanalysis on a graphing\nutility, first list the given\npoints using the STAT then\nEDIT menu. Next graph the\nscatter plot using the STAT\nPLOT feature. The shape of\nthe data points on the\nscatter graph can help\ndetermine which regression\nfeature to use. Once this is\ndetermined, select the\nappropriate regression\nanalysis command from the\nSTAT then CALC menu.\n5. The y-intercept on the graph\nof a logistic equation\ncorresponds to the initial\npopulation for the\npopulation model.\n7. C\n9. B\n11.\n; 175\n13.\n15. y-intercept:\n17.\nkoi\n19. about\nmonths.\n21.\n23. About 38 wolves\n25. About 8.7 years\n27.\n29.\n1349",
+          "page_number": 1359
+        },
+        {
+          "type": "paragraph",
+          "text": "31.\n33.\n35. When\n37.\n39.\n41.\n43. When\n45. When\n47.\n49. About 25\n51.\n53.\n55. When\n57.\n;\n; the\nregression curves are\nsymmetrical about\n, so\nit appears that they are\ninverse functions.\n59.\nReview Exercises\n1. exponential decay; The\ngrowth factor,\nis\nbetween\nand\n3.\n5.\n1350\nAccess for free at openstax.org",
+          "page_number": 1360
+        },
+        {
+          "type": "paragraph",
+          "text": "7. continuous decay; the\ngrowth rate is negative.\n9. domain: all real numbers;\nrange: all real numbers strictly\ngreater than zero; y-intercept:\n(0, 3.5);\n11.\ny-intercept:\nDomain: all real numbers;\nRange: all real numbers\ngreater than\n13.\n15.\n17.\n19.\n21.\n23.\n25. Domain:\nVertical\nasymptote:\nEnd\nbehavior: as\n∞and\nas\n∞\n∞\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41. no solution\n43. no solution\n45.\n47.\n49.\n51. about\nyears\n53.\n55.",
+          "page_number": 1361
+        },
+        {
+          "type": "paragraph",
+          "text": "61. exponential\n63.\n65. about\ndays\n67. logarithmic;\nPractice Test\n1. About 13 dolphins.\n3.\n5. y-intercept:\n1352\nAccess for free at openstax.org",
+          "page_number": 1362
+        },
+        {
+          "type": "paragraph",
+          "text": "7.\n9.\n11.\n13. Domain:\nVertical\nasymptote:\nEnd\nbehavior:\n∞and\n∞\n∞\n15.\n17.\n19.\n21.\n23. no solution\n25.\n27.\n29.\nhalf-\nlife: about\ndays\n31.\n33. logarithmic\n1353",
+          "page_number": 1363
+        }
+      ]
+    },
+    {
+      "id": "ch05",
+      "title": "Chapter 5: Try It",
+      "number": 5,
+      "content_blocks": [
+        {
+          "type": "paragraph",
+          "text": "35. exponential;\n37. logistic;\nChapter 5\nTry It\n5.1 Angles\n1.\n2.\n3. −135°\n4.\n5.\n6.\n7.\n8.\n9. 1.88\n10.\nrad/s\n11. 1655 kilometers per hour\n5.2 Unit Circle: Sine and Cosine Functions\n1.\n2.\n3.\n1354\nAccess for free at openstax.org",
+          "page_number": 1364
+        },
+        {
+          "type": "paragraph",
+          "text": "4. approximately 0.866025403\n5.\nⓐ\nⓑ\n6.\n7.\n5.3 The Other Trigonometric Functions\n1.\n,\n,\n,\n,\n,\n2.\n,\n,\n,\n,\n,\n3.\n4.\n5.\n6.\n7.\n8.",
+          "page_number": 1365
+        },
+        {
+          "type": "paragraph",
+          "text": "9.\n10.\n5.4 Right Triangle Trigonometry\n1.\n2.\n3.\n4. 2\n5.\n; missing\nangle is\n6. About 52 ft\n1355",
+          "page_number": 1365
+        },
+        {
+          "type": "paragraph",
+          "text": "5.1 Section Exercises\n1.\n3. Whether the angle is\npositive or negative\ndetermines the direction. A\npositive angle is drawn in\nthe counterclockwise\ndirection, and a negative\nangle is drawn in the\nclockwise direction.\n5. Linear speed is a\nmeasurement found by\ncalculating distance of an\narc compared to time.\nAngular speed is a\nmeasurement found by\ncalculating the angle of an\narc compared to time.\n7.\n9.\n11.\n13.\n15.\n17. 240°\n19.\n21.\n23.\n1356\nAccess for free at openstax.org",
+          "page_number": 1366
+        },
+        {
+          "type": "paragraph",
+          "text": "25.\n27. 20°\n29. 60°\n31. −75°\n33.\nradians\n35.\nradians\n37.\nradians\n39.\nradians\n41.\nmiles\n43.\ncentimeters\n45.\nmeters\n47. 104.7198 cm2\n49. 0.7697 in2\n51. 250°\n53. 320°\n55.\n57.\n59. 1320 rad 210.085 RPM\n61. 7 in./s, 4.77 RPM, 28.65\ndeg/s\n63.\n65.\nmiles\n67.\n69. 794 miles per hour\n71. 2,234 miles per hour\n73. 11.5 inches\n5.2 Section Exercises\n1. The unit circle is a circle of\nradius 1 centered at the\norigin.\n3. Coterminal angles are\nangles that share the same\nterminal side. A reference\nangle is the size of the\nsmallest acute angle,\nformed by the terminal side\nof the angle\nand the\nhorizontal axis.\n5. The sine values are equal.\n7. I\n9. IV\n11.\n13.\n15.\n17. 0\n19. −1\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\nQuadrant IV,\n1357",
+          "page_number": 1367
+        },
+        {
+          "type": "paragraph",
+          "text": "37.\nQuadrant II,\n39.\nQuadrant II,\n41.\nQuadrant II,\n43.\nQuadrant III,\n45.\nQuadrant II,\n47.\nQuadrant II,\n49.\nQuadrant IV,\n51.\n53.\n55.\n57.\n59.\n61.\n63.\n65.\n67.\n69.\n71.\n73.\n75.\n77.\n79.\n81. −0.1736\n83. 0.9511\n85. −0.7071\n87. −0.1392\n89. −0.7660\n91.\n93.\n95.\n97.\n99. 0\n101.\n103. 37.5 seconds, 97.5\nseconds, 157.5 seconds,\n217.5 seconds, 277.5\nseconds, 337.5 seconds\n5.3 Section Exercises\n1. Yes, when the reference\nangle is\nand the terminal\nside of the angle is in\nquadrants I and III. Thus, at\nthe sine and\ncosine values are equal.\n3. Substitute the sine of the\nangle in for\nin the\nPythagorean Theorem\nSolve for\nand\ntake the negative solution.\n5. The outputs of tangent and\ncotangent will repeat every\nunits.\n1358\nAccess for free at openstax.org",
+          "page_number": 1368
+        },
+        {
+          "type": "paragraph",
+          "text": "7.\n9.\n11.\n13. 1\n15. 2\n17.\n19.\n21.\n23.\n25. −1\n27. −2\n29.\n31. 2\n33.\n35. −2\n37. −1\n39. If\n,\n,\n,\n,\n41.\n,\n,\n,\n43.\n45. 3.1\n47. 1.4\n49.\n51.\n,\n,\n,\n,\n53. –0.228\n55. –2.414\n57. 1.414\n59. 1.540\n61. 1.556\n63.\n65.\n67. even\n69. even\n71.\n73. 13.77 hours, period:\n75. 7.73 inches\n5.4 Section Exercises\n1.\n3. The tangent of an angle is\nthe ratio of the opposite\nside to the adjacent side.\n5. For example, the sine of an\nangle is equal to the cosine\nof its complement; the\ncosine of an angle is equal\nto the sine of its\ncomplement.\n7.\n9.\n11.\n1359",
+          "page_number": 1369
+        },
+        {
+          "type": "paragraph",
+          "text": "13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43. 188.3159\n45. 200.6737\n47. 498.3471 ft\n49. 1060.09 ft\n51. 27.372 ft\n53. 22.6506 ft\n55. 368.7633 ft\nReview Exercises\n1.\n3.\n5. 10.385 meters\n7.\n9.\n11.\n13.\n15. 1036.73 miles per hour\n17.\n19. –1\n21.\n23.\n1360\nAccess for free at openstax.org",
+          "page_number": 1370
+        },
+        {
+          "type": "paragraph",
+          "text": "25.\n27. 1\n29.\n31.\n33. 0.6\n35.\nor\n37. sine, cosecant, tangent,\ncotangent\n39.\n41. 0\n43.\n45.\n47.\n49. 14.0954 ft\nPractice Test\n1.\n3. 6.283 centimeters\n5.\n7.\n9. 3.351 feet per second,\nradians per second\n11.\n13.\n15.\n17.\n19.\n21.\n23.\nChapter 6\nTry It\n6.1 Graphs of the Sine and Cosine Functions\n1.\n2.\ncompressed\n3.\nright\n4. 2 units up\n5. midline:\namplitude:\nperiod:\nphase shift:\n6.\n1361",
+          "page_number": 1371
+        },
+        {
+          "type": "paragraph",
+          "text": "7. two possibilities:\nor\n8.\nmidline:\namplitude:\nperiod:\nphase shift:\nor none\n9.\nmidline:\namplitude:\nperiod:\nphase shift:\n10. 7\n11.\n6.2 Graphs of the Other Trigonometric Functions\n1.\n2. It would be reflected across\nthe line\nbecoming\nan increasing function.\n3.\n1362\nAccess for free at openstax.org",
+          "page_number": 1372
+        },
+        {
+          "type": "paragraph",
+          "text": "4. This is a vertical reflection of\nthe preceding graph because\nis negative.\n5.\n6.\n7.\n6.3 Inverse Trigonometric Functions\n1.\nⓐ\nⓑ\nⓒ\nⓓ\n2.\n3. 1.9823 or 113.578°\n4.\nradians\n5.\n6.\n7.\n8.\n9.\n6.1 Section Exercises\n1. The sine and cosine\nfunctions have the property\nthat\nfor a\ncertain\nThis means that\nthe function values repeat\nfor every\nunits on the\nx-axis.\n3. The absolute value of the\nconstant\n(amplitude)\nincreases the total range\nand the constant\n(vertical\nshift) shifts the graph\nvertically.\n5. At the point where the\nterminal side of\nintersects\nthe unit circle, you can\ndetermine that the\nequals the y-coordinate of\nthe point.\n1363",
+          "page_number": 1373
+        },
+        {
+          "type": "paragraph",
+          "text": "7.\namplitude:\nperiod:\nmidline:\nmaximum:\noccurs at\nminimum:\noccurs at\nfor one period, the\ngraph starts at 0 and ends at\n9.\namplitude: 4; period:\nmidline:\nmaximum\noccurs at\nminimum:\noccurs at\none\nfull period occurs from\nto\n11.\namplitude: 1; period:\nmidline:\nmaximum:\noccurs at\nminimum:\noccurs at\none full period is\ngraphed from\nto\n13.\namplitude: 4; period: 2; midline:\nmaximum:\noccurs\nat\nminimum:\noccurs at\n15.\namplitude: 3; period:\nmidline:\nmaximum:\noccurs at\nminimum:\noccurs at\nhorizontal shift:\nvertical translation 5; one\nperiod occurs from\nto\n17.\namplitude: 5; period:\nmidline:\nmaximum:\noccurs at\nminimum:\noccurs at\nphase shift:\nvertical translation:\none full\nperiod can be graphed on\nto\n1364\nAccess for free at openstax.org",
+          "page_number": 1374
+        },
+        {
+          "type": "paragraph",
+          "text": "19.\namplitude: 1 ; period:\nmidline:\nmaximum:\noccurs at\nmaximum:\noccurs at\nminimum:\noccurs at\nphase shift:\nvertical translation: 1; one\nfull period is from\nto\n21.\namplitude: 1; period:\nmidline:\nmaximum:\noccurs at\nminimum:\noccurs at\nphase shift:\nvertical shift: 0\n23. amplitude: 2; midline:\nperiod: 4;\nequation:\n25. amplitude: 2; period: 5;\nmidline:\nequation:\n27. amplitude: 4; period: 2;\nmidline:\nequation:\n29. amplitude: 2; period: 2;\nmidline\nequation:\n31.\n33.\n35.\n37.\nis symmetric\n39.\n41. Maximum:\nat\n;\nminimum:\nat\n43. A linear function is added to a\nperiodic sine function. The\ngraph does not have an\namplitude because as the linear\nfunction increases without\nbound the combined function\nwill increase\nwithout bound as well. The\ngraph is bounded between the\ngraphs of\nand\nbecause sine\noscillates between −1 and 1.\n45. There is no amplitude because\nthe function is not bounded.\n47. The graph is symmetric with\nrespect to the y-axis and there\nis no amplitude because the\nfunction’s bounds decrease as\ngrows. There appears to be\na horizontal asymptote at\n.\n1365",
+          "page_number": 1375
+        },
+        {
+          "type": "paragraph",
+          "text": "6.2 Section Exercises\n1. Since\nis the\nreciprocal function of\nyou can plot the\nreciprocal of the coordinates\non the graph of\nto\nobtain the y-coordinates of\nThe x-intercepts\nof the graph\nare\nthe vertical asymptotes for\nthe graph of\n3. Answers will vary. Using the\nunit circle, one can show\nthat\n5. The period is the same:\n7. IV\n9. III\n11. period: 8; horizontal shift: 1\nunit to left\n13. 1.5\n15. 5\n17.\n19.\nstretching factor: 2; period:\nasymptotes:\n21.\nstretching factor: 6; period: 6;\nasymptotes:\n23.\nstretching factor: 1; period:\nasymptotes:\n25.\nStretching factor: 1; period:\nasymptotes:\n27.\nstretching factor: 2; period:\nasymptotes:\n1366\nAccess for free at openstax.org",
+          "page_number": 1376
+        },
+        {
+          "type": "paragraph",
+          "text": "29.\nstretching factor: 4; period:\nasymptotes:\n31.\nstretching factor: 7; period:\nasymptotes:\n33.\nstretching factor: 2; period:\nasymptotes:\n35.\nstretching factor:\nperiod:\nasymptotes:\n37.\n39.\n41.\n1367",
+          "page_number": 1377
+        },
+        {
+          "type": "paragraph",
+          "text": "43.\n45.\n47.\n49.\n51.\n53.\nⓐ\nⓑ\nⓒ\nand\nthe\ndistance grows without bound\nas\napproaches\n—i.e., at\nright angles to the line\nrepresenting due north, the\nboat would be so far away,\nthe fisherman could not see it;\nⓓ3; when\nthe boat\nis 3 km away;\nⓔ1.73; when\nthe\nboat is about 1.73 km away;\nⓕ1.5 km; when\n55.\nⓐ\nⓑ\nⓒ\nafter 0 seconds,\nthe rocket is 0 mi above the\nground;\nafter 30\nseconds, the rockets is 2 mi\nhigh;\nⓓAs\napproaches 60\nseconds, the values of\ngrow increasingly large. The\ndistance to the rocket is\ngrowing so large that the\ncamera can no longer track it.\n57.\n1368\nAccess for free at openstax.org",
+          "page_number": 1378
+        },
+        {
+          "type": "paragraph",
+          "text": "6.3 Section Exercises\n1. The function\nis\none-to-one on\nthus, this interval is the\nrange of the inverse\nfunction of\nThe function\nis one-to-one on\nthus, this interval is\nthe range of the inverse\nfunction of\n3.\nis the radian measure of\nan angle between\nand\nwhose sine is 0.5.\n5. In order for any function to\nhave an inverse, the\nfunction must be one-to-one\nand must pass the\nhorizontal line test. The\nregular sine function is not\none-to-one unless its\ndomain is restricted in some\nway. Mathematicians have\nagreed to restrict the sine\nfunction to the interval\nso that it is one-to-\none and possesses an\ninverse.\n7. True . The angle,\nthat\nequals\n,\n,\nwill be a second quadrant\nangle with reference angle,\n, where\nequals\n,\n. Since\nis\nthe reference angle for\n,\nand\n=\n-\n9.\n11.\n13.\n15.\n17. 1.98\n19. 0.93\n21. 1.41\n23. 0.56 radians\n25. 0\n27. 0.71\n29. -0.71\n31.\n33. 0.8\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n49.\ndomain\nrange\n51. approximately\n53. 0.395 radians\n1369",
+          "page_number": 1379
+        },
+        {
+          "type": "paragraph",
+          "text": "55. 1.11 radians\n57. 1.25 radians\n59. 0.405 radians\n61. No. The angle the ladder\nmakes with the horizontal\nis 60 degrees.\nReview Exercises\n1. amplitude: 3; period:\nmidline:\nno asymptotes\n3. amplitude: 3; period:\nmidline:\nno asymptotes\n5. amplitude: 3; period:\nmidline:\nno asymptotes\n7. amplitude: 6; period:\nmidline:\nno asymptotes\n9. stretching factor: none; period:\nmidline:\nasymptotes:\nwhere\nis an\ninteger\n11. stretching factor: 3; period:\nmidline:\nasymptotes:\nwhere\nis an\ninteger\n1370\nAccess for free at openstax.org",
+          "page_number": 1380
+        },
+        {
+          "type": "paragraph",
+          "text": "13. amplitude: none; period:\nno\nphase shift; asymptotes:\nwhere\nis an odd\ninteger\n15. amplitude: none; period:\nno phase shift; asymptotes:\nwhere\nis an integer\n17. amplitude: none; period:\nno\nphase shift; asymptotes:\nwhere\nis an integer\n19. largest: 20,000; smallest:\n4,000\n21. amplitude: 8,000; period:\n10; phase shift: 0\n23. In 2007, the predicted\npopulation is 4,413. In\n2010, the population will be\n11,924.\n25. 5 in.\n27. 10 seconds\n29.\n31.\n33.\n35. No solution\n37.\n39. The graphs are not symmetrical\nwith respect to the line\nThey are symmetrical with\nrespect to the\n-axis.\n41. The graphs appear to be\nidentical.\n1371",
+          "page_number": 1381
+        },
+        {
+          "type": "paragraph",
+          "text": "Practice Test\n1. amplitude: 0.5; period:\nmidline\n3. amplitude: 5; period:\nmidline:\n5. amplitude: 1; period:\nmidline:\n7. amplitude: 3; period:\nmidline:\n9. amplitude: none; period:\nmidline:\nasymptotes:\nwhere\nis an\ninteger\n11. amplitude: none; period:\nmidline:\nasymptotes:\nwhere\nis an integer\n13. amplitude: none; period:\nmidline:\n15. amplitude: 2; period: 2;\nmidline:\n17. amplitude: 1; period: 12;\nphase shift:\nmidline\n19.\n21. period:\nhorizontal shift:\n23.\nperiod: 2;\nphase shift: 0\n1372\nAccess for free at openstax.org",
+          "page_number": 1382
+        },
+        {
+          "type": "paragraph",
+          "text": "25.\n27. The views are different because\nthe period of the wave is\nOver a bigger domain, there\nwill be more cycles of the\ngraph.\n29.\n31. On the approximate intervals\n33.\n35. This graph is periodic with a\nperiod of\n37.\n39.\n41.\n43.\n45.\n47. False\n49. approximately 0.07 radians\n1373",
+          "page_number": 1383
+        }
+      ]
+    },
+    {
+      "id": "ch07",
+      "title": "Chapter 7: Try It",
+      "number": 7,
+      "content_blocks": [
+        {
+          "type": "paragraph",
+          "text": "Chapter 7\nTry It\n7.1 Solving Trigonometric Equations with Identities\n1.\n2.\n3.\n4. This is a difference of squares formula:\n5.\n7.2 Sum and Difference Identities\n1.\n2.\n3.\n4.\n5.\n7.3 Double-Angle, Half-Angle, and Reduction Formulas\n1.\n2.\n3.\n4.\n1374\nAccess for free at openstax.org",
+          "page_number": 1384
+        },
+        {
+          "type": "paragraph",
+          "text": "5.\n7.4 Sum-to-Product and Product-to-Sum Formulas\n1.\n2.\n3.\n4.\n5.\n7.5 Solving Trigonometric Equations\n1.\n2.\n3.\nand\n4.\n5.\n7.6 Modeling with Trigonometric Functions\n1. The amplitude is\nand the\nperiod is\n2.\nx\n0\n0\n3\n0\n0\n3.\nThe temperature reaches\nfreezing at noon and at\nmidnight.\n4. initial displacement =6,\ndamping constant = -6,\nfrequency =\n5.\n6.\n1375",
+          "page_number": 1385
+        },
+        {
+          "type": "paragraph",
+          "text": "7.1 Section Exercises\n1. All three functions,\n,\n, and\nare even.\nThis is because\nand\n3. When\nthen\nwhich is undefined.\n5.\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29. Answers will vary. Sample proof:\n31. Answers will vary. Sample proof:\n33. Answers will vary. Sample proof:\n35. False\n37. False\n39. Proved with negative and\nPythagorean Identities\n41. True\n1376\nAccess for free at openstax.org",
+          "page_number": 1386
+        },
+        {
+          "type": "paragraph",
+          "text": "7.2 Section Exercises\n1. The cofunction identities\napply to complementary\nangles. Viewing the two\nacute angles of a right\ntriangle, if one of those\nangles measures\nthe\nsecond angle measures\nThen\nThe\nsame holds for the other\ncofunction identities. The\nkey is that the angles are\ncomplementary.\n3.\nso\nis\nodd.\nso\nis even.\n5.\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33. They are the same.\n35. They are the different, try\n37. They are the same.\n39. They are the different, try\n1377",
+          "page_number": 1387
+        },
+        {
+          "type": "paragraph",
+          "text": "41. They are different, try\n43.\n45.\nor 0.9659\n47.\n49.\n51.\n53. True\n55. True. Note that\nand expand the right hand\nside.\n7.3 Section Exercises\n1. Use the Pythagorean\nidentities and isolate the\nsquared term.\n3.\nmultiplying the top and\nbottom by\nand\nrespectively.\n5. a)\nb)\nc)\n7. a)\nb)\nc)\n9.\n11.\n13.\n15.\n17.\n19.\n21. a)\nb)\nc)\n23. a)\nb)\nc)\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n1378\nAccess for free at openstax.org",
+          "page_number": 1388
+        },
+        {
+          "type": "paragraph",
+          "text": "39.\n41.\n43.\n45.\n47.\n49.\n51.\n53.\n55.\n57.\n59.\n61.\n63.\n7.4 Section Exercises\n1. Substitute\ninto cosine\nand\ninto sine and\nevaluate.\n3. Answers will vary. There are\nsome equations that involve\na sum of two trig\nexpressions where when\nconverted to a product are\neasier to solve. For example:\nWhen\nconverting the numerator to\na product the equation\nbecomes:\n5.\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n1379",
+          "page_number": 1389
+        },
+        {
+          "type": "paragraph",
+          "text": "33.\n35.\n37.\n39.\n41.\n43.\n45. It is and identity.\n47. It is not an identity, but\nis.\n49.\n51.\n53.\n55. Start with\nMake a substitution and let\nand let\nso\nbecomes\nSince\nand\nwe can solve for\nand\nin terms of x and y and substitute\nin for\nand get\n57.\n59.\n61.\n63.\n1380\nAccess for free at openstax.org",
+          "page_number": 1390
+        },
+        {
+          "type": "paragraph",
+          "text": "7.5 Section Exercises\n1. There will not always be\nsolutions to trigonometric\nfunction equations. For a\nbasic example,\n3. If the sine or cosine function\nhas a coefficient of one,\nisolate the term on one side\nof the equals sign. If the\nnumber it is set equal to has\nan absolute value less than\nor equal to one, the\nequation has solutions,\notherwise it does not. If the\nsine or cosine does not have\na coefficient equal to one,\nstill isolate the term but\nthen divide both sides of the\nequation by the leading\ncoefficient. Then, if the\nnumber it is set equal to has\nan absolute value greater\nthan one, the equation has\nno solution.\n5.\n7.\n9.\n11.\n13.\n15.\n17.\n,\n,\n,\n,\n,\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43. There are no solutions.\n45.\n47.\n1381",
+          "page_number": 1391
+        },
+        {
+          "type": "paragraph",
+          "text": "49. There are no solutions.\n51. There are no solutions.\n53.\n55.\n57.\n59.\n,\n61.\n63.\n,\n65.\n67.\n69. There are no solutions.\n71.\n,\n73.\n75.\n77.\n79.\n81.\n83.\n85.\n87. There are no solutions.\n89.\n91. There are no solutions.\n93.\n95.\n97.\n99.\n101.\n103.\n105.\n7.6 Section Exercises\n1. Physical behavior should be\nperiodic, or cyclical.\n3. Since cumulative rainfall is\nalways increasing, a\nsinusoidal function would\nnot be ideal here.\n5.\n7.\n8.\n10.\n12.\n13.\n15.\n17. 75 °F\n19. 8 a.m.\n21. 2:49\n23. From June 15 through\nNovember 16\n25. From day 31 through day\n58\n27. Floods: April 16 to July 15.\nDrought: October 16 to\nJanuary 15.\n1382\nAccess for free at openstax.org",
+          "page_number": 1392
+        },
+        {
+          "type": "paragraph",
+          "text": "29. Amplitude: 8, period:\nfrequency: 3 Hz\n31. Amplitude: 4, period:\nfrequency:\nHz\n33.\n35.\n37.\n39.\n41. 6 years\n43. 15.4 seconds\n45. Spring 2 comes to rest first\nafter 7.3 seconds.\n47. 234.3 miles, at 72.2°\n49.\n51.\n53.\nReview Exercises\n1.\n3.\n5.\n7.\n9. Yes\n11.\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n1383",
+          "page_number": 1393
+        },
+        {
+          "type": "paragraph",
+          "text": "41.\n43.\n45. No solution\n47.\n49.\n,\n,\n,\n51.\n53.\n55.\n57. Amplitude: 3, period: 2,\nfrequency:\nHz\n59.\nPractice Test\n1. 1\n3.\n5.\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21. Amplitude:\n, period\n,\nfrequency: 60 Hz\n23. Amplitude:\n, fast period:\n, fast frequency: 500\nHz, slow period:\n, slow\nfrequency: 10 Hz\n25.\n,\n31 seconds\nChapter 8\nTry It\n8.1 Non-right Triangles: Law of Sines\n1.\n2. Solution 1\nSolution 2\n3.\n4. two\n5. about\nsquare feet\n6. 161.9 yd.\n1384\nAccess for free at openstax.org",
+          "page_number": 1394
+        },
+        {
+          "type": "paragraph",
+          "text": "8.2 Non-right Triangles: Law of Cosines\n1.\n2.\n3. Area = 552 square feet\n4. about 8.15 square feet\n8.3 Polar Coordinates\n1.\n2.\n3.\n4.\n5.\nor, in the\nstandard form for a circle,\n8.4 Polar Coordinates: Graphs\n1. The equation fails the\nsymmetry test with respect\nto the line\nand with\nrespect to the pole. It passes\nthe polar axis symmetry\ntest.\n2. Tests will reveal symmetry\nabout the polar axis. The\nzero is\nand the\nmaximum value is\n3.\n4. The graph is a rose curve,\neven\n5.\nRose curve,\nodd\n6.\n1385",
+          "page_number": 1395
+        },
+        {
+          "type": "paragraph",
+          "text": "8.5 Polar Form of Complex Numbers\n1.\n2. 13\n3.\n4.\n5.\n6.\n7.\n8.\n8.6 Parametric Equations\n1.\n2.\n3.\n4.\n5.\n6.\n1386\nAccess for free at openstax.org",
+          "page_number": 1396
+        },
+        {
+          "type": "paragraph",
+          "text": "8.7 Parametric Equations: Graphs\n1.\n2.\n3. The graph of the parametric\nequations is in red and the\ngraph of the rectangular\nequation is drawn in blue dots\non top of the parametric\nequations.\n8.8 Vectors\n1.\n2.\n3.\n4.\nMagnitude =\n8.1 Section Exercises\n1. The altitude extends from\nany vertex to the opposite\nside or to the line containing\nthe opposite side at a 90°\nangle.\n3. When the known values are\nthe side opposite the\nmissing angle and another\nside and its opposite angle.\n5. A triangle with two given\nsides and a non-included\nangle.\n7.\n9.\n11.\n13.\n15. one triangle,\n17. two triangles,\nor\n1387",
+          "page_number": 1397
+        },
+        {
+          "type": "paragraph",
+          "text": "19. two triangles,\nor\n21. two triangles,\nor\n23. no triangle possible\n25.\nor\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n49.\n51.\n53.\n55.\n57.\n59. 51.4 feet\n61. The distance from the\nsatellite to station\nis\napproximately 1716 miles.\nThe satellite is\napproximately 1706 miles\nabove the ground.\n63. 2.6 ft\n65. 5.6 km\n67. 371 ft\n69. 5936 ft\n71. 24.1 ft\n73. 19,056 ft2\n75. 445,624 square miles\n77. 8.65 ft2\n8.2 Section Exercises\n1. two sides and the angle\nopposite the missing side.\n3.\nis the semi-perimeter,\nwhich is half the perimeter\nof the triangle.\n5. The Law of Cosines must be\nused for any oblique (non-\nright) triangle.\n7. 11.3\n9. 34.7\n11. 26.7\n13. 257.4\n15. not possible\n17. 95.5°\n19. 26.9°\n21.\n23.\n25.\n27. 177.56 in2\n29. 0.04 m2\n31. 0.91 yd2\n33. 3.0\n35. 29.1\n37. 0.5\n39. 70.7°\n41. 77.4°\n43. 25.0\n45. 9.3\n47. 43.52\n1388\nAccess for free at openstax.org",
+          "page_number": 1398
+        },
+        {
+          "type": "paragraph",
+          "text": "49. 1.41\n51. 0.14\n53. 18.3\n55. 48.98\n57.\n59. 7.62\n61. 85.1\n63. 24.0 km\n65. 99.9 ft\n67. 37.3 miles\n69. 2371 miles\n71.\n73. 292.4 miles\n75. 65.4 cm2\n77. 468 ft2\n8.3 Section Exercises\n1. For polar coordinates, the\npoint in the plane depends\non the angle from the\npositive x-axis and distance\nfrom the origin, while in\nCartesian coordinates, the\npoint represents the\nhorizontal and vertical\ndistances from the origin.\nFor each point in the\ncoordinate plane, there is\none representation, but for\neach point in the polar\nplane, there are infinite\nrepresentations.\n3. Determine\nfor the point,\nthen move\nunits from the\npole to plot the point. If\nis\nnegative, move\nunits from\nthe pole in the opposite\ndirection but along the\nsame angle. The point is a\ndistance of\naway from the\norigin at an angle of\nfrom\nthe polar axis.\n5. The point\nhas a\npositive angle but a negative\nradius and is plotted by\nmoving to an angle of\nand then moving 3 units in\nthe negative direction. This\nplaces the point 3 units\ndown the negative y-axis.\nThe point\nhas a\nnegative angle and a\npositive radius and is plotted\nby first moving to an angle\nof\nand then moving 3\nunits down, which is the\npositive direction for a\nnegative angle. The point is\nalso 3 units down the\nnegative y-axis.\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\nor\ncircle\n31.\nline\n33.\nline\n35.\nhyperbola\n1389",
+          "page_number": 1399
+        },
+        {
+          "type": "paragraph",
+          "text": "37.\ncircle\n39.\nline\n41.\n43.\n45.\n47.\n49.\n51.\n53.\n55.\n57.\n59.\n61.\n63.\n65.\n67.\n69.\n71.\n1390\nAccess for free at openstax.org",
+          "page_number": 1400
+        },
+        {
+          "type": "paragraph",
+          "text": "73.\n75. A vertical line with\nunits\nleft of the y-axis.\n77. A horizontal line with\nunits below the x-axis.\n79.\n81.\n83.\n8.4 Section Exercises\n1. Symmetry with respect to\nthe polar axis is similar to\nsymmetry about the\n-axis,\nsymmetry with respect to\nthe pole is similar to\nsymmetry about the origin,\nand symmetric with respect\nto the line\nis similar\nto symmetry about the\n-axis.\n3. Test for symmetry; find\nzeros, intercepts, and\nmaxima; make a table of\nvalues. Decide the general\ntype of graph, cardioid,\nlimaçon, lemniscate, etc.,\nthen plot points at\nand\nand\nsketch the graph.\n5. The shape of the polar\ngraph is determined by\nwhether or not it includes a\nsine, a cosine, and constants\nin the equation.\n7. symmetric with respect to\nthe polar axis\n9. symmetric with respect to\nthe polar axis, symmetric\nwith respect to the line\nsymmetric with\nrespect to the pole\n11. no symmetry\n13. no symmetry\n15. symmetric with respect to\nthe pole\n17. circle\n19. cardioid\n21. cardioid\n23. one-loop/dimpled limaçon\n1391",
+          "page_number": 1401
+        },
+        {
+          "type": "paragraph",
+          "text": "25. one-loop/dimpled limaçon\n27. inner loop/two-loop limaçon\n29. inner loop/two-loop limaçon\n31. inner loop/two-loop limaçon\n33. lemniscate\n35. lemniscate\n37. rose curve\n39. rose curve\n41. Archimedes’ spiral\n43. Archimedes’ spiral\n45.\n47.\n49.\n51.\n53.\n1392\nAccess for free at openstax.org",
+          "page_number": 1402
+        },
+        {
+          "type": "paragraph",
+          "text": "55. They are both spirals, but\nnot quite the same.\n57. Both graphs are curves\nwith 2 loops. The equation\nwith a coefficient of\nhas\ntwo loops on the left, the\nequation with a coefficient\nof 2 has two loops side by\nside. Graph these from 0 to\nto get a better picture.\n59. When the width of the\ndomain is increased, more\npetals of the flower are\nvisible.\n61. The graphs are three-petal,\nrose curves. The larger the\ncoefficient, the greater the\ncurve’s distance from the\npole.\n63. The graphs are spirals. The\nsmaller the coefficient, the\ntighter the spiral.\n65.\n67.\n69.\n71.\nand at\nsince\nis squared\n8.5 Section Exercises\n1. a is the real part, b is the\nimaginary part, and\n3. Polar form converts the real\nand imaginary part of the\ncomplex number in polar\nform using\nand\n5.\nIt is used to simplify polar\nform when a number has\nbeen raised to a power.\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n1393",
+          "page_number": 1403
+        },
+        {
+          "type": "paragraph",
+          "text": "47.\n49.\n51.\n53.\n55.\n57.\n59.\n61.\n8.6 Section Exercises\n1. A pair of functions that is\ndependent on an external\nfactor. The two functions are\nwritten in terms of the same\nparameter. For example,\nand\n3. Choose one equation to\nsolve for\nsubstitute into\nthe other equation and\nsimplify.\n5. Some equations cannot be\nwritten as functions, like a\ncircle. However, when\nwritten as two parametric\nequations, separately the\nequations are functions.\n7.\n9.\n11.\nor\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\nEllipse\n37.\nCircle\n39.\n41.\n1394\nAccess for free at openstax.org",
+          "page_number": 1404
+        },
+        {
+          "type": "paragraph",
+          "text": "43. yes, at\n45.\n1\n-3\n1\n2\n0\n7\n3\n5\n17\n47. answers may vary:\n49. answers may vary: ,\n8.7 Section Exercises\n1. plotting points with the\norientation arrow and a\ngraphing calculator\n3. The arrows show the\norientation, the direction of\nmotion according to\nincreasing values of\n5. The parametric equations\nshow the different vertical\nand horizontal motions over\ntime.\n7.\n9.\n11.\n13.\n15.\n17.\n1395",
+          "page_number": 1405
+        },
+        {
+          "type": "paragraph",
+          "text": "19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39. There will be 100 back-and-\nforth motions.\n41. Take the opposite of the\nequation.\n1396\nAccess for free at openstax.org",
+          "page_number": 1406
+        },
+        {
+          "type": "paragraph",
+          "text": "43. The parabola opens up.\n45.\n47.\n49.\n51.\n53.\n1397",
+          "page_number": 1407
+        },
+        {
+          "type": "paragraph",
+          "text": "55.\n57.\n59.\n61. The\n-intercept changes.\n63.\n65.\n67. approximately 3.2 seconds\n69. 1.6 seconds\n71.\n1398\nAccess for free at openstax.org",
+          "page_number": 1408
+        },
+        {
+          "type": "paragraph",
+          "text": "73.\n8.8 Section Exercises\n1. lowercase, bold letter,\nusually\n3. They are unit vectors. They\nare used to represent the\nhorizontal and vertical\ncomponents of a vector.\nThey each have a magnitude\nof 1.\n5. The first number always\nrepresents the coefficient of\nthe\nand the second\nrepresents the\n7.\n9. not equal\n11. equal\n13. equal\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n1399",
+          "page_number": 1409
+        },
+        {
+          "type": "paragraph",
+          "text": "47.\n49.\n51.\n53.\nⓐ58.7 ⓑ12.5\n55.\n57.\npounds,\npounds\n59.\npounds,\npounds\n61. 4.635 miles, 17.764° N of E\n63. 17 miles. 10.318 miles\n65. Distance: 2.868. Direction:\n86.474° North of West, or\n3.526° West of North\n67. 4.924°. 659 km/hr\n69. 4.424°\n71.\n73. 21.801°, relative to the car’s\nforward direction\n75. parallel: 16.28,\nperpendicular: 47.28\npounds\n77. 19.35 pounds, 231.54° from\nthe horizontal\n79. 5.1583 pounds, 75.8° from\nthe horizontal\nReview Exercises\n1. Not possible\n3.\n5. distance of the plane from\npoint\n2.2 km, elevation\nof the plane: 1.6 km\n7.\n9. 40.6 km\n11.\n13.\n15.\n17.\n1400\nAccess for free at openstax.org",
+          "page_number": 1410
+        },
+        {
+          "type": "paragraph",
+          "text": "19.\n21.\n23. symmetric with respect to\nthe line\n25.\n27.\n29. 5\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n49.\n51.\na.\nb.\nThe ball is 14 feet high and 184 feet\nfrom where it was launched.\nc.\n3.3 seconds\n53. not equal\n55. 4i\n57.\ni\nj\n1401",
+          "page_number": 1411
+        },
+        {
+          "type": "paragraph",
+          "text": "59. Magnitude:\nDirection:\n61.\n63.\nPractice Test\n1.\n3.\n5.\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21.\n23. −4i − 15j\n25.\n1402\nAccess for free at openstax.org",
+          "page_number": 1412
+        }
+      ]
+    },
+    {
+      "id": "ch09",
+      "title": "Chapter 9: Try It",
+      "number": 9,
+      "content_blocks": [
+        {
+          "type": "paragraph",
+          "text": "Chapter 9\nTry It\n9.1 Systems of Linear Equations: Two Variables\n1. Not a solution.\n2. The solution to the system is\nthe ordered pair\n3.\n4.\n5.\n6. No solution. It is an\ninconsistent system.\n7. The system is dependent so\nthere are infinite solutions\nof the form\n8. 700 children, 950 adults\n9.2 Systems of Linear Equations: Three Variables\n1.\n2. No solution.\n3. Infinite number of solutions\nof the form\n9.3 Systems of Nonlinear Equations and Inequalities: Two Variables\n1.\nand\n2.\n3.\n4.\n9.4 Partial Fractions\n1.\n2.\n3.\n1403",
+          "page_number": 1413
+        },
+        {
+          "type": "paragraph",
+          "text": "4.\n9.5 Matrices and Matrix Operations\n1.\n2.\n9.6 Solving Systems with Gaussian Elimination\n1.\n2.\n3.\n4.\n5.\n6. $150,000 at 7%, $750,000 at\n8%, $600,000 at 10%\n9.7 Solving Systems with Inverses\n1.\n2.\n3.\n4.\n9.8 Solving Systems with Cramer's Rule\n1.\n2.\n3.\n9.1 Section Exercises\n1. No, you can either have\nzero, one, or infinitely many.\nExamine graphs.\n3. This means there is no\nrealistic break-even point.\nBy the time the company\nproduces one unit they are\nalready making profit.\n5. You can solve by\nsubstitution (isolating\nor\n), graphically, or by addition.\n1404\nAccess for free at openstax.org",
+          "page_number": 1414
+        },
+        {
+          "type": "paragraph",
+          "text": "7. Yes\n9. Yes\n11.\n13.\n15.\n17. No solutions exist.\n19.\n21.\n23.\n25. No solutions exist.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41. Consistent with one\nsolution\n43. Consistent with one\nsolution\n45. Dependent with infinitely\nmany solutions\n47.\n49.\n51.\n53.\n55.\n57. They never turn a profit.\n59.\n61. The numbers are 7.5 and\n20.5.\n63. 24,000\n65. 790 second-year students,\n805 first-year students\n67. 56 men, 74 women\n69. 10 gallons of 10% solution,\n15 gallons of 60% solution\n71. Swan Peak: $750,000,\nRiverside: $350,000\n73. $12,500 in the first account,\n$10,500 in the second\naccount.\n75. High-tops: 45, Low-tops: 15\n77. Infinitely many solutions.\nWe need more information.\n9.2 Section Exercises\n1. No, there can be only one,\nzero, or infinitely many\nsolutions.\n3. Not necessarily. There could\nbe zero, one, or infinitely\nmany solutions. For\nexample,\nis not a\nsolution to the system\nbelow, but that does not\nmean that it has no solution.\n5. Every system of equations\ncan be solved graphically, by\nsubstitution, and by\naddition. However, systems\nof three equations become\nvery complex to solve\ngraphically so other\nmethods are usually\npreferable.\n7. No\n9. Yes\n11.\n13.\n15.\n17.\n1405",
+          "page_number": 1415
+        },
+        {
+          "type": "paragraph",
+          "text": "19.\n21.\n23. No solutions exist\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n49.\n51. 24, 36, 48\n53. 70 grandparents, 140\nparents, 190 children\n55. Your share was $19.95,\nShani’s share was $40, and\nyour other roommate’s\nshare was $22.05.\n57. There are infinitely many\nsolutions; we need more\ninformation\n59. 500 students, 225 children,\nand 450 adults\n61. The BMW was $49,636, the\nJeep was $42,636, and the\nToyota was $47,727.\n63. $400,000 in the account\nthat pays 3% interest,\n$500,000 in the account\nthat pays 4% interest, and\n$100,000 in the account\nthat pays 2% interest.\n65. The United States\nconsumed 26.3%, Japan\n7.1%, and China 6.4% of the\nworld’s oil.\n67. Saudi Arabia imported\n16.8%, Canada imported\n15.1%, and Mexico 15.0%\n69. Birds were 19.3%, fish were\n18.6%, and mammals were\n17.1% of endangered\nspecies\n9.3 Section Exercises\n1. A nonlinear system could be\nrepresentative of two circles\nthat overlap and intersect in\ntwo locations, hence two\nsolutions. A nonlinear\nsystem could be\nrepresentative of a parabola\nand a circle, where the\nvertex of the parabola\nmeets the circle and the\nbranches also intersect the\ncircle, hence three solutions.\n3. No. There does not need to\nbe a feasible region.\nConsider a system that is\nbounded by two parallel\nlines. One inequality\nrepresents the region above\nthe upper line; the other\nrepresents the region below\nthe lower line. In this case,\nno points in the plane are\nlocated in both regions;\nhence there is no feasible\nregion.\n5. Choose any number\nbetween each solution and\nplug into\nand\nIf\nthen there is\nprofit.\n7.\n9.\n11.\n1406\nAccess for free at openstax.org",
+          "page_number": 1416
+        },
+        {
+          "type": "paragraph",
+          "text": "13.\n15.\n17.\n19.\n21.\n23.\n25.\n27. No Solutions Exist\n29. No Solutions Exist\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n49.\n51. No Solution Exists\n53.\nand\n55. 12, 288\n57. 2–20 computers\n1407",
+          "page_number": 1417
+        },
+        {
+          "type": "paragraph",
+          "text": "9.4 Section Exercises\n1. No, a quotient of\npolynomials can only be\ndecomposed if the\ndenominator can be\nfactored. For example,\ncannot be decomposed\nbecause the denominator\ncannot be factored.\n3. Graph both sides and\nensure they are equal.\n5. If we choose\nthen\nthe B-term disappears,\nletting us immediately know\nthat\nWe could\nalternatively plug in\n, giving us a B-value\nof\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n49.\n51.\n53.\n55.\n57.\n59.\n9.5 Section Exercises\n1. No, they must have the\nsame dimensions. An\nexample would include two\nmatrices of different\ndimensions. One cannot add\nthe following two matrices\nbecause the first is a\nmatrix and the second is a\nmatrix.\nhas no\nsum.\n3. Yes, if the dimensions of\nare\nand the\ndimensions of\nare\nboth products will be\ndefined.\n5. Not necessarily. To find\nwe multiply the first row of\nby the first column of\nto\nget the first entry of\nTo\nfind\nwe multiply the\nfirst row of\nby the first\ncolumn of\nto get the first\nentry of\nThus, if those\nare unequal, then the matrix\nmultiplication does not\ncommute.\n1408\nAccess for free at openstax.org",
+          "page_number": 1418
+        },
+        {
+          "type": "paragraph",
+          "text": "7.\n9.\n11. Undidentified; dimensions\ndo not match\n13.\n15.\n17.\n19.\n21.\n23.\n25. Undefined; dimensions do\nnot match.\n27.\n29.\n31.\n33. Undefined; inner\ndimensions do not match.\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n49.\n51.\n53.\n55.\n57.\n59.",
+          "page_number": 1419
+        },
+        {
+          "type": "paragraph",
+          "text": "9.6 Section Exercises\n1. Yes. For each row, the\ncoefficients of the variables\nare written across the\ncorresponding row, and a\nvertical bar is placed; then\nthe constants are placed to\nthe right of the vertical bar.\n3. No, there are numerous\ncorrect methods of using\nrow operations on a matrix.\nTwo possible ways are the\nfollowing: (1) Interchange\nrows 1 and 2. Then\n(2)\nThen divide\nrow 1 by 9.\n5. No. A matrix with 0 entries\nfor an entire row would have\neither zero or infinitely\nmany solutions.\n1409",
+          "page_number": 1419
+        },
+        {
+          "type": "paragraph",
+          "text": "7.\n9.\n11.\n13.\n15.\n17. No solutions\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n49.\n51. No solutions exist.\n53. 860 red velvet, 1,340\nchocolate\n55. 4% for account 1, 6% for\naccount 2\n57. $126\n59. Banana was 3%, pumpkin\nwas 7%, and rocky road\nwas 2%\n61. 100 almonds, 200 cashews,\n600 pistachios\n9.7 Section Exercises\n1. If\nis the inverse of\nthen\nthe identity\nmatrix. Since\nis also the\ninverse of\nYou can also check by\nproving this for a\nmatrix.\n3. No, because\nand\nare\nboth 0, so\nwhich requires us to divide\nby 0 in the formula.\n5. Yes. Consider the matrix\nThe\ninverse is found with the following\ncalculation:\n7.\n9.\n11.\n13.\n15.\n17. There is no inverse\n1410\nAccess for free at openstax.org",
+          "page_number": 1420
+        },
+        {
+          "type": "paragraph",
+          "text": "19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n49.\n51.\n53. Infinite solutions.\n55. 50% oranges, 25%\nbananas, 20% apples\n57. 10 straw hats, 50 beanies,\n40 cowboy hats\n59. Micah ate 6, Joe ate 3, and\nAlbert ate 3.\n61. 124 oranges, 10 lemons, 8\npomegranates\n9.8 Section Exercises\n1. A determinant is the sum\nand products of the entries\nin the matrix, so you can\nalways evaluate that\nproduct—even if it does end\nup being 0.\n3. The inverse does not exist.\n5.\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n1411",
+          "page_number": 1421
+        },
+        {
+          "type": "paragraph",
+          "text": "31.\n33.\n35.\n37.\n39.\n41.\n43. Infinite solutions\n45.\n47.\n49. Yes; 18, 38\n51. Yes; 33, 36, 37\n53. $7,000 in first account,\n$3,000 in second account.\n55. 120 children, 1,080 adult\n57. 4 gal yellow, 6 gal blue\n59. 13 green tomatoes, 17 red\ntomatoes\n61. Strawberries 18%, oranges\n9%, kiwi 10%\n63. 100 for movie 1, 230 for\nmovie 2, 312 for movie 3\n65. 300 almonds, 400\ncranberries, 300 cashews\nReview Exercises\n1. No\n3.\n5.\n7. No solutions exist.\n9.\n11. Infinite solutions\n13. No solutions exist.\n15.\n17.\n19. 11, 17, 33\n21.\n23. No solution\n25. No solution\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41. undefined; dimensions do\nnot match\n43. undefined; inner\ndimensions do not match\n45.\n47.\n49. undefined; inner\ndimensions do not match\n51.\nwith infinite\nsolutions\n53.\n1412\nAccess for free at openstax.org",
+          "page_number": 1422
+        },
+        {
+          "type": "paragraph",
+          "text": "55.\n57. No solutions exist.\n59. No solutions exist.\n61.\n63. No inverse exists.\n65.\n67.\n69. 17% oranges, 34%\nbananas, 39% apples\n71. 0\n73. 6\n75.\n77. (x, 5x + 3)\n79.\nPractice Test\n1. Yes\n3. No solutions exist.\n5.\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21.\n23. No solutions exist.\n25.\n27.\n29. 32 or more cell phones per\nday\n1413",
+          "page_number": 1423
+        }
+      ]
+    },
+    {
+      "id": "ch10",
+      "title": "Chapter 10: Try It",
+      "number": 10,
+      "content_blocks": [
+        {
+          "type": "paragraph",
+          "text": "Chapter 10\nTry It\n10.1 The Ellipse\n1.\n2.\n3. center:\nvertices:\nco-vertices:\nfoci:\n4. Standard form:\ncenter:\nvertices:\nco-vertices:\nfoci:\n5. Center:\nvertices:\nand\nco-vertices:\nand\nfoci:\nand\n6.\ncenter:\nvertices:\nand\nco-\nvertices:\nand\nfoci:\nand\nⓐ\nⓑThe people are standing\n358 feet apart.\n7.\n10.2 The Hyperbola\n1. Vertices:\nFoci:\n2.\n3.\n1414\nAccess for free at openstax.org",
+          "page_number": 1424
+        },
+        {
+          "type": "paragraph",
+          "text": "4. vertices:\nco-vertices:\nfoci:\nasymptotes:\n5. center:\nvertices:\nand\nco-vertices:\nand\nfoci:\nand\nasymptotes:\n6. The sides of the tower can be\nmodeled by the hyperbolic\nequation.\n10.3 The Parabola\n1. Focus:\nDirectrix:\nEndpoints of the latus rectum:\n2. Focus:\nDirectrix:\nEndpoints of the latus rectum:\n3.\n4. Vertex:\nAxis of\nsymmetry:\nFocus:\nDirectrix:\nEndpoints of the latus rectum:\nand\n5. Vertex:\nAxis of\nsymmetry:\nFocus:\nDirectrix:\nEndpoints of the latus rectum:\nand\nⓐ\nⓑThe depth of the cooker\nis 500 mm\n6.\n1415",
+          "page_number": 1425
+        },
+        {
+          "type": "paragraph",
+          "text": "10.4 Rotation of Axes\nⓐhyperbola ⓑellipse\n1.\n2.\nⓐhyperbola ⓑellipse\n3.\n10.5 Conic Sections in Polar Coordinates\n1. ellipse;\n2.\n3.\n4.\n10.1 Section Exercises\n1. An ellipse is the set of all\npoints in the plane the sum\nof whose distances from two\nfixed points, called the foci,\nis a constant.\n3. This special case would be a\ncircle.\n5. It is symmetric about the\nx-axis, y-axis, and the origin.\n7. yes;\n9. yes;\n11.\nEndpoints of\nmajor axis\nand\nEndpoints of minor\naxis\nand\nFoci\nat\n13.\nEndpoints of major axis\nand\nEndpoints of minor axis\nFoci at\n15.\nEndpoints of major axis\nEndpoints of\nminor axis\nFoci\nat\n17.\nEndpoints of major axis\nEndpoints of\nminor axis\nFoci at\n1416\nAccess for free at openstax.org",
+          "page_number": 1426
+        },
+        {
+          "type": "paragraph",
+          "text": "19.\nEndpoints of major axis\nEndpoints of\nminor axis\nFoci at\n21.\nEndpoints of major axis\nEndpoints of minor axis\nFoci at\n23.\nEndpoints\nof major axis\nEndpoints of minor axis\nFoci at\n25.\nEndpoints of\nmajor axis\nEndpoints of minor axis\nFoci at\n27. Foci\n29. Focus\n31. Foci\n33. Center\nVertices\nFoci\n35. Center\nVertices\nFoci\n37. Center\nVertices\nFocus\nNote that this ellipse is a circle.\nThe circle has only one focus,\nwhich coincides with the center.\n1417",
+          "page_number": 1427
+        },
+        {
+          "type": "paragraph",
+          "text": "39. Center\nVertices\nFoci\n41. Center\nVertices\nFoci\n43. Center\nVertices\nFoci\n45. Center\nVertices\nFocus\n47.\n49.\n51.\n53.\n55.\n57.\n59.\nsquare units.\n61.\nsquare units.\n63.\n65.\n. Distance =\n17.32 feet\n67. Approximately 51.96 feet\n10.2 Section Exercises\n1. A hyperbola is the set of\npoints in a plane the\ndifference of whose\ndistances from two fixed\npoints (foci) is a positive\nconstant.\n3. The foci must lie on the\ntransverse axis and be in the\ninterior of the hyperbola.\n5. The center must be the\nmidpoint of the line\nsegment joining the foci.\n7. yes\n9. yes\n11.\nvertices:\nfoci:\nasymptotes:\n1418\nAccess for free at openstax.org",
+          "page_number": 1428
+        },
+        {
+          "type": "paragraph",
+          "text": "13.\nvertices:\nfoci:\nasymptotes:\n15.\nvertices:\nfoci:\nasymptotes:\n17.\nvertices:\nfoci:\nasymptotes:\n19.\nvertices:\nfoci:\nasymptotes:\n21.\nvertices:\nfoci:\nasymptotes:\n23.\nvertices:\nfoci:\nasymptotes:\n25.\nvertices:\nfoci:\nasymptotes:\n27.\n29.\n31.\n1419",
+          "page_number": 1429
+        },
+        {
+          "type": "paragraph",
+          "text": "33.\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n49.\n51.\n53.\n55.\n57.\n59.\n1420\nAccess for free at openstax.org",
+          "page_number": 1430
+        },
+        {
+          "type": "paragraph",
+          "text": "61.\n63.\n65.\n67.\n69.\n10.3 Section Exercises\n1. A parabola is the set of\npoints in the plane that lie\nequidistant from a fixed\npoint, the focus, and a fixed\nline, the directrix.\n3. The graph will open down.\n5. The distance between the\nfocus and directrix will\nincrease.\n7. yes\n9. yes\n11.\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n1421",
+          "page_number": 1431
+        },
+        {
+          "type": "paragraph",
+          "text": "29.\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n49.\n51.\n53.\n55.\n57.\n59.\n61.\n63. At the point 2.25 feet above\nthe vertex.\n65. 0.5625 feet\n67.\nheight is 7.2 feet\n69. 2304 feet\n1422\nAccess for free at openstax.org",
+          "page_number": 1432
+        },
+        {
+          "type": "paragraph",
+          "text": "10.4 Section Exercises\n1. The\nterm causes a\nrotation of the graph to\noccur.\n3. The conic section is a\nhyperbola.\n5. It gives the angle of rotation\nof the axes in order to\neliminate the\nterm.\n7.\nparabola\n9.\nhyperbola\n11.\nellipse\n13.\nparabola\n15.\nparabola\n17.\nellipse\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n1423",
+          "page_number": 1433
+        },
+        {
+          "type": "paragraph",
+          "text": "41.\n43.\n45.\n47.\n49.\n51.\n53.\n55.\n57.\n59.\n10.5 Section Exercises\n1. If eccentricity is less than 1,\nit is an ellipse. If eccentricity\nis equal to 1, it is a parabola.\nIf eccentricity is greater than\n1, it is a hyperbola.\n3. The directrix will be parallel\nto the polar axis.\n5. One of the foci will be\nlocated at the origin.\n7. Parabola with\nand\ndirectrix\nunits below the\npole.\n9. Hyperbola with\nand\ndirectrix\nunits above the\npole.\n11. Parabola with\nand\ndirectrix\nunits to the\nright of the pole.\n1424\nAccess for free at openstax.org",
+          "page_number": 1434
+        },
+        {
+          "type": "paragraph",
+          "text": "13. Ellipse with\nand\ndirectrix\nunits to the right\nof the pole.\n15. Hyperbola with\nand\ndirectrix\nunits above\nthe pole.\n17. Hyperbola with\nand\ndirectrix\nunits to the\nright of the pole.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n49.\n51.\n53.\n55.\n57.\n59.\nReview Exercises\n1.\ncenter:\nvertices:\nfoci:\n1425",
+          "page_number": 1435
+        },
+        {
+          "type": "paragraph",
+          "text": "3.\n5. center:\nvertices:\nfoci:\n7. center:\nvertices:\nfoci:\n9.\n11. Approximately 35.71 feet\n13.\ncenter:\nvertices:\nfoci:\n15.\ncenter:\nvertices:\nfoci:\n17.\n19.\n21.\n23.\nvertex:\nfocus:\ndirectrix:\n25.\nvertex:\nfocus:\ndirectrix:\n27.\n29.\n31.\n33.\nparabola\n1426\nAccess for free at openstax.org",
+          "page_number": 1436
+        },
+        {
+          "type": "paragraph",
+          "text": "35.\nellipse\n37.\n39.\n41. Hyperbola with\nand\ndirectrix\nunits to the left\nof the pole.\n43. Ellipse with\nand\ndirectrix\nunit above the\npole.\n45.\n47.\n49.\nPractice Test\n1.\ncenter:\nvertices:\nfoci:\n3. center:\nvertices:\nfoci:\n5.\n1427",
+          "page_number": 1437
+        },
+        {
+          "type": "paragraph",
+          "text": "7.\ncenter:\nvertices\nfoci:\nasymptotes:\n9. center:\nvertices:\nfoci:\nasymptotes:\n11.\n13.\nvertex:\nfocus:\ndirectrix:\n15.\n17. Approximately\nfeet\n19. parabola;\n21.\n23. Hyperbola with\nand\ndirectrix\nunits to the\nright of the pole.\n25.\n1428\nAccess for free at openstax.org",
+          "page_number": 1438
+        }
+      ]
+    },
+    {
+      "id": "ch11",
+      "title": "Chapter 11: Try It",
+      "number": 11,
+      "content_blocks": [
+        {
+          "type": "paragraph",
+          "text": "Chapter 11\nTry It\n11.1 Sequences and Their Notations\n1. The first five terms are\n2. The first five terms are\n3. The first six terms are\n4.\n5.\n6.\n7.\n8.\n9. The first five terms are\n11.2 Arithmetic Sequences\n1. The sequence is arithmetic.\nThe common difference is\n2. The sequence is not\narithmetic because\n3.\n4.\n5.\n6.\n7. There are 11 terms in the\nsequence.\n8. The formula is\nand it will\ntake her 42 minutes.\n11.3 Geometric Sequences\n1. The sequence is not\ngeometric because\n.\n2. The sequence is geometric.\nThe common ratio is\n.\n3.\n4.\n5.\n6.\nⓐ\nⓑThe number of hits will\nbe about 333.\n7.\n11.4 Series and Their Notations\n1. 38\n2.\n3.\n4.\n5. $2,025\n6.\n7. 9,840\n8. $275,513.31\n9. The sum is not defined.\n1429",
+          "page_number": 1439
+        },
+        {
+          "type": "paragraph",
+          "text": "10. The sum of the infinite\nseries is defined.\n11. The sum of the infinite\nseries is defined.\n12. 3\n13. The series is not geometric.\n14.\n15. $32,775.87\n11.5 Counting Principles\n1. 7\n2. There are 60 possible\nbreakfast specials.\n3. 120\n4. 60\n5. 12\n6.\n7.\n8.\n9. 64 sundaes\n10. 840\n11.6 Binomial Theorem\nⓐ35 ⓑ330\n1.\nⓐ\nⓑ\n2.\n3.\n11.7 Probability\n1.\nOutcome\nProbability\nHeads\nTails\n2.\n3.\n4.\n5.\n6.\n11.1 Section Exercises\n1. A sequence is an ordered list\nof numbers that can be\neither finite or infinite in\nnumber. When a finite\nsequence is defined by a\nformula, its domain is a\nsubset of the non-negative\nintegers. When an infinite\nsequence is defined by a\nformula, its domain is all\npositive or all non-negative\nintegers.\n3. Yes, both sets go on\nindefinitely, so they are both\ninfinite sequences.\n5. A factorial is the product of a positive\ninteger and all the positive integers below\nit. An exclamation point is used to indicate\nthe operation. Answers may vary. An\nexample of the benefit of using factorial\nnotation is when indicating the product It\nis much easier to write than it is to write\nout\n1430\nAccess for free at openstax.org",
+          "page_number": 1440
+        },
+        {
+          "type": "paragraph",
+          "text": "7. First four terms:\n9. First four terms:\n.\n11. First four terms:\n.\n13. First four terms:\n.\n15. First four terms:\n17.\n19.\n21.\n23.\n25.\n27. First five terms:\n29. First five terms:\n31.\n33.\n35.\n37.\n39.\n41.\n43. First four terms:\n45. First four terms:\n47.\n49.\n51.\n53.\n55.\n57. First five terms:\n,\n,\n,\n,\n59. First five terms: 2, 3, 5, 17,\n65537\n61.\n63. First six terms: 0.042, 0.146,\n0.875, 2.385, 4.708\n65. First four terms: 5.975,\n2.765, 185.743, 1057.25,\n6023.521\n67. If\nis a term in\nthe sequence, then solving\nthe equation\nfor\nwill\nyield a non-negative\ninteger. However, if\nthen\nso\nis\nnot a term in the sequence.\n69.\n71.\n1431",
+          "page_number": 1441
+        },
+        {
+          "type": "paragraph",
+          "text": "11.2 Section Exercises\n1. A sequence where each\nsuccessive term of the\nsequence increases (or\ndecreases) by a constant\nvalue.\n3. We find whether the\ndifference between all\nconsecutive terms is the\nsame. This is the same as\nsaying that the sequence\nhas a common difference.\n5. Both arithmetic sequences\nand linear functions have a\nconstant rate of change.\nThey are different because\ntheir domains are not the\nsame; linear functions are\ndefined for all real numbers,\nand arithmetic sequences\nare defined for natural\nnumbers or a subset of the\nnatural numbers.\n7. The common difference is\n9. The sequence is not\narithmetic because\n11.\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n37.\n39.\n41. First five terms:\n43.\n45.\n47.\n49.\n51.\n53. There are 10 terms in the\nsequence.\n55. There are 6 terms in the\nsequence.\n57. The graph does not\nrepresent an arithmetic\nsequence.\n59.\n61.\n1432\nAccess for free at openstax.org",
+          "page_number": 1442
+        },
+        {
+          "type": "paragraph",
+          "text": "63.\n65.\n67. Answers will vary.\nExamples:\nand\n69.\n71. The sequence begins to\nhave negative values at the\n13th term,\n73. Answers will vary. Check to\nsee that the sequence is\narithmetic. Example:\nRecursive formula:\nFirst 4 terms:\n11.3 Section Exercises\n1. A sequence in which the\nratio between any two\nconsecutive terms is\nconstant.\n3. Divide each term in a\nsequence by the preceding\nterm. If the resulting\nquotients are equal, then\nthe sequence is geometric.\n5. Both geometric sequences\nand exponential functions\nhave a constant ratio.\nHowever, their domains are\nnot the same. Exponential\nfunctions are defined for all\nreal numbers, and\ngeometric sequences are\ndefined only for positive\nintegers. Another difference\nis that the base of a\ngeometric sequence (the\ncommon ratio) can be\nnegative, but the base of an\nexponential function must\nbe positive.\n7. The common ratio is\n9. The sequence is geometric.\nThe common ratio is 2.\n11. The sequence is geometric.\nThe common ratio is\n13. The sequence is geometric.\nThe common ratio is\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n1433",
+          "page_number": 1443
+        },
+        {
+          "type": "paragraph",
+          "text": "37.\n39.\n41.\n43.\n45. There are\nterms in the\nsequence.\n47. The graph does not\nrepresent a geometric\nsequence.\n49.\n51. Answers will vary.\nExamples:\nand\n53.\n55. The sequence exceeds\nat the 14th term,\n57.\nis the first non-\ninteger value\n59. Answers will vary. Example:\nExplicit formula with a decimal\ncommon ratio:\nFirst 4\nterms:\n11.4 Section Exercises\n1. An\npartial sum is the\nsum of the first\nterms of a\nsequence.\n3. A geometric series is the\nsum of the terms in a\ngeometric sequence.\n5. An annuity is a series of\nregular equal payments that\nearn a constant\ncompounded interest.\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21.\n23. The series is defined.\n25. The series is defined.\n27.\n1434\nAccess for free at openstax.org",
+          "page_number": 1444
+        },
+        {
+          "type": "paragraph",
+          "text": "29. Sample answer: The graph\nof\nseems to be\napproaching 1. This makes\nsense because\n∞\nis a defined infinite\ngeometric series with\n31. 49\n33. 254\n35.\n37.\n39.\n41.\n43.\n45.\n47. $3,705.42\n49. $695,823.97\n51.\n53. 9 terms\n55.\n57. $400 per month\n59. 420 feet\n61. 12 feet\n11.5 Section Exercises\n1. There are\nways for\neither event\nor event\nto\noccur.\n3. The addition principle is\napplied when determining\nthe total possible of\noutcomes of either event\noccurring. The multiplication\nprinciple is applied when\ndetermining the total\npossible outcomes of both\nevents occurring. The word\n“or” usually implies an\naddition problem. The word\n“and” usually implies a\nmultiplication problem.\n5. A combination;\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35. 9\n1435",
+          "page_number": 1445
+        },
+        {
+          "type": "paragraph",
+          "text": "37. Yes, for the trivial cases\nand\nIf\nthen\n  If\nthen\n39.\n41.\n43.\n45.\n47.\n49.\n51.\n53.\n11.6 Section Exercises\n1. A binomial coefficient is an\nalternative way of denoting\nthe combination\nIt\nis defined as\n3. The Binomial Theorem is\ndefined as\nand can be used to expand\nany binomial.\n5. 15\n7. 35\n9. 10\n11. 12,376\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n35.\n1436\nAccess for free at openstax.org",
+          "page_number": 1446
+        },
+        {
+          "type": "paragraph",
+          "text": "37.\n39.\n41.\n43.\n45.\n47.\n49. The expression\ncannot be\nexpanded using the\nBinomial Theorem because\nit cannot be rewritten as a\nbinomial.\n1437",
+          "page_number": 1447
+        },
+        {
+          "type": "paragraph",
+          "text": "11.7 Section Exercises\n1. probability; The probability\nof an event is restricted to\nvalues between\nand\ninclusive of\nand\n3. An experiment is an activity\nwith an observable result.\n5. The probability of the union\nof two events occurring is a\nnumber that describes the\nlikelihood that at least one\nof the events from a\nprobability model occurs. In\nboth a union of sets\nand a union of\nevents\nthe union\nincludes either\nor\nboth. The difference is that a\nunion of sets results in\nanother set, while the union\nof events is a probability, so\nit is always a numerical\nvalue between\nand\n7.\n9.\n11.\n13.\n15.\n17.\n19.\n21.\n23.\n25.\n27.\n29.\n31.\n33.\n1\n2\n3\n4\n5\n6\n1\n(1,1)\n2\n(1,2)\n3\n(1,3)\n4\n(1,4)\n5\n(1,5)\n6\n(1,6)\n7\n2\n(2,1)\n3\n(2,2)\n4\n(2,3)\n5\n(2,4)\n6\n(2,5)\n7\n(2,6)\n8\n3\n(3,1)\n4\n(3,2)\n5\n(3,3)\n6\n(3,4)\n7\n(3,5)\n8\n(3,6)\n9\n4\n(4,1)\n5\n(4,2)\n6\n(4,3)\n7\n(4,4)\n8\n(4,5)\n9\n(4,6)\n10\n5\n(5,1)\n6\n(5,2)\n7\n(5,3)\n8\n(5,4)\n9\n(5,5)\n10\n(5,6)\n11\n6\n(6,1)\n7\n(6,2)\n8\n(6,3)\n9\n(6,4)\n10\n(6,5)\n11\n(6,6)\n12\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n1438\nAccess for free at openstax.org",
+          "page_number": 1448
+        },
+        {
+          "type": "paragraph",
+          "text": "49.\n51.\n53.\n55.\n57.\n59.\nReview Exercises\n1.\n3.\n5. The sequence is arithmetic.\nThe common difference is\n7.\n9.\n11.\n13.\n15. 4, 16, 64, 256, 1024\n17.\n19.\n21.\n23.\n25.\n27.\n29. $5,617.61\n31. 6\n33.\n35.\n37.\n39.\n41.\n43.\n45.\n47.\n1\n2\n3\n4\n5\n6\n1\n1,1\n1,2\n1,3\n1,4\n1,5\n1,6\n2\n2,1\n2,2\n2,3\n2,4\n2,5\n2,6\n3\n3,1\n3,2\n3,3\n3,4\n3,5\n3,6\n4\n4,1\n4,2\n4,3\n4,4\n4,5\n4,6\n5\n5,1\n5,2\n5,3\n5,4\n5,5\n5,6\n6\n6,1\n6,2\n6,3\n6,4\n6,5\n6,6\n49.\n51.\n53.\n55.\n57.\n1439",
+          "page_number": 1449
+        },
+        {
+          "type": "paragraph",
+          "text": "Practice Test\n1.\n3. The sequence is arithmetic.\nThe common difference is\n5.\n7. The sequence is geometric.\nThe common ratio is\n9.\n11.\n13.\n15. Total in account:\nInterest\nearned:\n17.\n19.\n21.\n23.\n25.\n27.\n29.\nChapter 12\nTry It\n12.1 Finding Limits: Numerical and Graphical Approaches\n1.\nand\n2. a. 0; b. 2; c. does not exist; d.\ne. 0; f. does not exist; g.\n4; h. 4; i. 4\n3.\n4. does not exist\n12.2 Finding Limits: Properties of Limits\n1. 26\n2. 59\n3. 10\n4.\n5.\n6.\n7.\n8.\n9.\n1440\nAccess for free at openstax.org",
+          "page_number": 1450
+        },
+        {
+          "type": "paragraph",
+          "text": "12.3 Continuity\nⓐremovable discontinuity\nat\nⓑjump discontinuity at\n1.\n2. No. The function is not\ncontinuous at\nbecause\nthe left hand limit is\nand\nthe right hand limit is\n.\n3. No, the function is not\ncontinuous at\nThere\nexists a removable\ndiscontinuity at\n4.\n12.4 Derivatives\n1. 3\n2.\n3.\n4.\n5. 0\n6.\n0, 0,\nⓐAfter zero seconds, she\nhas traveled 0 feet.\nⓑAfter 10 seconds, she\nhas traveled 150 feet east.\nⓒAfter 10 seconds, she is\nmoving eastward at a rate of\n15 ft/sec.\nⓓAfter 20 seconds, she is\nmoving westward at a rate\nof 10 ft/sec.\nⓔAfter 40 seconds, she is\n100 feet westward of her\nstarting point.\n7.\n8. The graph of\nis continuous\non\n∞\n∞\nThe graph of\nis\ndiscontinuous at\nand\nThe graph of\nis\ndifferentiable on\n∞\n∞\nThe graph of\nis not\ndifferentiable at\nand\n9.\n10. –68 ft/sec, it is dropping\nback to Earth at a rate of 68\nft/s.\n12.1 Section Exercises\n1. The value of the function,\nthe output, at\nis\nWhen the\nis taken,\nthe values of\nget infinitely\nclose to\nbut never equal\nAs the values of\napproach\nfrom the left and right, the\nlimit is the value that the\nfunction is approaching.\n3. –4\n5. –4\n7. 2\n9. does not exist\n11. 4\n13. does not exist\n15. Answers will vary.\n16. Answers will vary.\n1441",
+          "page_number": 1451
+        },
+        {
+          "type": "paragraph",
+          "text": "17. Answers will vary.\n18. Answers will vary.\n19. Answers will vary.\n20. Answers will vary.\n21. Answers will vary.\n23. 7.38906\n25. 54.59815\n27.\n29.\n31.\n33.\n35.\n37.\ndoes\nnot exist. Function values\ndecrease without bound as\napproaches –0.5 from\neither left or right.\n39.\n40.\n43.\n45.\nand\nsince the right-hand limit\ndoes not equal the left-hand\nlimit,\ndoes not\nexist.\n47.\ndoes not exist.\nThe function increases\nwithout bound as\napproaches\nfrom either\nside.\n49.\ndoes not exist.\nFunction values approach 5\nfrom the left and approach\n0 from the right.\n51. Through examination of the\npostulates and an\nunderstanding of relativistic\nphysics, as\n∞Take\nthis one step further to the\nsolution,\n∞\n1442\nAccess for free at openstax.org",
+          "page_number": 1452
+        },
+        {
+          "type": "paragraph",
+          "text": "12.2 Section Exercises\n1. If\nis a polynomial function,\nthe limit of a polynomial\nfunction as\napproaches\nwill always be\n3. It could mean either (1) the\nvalues of the function\nincrease or decrease\nwithout bound as\napproaches\nor (2) the left\nand right-hand limits are not\nequal.\n5.\n7. 6\n9.\n11. 6\n13. does not exist\n15.\n17.\n19.\n21. 1\n23. 6\n25. 1\n27. 1\n29. does not exist\n31.\n33.\n35. 0\n37.\n39. does not exist; right-hand\nlimit is not the same as the\nleft-hand limit.\n41. 2\n43. Limit does not exist; limit\napproaches infinity.\n45.\n47.\n49.\n51.\n53.\n55.\n57. does not exist\n59. 52\n12.3 Section Exercises\n1. Informally, if a function is\ncontinuous at\nthen\nthere is no break in the\ngraph of the function at\nand\nis defined.\n3. discontinuous at\n;\ndoes not exist\n5. removable discontinuity at\n;\nis not defined\n7. Discontinuous at\n;\nbut\nwhich is not equal to the\nlimit.\n9.\ndoes not exist.\n11.\n.\nTherefore,\ndoes not\nexist.\n1443",
+          "page_number": 1453
+        },
+        {
+          "type": "paragraph",
+          "text": "13.\n.\nThus\ndoes not exist.\n15.\n,\nTherefore,\ndoes\nnot exist.\n17.\nis not defined.\n19.\nis not defined.\n21.\nis not defined.\n23. Continuous on\n∞∞\n25. Continuous on\n∞∞\n27. Discontinuous at\nand\n29. Discontinuous at\n31. Continuous on\n∞\n33. Continuous on\n∞\n35. Continuous on\n∞∞.\n37. 1, but not 2 or 3\n39. 1 and 2, but not 3\n41.\nis undefined.\n43.\n∞\n∞\n45. At\nthe limit does\nnot exist. At\ndoes not exist.\nAt\nthere appears to\nbe a vertical asymptote,\nand the limit does not\nexist.\n47.\n49. The function is\ndiscontinuous at\nbecause the limit as\napproaches 1 is 5 and\n12.4 Section Exercises\n1. The slope of a linear\nfunction stays the same. The\nderivative of a general\nfunction varies according to\nBoth the slope of a line\nand the derivative at a point\nmeasure the rate of change\nof the function.\n3. Average velocity is 55 miles\nper hour. The instantaneous\nvelocity at 2:30 p.m. is 62\nmiles per hour. The\ninstantaneous velocity\nmeasures the velocity of the\ncar at an instant of time\nwhereas the average\nvelocity gives the velocity of\nthe car over an interval.\n5. The average rate of change\nof the amount of water in\nthe tank is 45 gallons per\nminute. If\nis the\nfunction giving the amount\nof water in the tank at any\ntime\nthen the average rate\nof change of\nbetween\nand\nis\n7.\n9.\n11.\n13.\n15.\n17.\n1444\nAccess for free at openstax.org",
+          "page_number": 1454
+        },
+        {
+          "type": "paragraph",
+          "text": "19.\n21. undefined\n23.\n25.\n27.\n29.\nor\n31. Discontinuous at\nand\nNot\ndifferentiable at –2, 0, 2.\n33. Discontinuous at\nNot differentiable at -4, –2,\n0, 1, 3, 4, 5.\n35.\n37.\n39.\n41.\n43.\n45. Answers vary. The slope of\nthe tangent line near\nis 2.\n47. At 12:30 p.m., the rate of\nchange of the number of\ngallons in the tank is –20\ngallons per minute. That is,\nthe tank is losing 20\ngallons per minute.\n49. At 200 minutes after noon,\nthe volume of gallons in\nthe tank is changing at the\nrate of 30 gallons per\nminute.\n51. The height of the projectile\nafter 2 seconds is 96 feet.\n53. The height of the projectile\nat\nseconds is 96 feet.\n55. The height of the projectile\nis zero at\nand again at\nIn other words, the\nprojectile starts on the\nground and falls to earth\nagain after 5 seconds.\n57.\n59. $50.00 per unit, which is\nthe instantaneous rate of\nchange of revenue when\nexactly 10 units are sold.\n61. $21 per unit\n63. $36\n65.\n67.\nReview Exercises\n1. 2\n3. does not exist\n5. Discontinuous at\ndoes not exist\njump discontinuity ,\nand\ndoes not exist\n7.\n9. Does not exist\n11.\n13.\n15.\n17.\n19.\n1445",
+          "page_number": 1455
+        },
+        {
+          "type": "paragraph",
+          "text": "21. At\nthe function has a\nvertical asymptote.\n23. At\nthe function has a\nvertical asymptote.\n25. Removable discontinuity at\n27. Removable discontinuity at\n29. Removable discontinuity at\n, discontinuity at\n31. Removable discontinuity at\n, discontinuity at\n33.\n35.\n37.\n39.\n41. The function would not be\ndifferentiable at however, 0\nis not in its domain. So it is\ndifferentiable everywhere\nin its domain.\nPractice Test\n1. 3\n3. 0\n5.\n7.\nand\nThus, the\nlimit of the function as\napproaches 2 does not exist.\n10.\n12.\n14. Removable discontinuity at\n16.\n18. Discontinuous at −2, 0, not\ndifferentiable at −2, 0, 2\n20. Not differentiable at\n(no limit)\n22. The height of the projectile\nat\nSeconds\n24. The average velocity from\n26.\n28.\n29. 2\n30.\n32.\n34. The graph is not\ndifferentiable at\n(cusp).\n36.\n38.\n40.\n42.\n1446\nAccess for free at openstax.org",
+          "page_number": 1456
+        },
+        {
+          "type": "paragraph",
+          "text": "Index\nA\nAAS (angle-angle-side)\n788\nabsolute maximum\n67\nabsolute minimum\n67\nabsolute value\n49, 121\nabsolute value equation\n125\nabsolute value functions\n121, 125\nabsolute value inequality\n128\naddition method\n926, 928, 932\nAddition Principle\n1176\nadjacent side\n610\naltitude\n788\nambiguous case\n791\namplitude\n636, 756, 770\nangle\n550, 574\nangle of depression\n617\nangle of elevation\n617, 787\nangle of rotation\n1096\nangular speed\n567\nannual interest\n1170\nannual percentage rate (APR)\n419\nannuity\n1170\napoapsis\n1106\narc\n554\narc length\n555, 564, 574\narccosine\n673\nArchimedes’ spiral\n847\narcsine\n673\narctangent\n673\narea of a circle\n283\narea of a sector\n565, 565\nargument\n856\narithmetic sequence\n1141, 1142,\n1144, 1145, 1163\narithmetic series\n1163\narrow notation\n351\nasymptotes\n1059\naugmented matrix\n988, 992, 993,\n1007\naverage rate of change\n56, 1254\naxes of symmetry\n1059\naxis of symmetry\n263, 265, 1085,\n1086\nB\nbinomial\n327\nbinomial coefficient\n1187\nbinomial expansion\n1187, 1190\nBinomial Theorem\n1189\nbreak-even point\n934\nC\ncardioid\n838\ncarrying capacity\n506\nCartesian equation\n826\nCelsius\n134\ncenter of a hyperbola\n1059\ncenter of an ellipse\n1043\ncentral rectangle\n1059\nchange-of-base formula\n482, 483\ncircle\n956, 957\ncircular motion\n644\ncircumference\n554\nco-vertex\n1043\nco-vertices\n1045\ncoefficient\n284, 338\ncoefficient matrix\n988, 990, 1009,\n1012\ncofunction\n712\ncofunction identities\n615, 713\ncolumn\n975\ncolumn matrix\n976\ncombinations\n1181, 1187\ncombining functions\n75\ncommon base\n487\ncommon difference\n1141, 1163\ncommon logarithm\n447\ncommon ratio\n1153, 1165\ncommutative\n76\ncomplement of an event\n1198\ncomplex conjugate\n256, 257\nComplex Conjugate Theorem\n343\ncomplex number\n252, 852\ncomplex plane\n253, 852\ncomposite function\n75\ncomposition of functions\n75\ncompound interest\n419\ncompression\n189, 435, 461\nconic\n1042, 1058, 1113\nconic section\n1094\nconic sections\n871\nconjugate\n1233\nconjugate axis\n1059\nconsistent system\n923\nconstant of variation\n390\nconstant rate of change\n212\ncontinuous\n304\ncontinuous function\n295, 1238\nconvex limaçons\n840\ncoordinate plane\n1077\ncorrelation coefficient\n231\ncosecant\n595, 657\ncosecant function\n657, 658, 661,\n696\ncosine\n733, 734\ncosine function\n574, 633, 635, 637,\n640, 644\ncost function\n73, 933\ncotangent\n595, 663\ncotangent function\n663, 696\ncoterminal angles\n560, 560, 563\nCramer’s Rule\n1018, 1019, 1021,\n1025\ncube root\n284\ncubic functions\n380\ncurvilinear path\n864\nD\ndamped harmonic motion\n765,\n765\nDe Moivre\n858\nDe Moivre’s Theorem\n859, 860\ndecompose a composite function\n82\ndecomposition\n965\ndecreasing function\n62, 166\ndecreasing linear function\n167\ndegenerate conic sections\n1092\ndegree\n289, 551\ndependent system\n923, 932, 946\ndependent variable\n8\nderivative\n1255, 1255, 1257, 1259,\n1260\nDescartes\n852\nDescartes’ Rule of Signs\n344\ndeterminant\n1017, 1020, 1021\ndifference quotient\n1255\ndifferentiable\n1262\ndimpled limaçons\n840\ndirect variation\n390\ndirectrix\n1077, 1080, 1081, 1082,\n1085, 1106, 1108, 1112, 1113, 1114\ndiscontinuous\n1241\ndiscontinuous function\n1238\ndisplacement\n567\ndistance formula\n705, 1060, 1078\ndiverges\n1167\ndividend\n327\nDivision Algorithm\n327, 336\ndivisor\n327\ndomain\n8, 18, 34, 36, 37, 38, 672,\n673\ndomain and range\n35, 35\ndomain of a composite function\n80\ndot product\n901\ndouble-angle formulas\n719, 720\ndoubling time\n504\nDürer\n842\nE\neccentricity\n1107, 1108\nelectrostatic force\n59\nelimination\n957\nellipse\n879, 879, 957, 1042, 1043,\n1045, 1046, 1051, 1076, 1108, 1112\nellipsis\n1126\nend behavior\n285, 362\nendpoint\n59, 550\nIndex\n1447",
+          "page_number": 1457
+        },
+        {
+          "type": "paragraph",
+          "text": "entry\n975\nequation\n16\nEuler\n852\neven function\n103, 598, 600, 695\neven-odd identities\n695, 697\nevent\n1194\nexperiment\n1194\nexplicit formula\n1126, 1127, 1128,\n1145, 1156\nExponential decay\n410, 417, 430,\n499, 502, 505, 518\nexponential equation\n486\nexponential function\n411\nexponential growth\n410, 413, 431,\n499, 504, 506\nextraneous solution\n491\nextrapolation\n228\nF\nFactor Theorem\n338\nfactorial\n1135\nFahrenheit\n134\nfeasible region\n960\nfinite arithmetic sequence\n1147\nfinite sequence\n1127\nfoci\n1042, 1044, 1045, 1060\nfocus\n1042, 1077, 1080, 1081, 1082,\n1085, 1106, 1112, 1113, 1114\nformula\n16\nfunction\n8, 49\nfunction notation\n10\nFundamental Counting Principle\n1177\nFundamental Theorem of Algebra\n342, 343\nG\nGauss\n852, 941, 988\nGaussian elimination\n941, 990, 992\ngeneral form\n264\ngeneral form of a quadratic\nfunction\n266\nGeneralized Pythagorean\nTheorem\n806\ngeometric sequence\n1153, 1165\ngeometric series\n1165\nglobal maximum\n318\nglobal minimum\n318\ngravity\n882\nH\nhalf-angle formulas\n725, 726\nhalf-life\n494, 499\nharmonic motion\n764\nHeaviside method\n967\nHeron of Alexandria\n811\nHeron’s formula\n811\nhorizontal asymptote\n354, 360,\n362\nhorizontal compression\n109, 749\nhorizontal line\n196\nhorizontal line test\n24\nhorizontal reflection\n98\nhorizontal shift\n92, 433, 457, 633\nhorizontal stretch\n109\nhyperbola\n1059, 1062, 1063, 1064,\n1066, 1067, 1069, 1071, 1077, 1108,\n1111\nhypotenuse\n610\nI\nidentities\n587, 600\nidentity matrix\n1002, 1002, 1007\nimaginary number\n252\ninconsistent system\n923, 931, 945\nincreasing function\n62, 166\nincreasing linear function\n167\nindependent system\n923\nindependent variable\n8\nindex of summation\n1162\ninequality\n959\ninfinite geometric sequence\n1167\ninfinite sequence\n1127\ninfinite series\n1167\ninitial point\n889, 892\ninitial side\n551\ninner-loop limaçons\n842\ninput\n8\ninstantaneous rate of change\n1255\ninstantaneous velocity\n1268\nIntermediate Value Theorem\n315\ninterpolation\n228\nintersection\n1196\ninterval notation\n35, 63\ninverse cosine function\n673\ninverse function\n135, 376, 380\ninverse matrix\n1007, 1009\ninverse of a radical function\n383\ninverse of a rational function\n385\ninverse sine function\n673\ninverse tangent function\n673\ninverse trigonometric functions\n672, 673, 676, 680\ninverse variation\n392\ninverse variations\n392\ninversely proportional\n392\ninvertible functions\n378\ninvertible matrix\n1002, 1017\nJ\nJohnson\n1076\njoint variation\n393\njump discontinuity\n1241\nK\nKovalevskaya\n1041\nKronecker\n852\nL\nlatus rectum\n1077, 1080, 1081,\n1085\nLaw of Cosines\n806, 808\nLaw of Sines\n789, 807\nleading coefficient\n289\nleading term\n289\nleast common denominator (LCD)\n1233\nleast squares regression\n229\nleft-hand limit\n1218, 1241\nlemniscate\n843\nlimit\n1215, 1217, 1221, 1228, 1229,\n1230, 1232, 1233, 1234\nLinear Factorization Theorem\n343,\n343\nlinear function\n165, 211\nlinear growth\n410\nlinear model\n212, 225\nlinear relationship\n226\nlinear speed\n567\nlocal extrema\n61\nlocal maximum\n61, 318\nlocal minimum\n61, 318\nlogarithm\n445\nlogarithmic equation\n491\nlogarithmic model\n521\nlogistic growth model\n506\nlong division\n326\nlower limit of summation\n1162\nM\nmagnitude\n49, 91, 853, 889\nmain diagonal\n990\nmajor and minor axes\n1045\nmajor axis\n1043, 1047\nmarginal cost\n1261\nmatrix\n975, 976, 988\nmatrix multiplication\n981, 1004,\n1008\nmatrix operations\n976\nmaximum value\n263\nMaxwell\n1041\nmeasure of an angle\n551\nmidline\n636, 756\nminimum value\n263\nminor axis\n1043\nmodel breakdown\n228\nmodeling\n212\nmodulus\n49, 856\nMultiplication Principle\n1177\nmultiplicative inverse\n1004, 1005\nmultiplicative inverse of a matrix\n1002, 1002\nmultiplicity\n308, 309\nmutually exclusive events\n1196\n1448\nIndex\nAccess for free at openstax.org",
+          "page_number": 1458
+        },
+        {
+          "type": "paragraph",
+          "text": "N\nn factorial\n1135\nnatural logarithm\n449, 490\nnatural numbers\n8\nnegative angle\n551, 560, 585\nNewton’s Law of Cooling\n505\nnominal rate\n419\nnon-right triangles\n788\nnondegenerate conic sections\n1092\nnonlinear inequality\n959\nnth partial sum\n1161\nnth root of a complex number\n860\nnth term of the sequence\n1126,\n1127\nO\noblique triangle\n788\nodd function\n103, 599, 600, 695\none-loop limaçon\n840\none-to-one\n376, 431, 444, 475, 482\none-to-one function\n21, 135, 672\nopposite side\n610\norder of magnitude\n500\nordered pair\n8, 36\nordered triple\n941\norigin\n122\noutcomes\n1194\noutput\n8\nP\nparabola\n263, 270, 877, 953, 1076,\n1081, 1081, 1082, 1086, 1107, 1109,\n1109\nparallel lines\n199\nparallelograms\n893\nparameter\n864\nparametric equations\n864, 876,\n877\nparametric form\n879\nparent function\n457\npartial fraction\n965\npartial fraction decomposition\n965, 965\nPascal\n842\nPascal's Triangle\n1189\nperiapsis\n1106\nperiod\n603, 633, 651, 653, 740, 756\nperiodic function\n603, 633\nperiodic motion\n756, 764\npermutation\n1178\nperpendicular lines\n199\npH\n474\nphase shift\n638\npiecewise function\n49, 1242, 1245,\n1247\npiecewise functions\n1130\npoint-slope form\n169\npoint-slope formula\n1064\npolar axis\n819\npolar coordinates\n819, 821, 823,\n833\npolar equation\n827, 834, 835, 1107\npolar form\n853\npolar form of a complex number\n855\npolar form of a conic\n1114\npolar grid\n819, 820\npole\n819\npolynomial\n338, 1245\npolynomial function\n288, 303, 310,\n316\nposition vector\n889, 891\npositive angle\n551, 560\npower function\n283\npower rule for logarithms\n478, 482\nprobability\n1194\nprobability model\n1194\nproduct of two matrices\n981\nproduct rule for logarithms\n475,\n477\nproduct-to-sum formulas\n733, 734\nprofit function\n934\nproperties of determinants\n1023\nproperties of limits\n1228\nProxima Centauri\n500\nPythagoras\n852\nPythagorean Identities\n694, 697\nPythagorean Identity\n577, 578,\n602, 705\nPythagorean Theorem\n720, 750,\n806, 880\nQ\nquadrantal angle\n579\nquadratic\n969, 971\nquadratic equation\n744\nquadratic formula\n275, 745\nquadratic function\n266, 269\nquotient\n327\nquotient identities\n696, 697\nquotient rule for logarithms\n477\nR\nradian\n555, 556, 557\nradian measure\n555, 556, 564\nradical functions\n378\nradiocarbon dating\n503\nrange\n8, 673\nrate of change\n56, 212\nrational expression\n965, 966, 971\nrational function\n356, 364, 369,\n1227\nRational Zero Theorem\n338, 339\nray\n550\nreciprocal\n135, 284\nreciprocal function\n350\nreciprocal identities\n696, 697\nreciprocal identity\n656, 663\nrectangular coordinates\n819, 821,\n823\nrectangular equation\n827, 870\nrectangular form\n855, 879\nrecursive formula\n1133, 1144,\n1144, 1155\nreduction formulas\n723, 724\nreference angle\n561, 584, 585, 587,\n597\nreflection\n436, 464\nregression analysis\n518, 521, 524\nrelation\n8\nremainder\n327\nRemainder Theorem\n336\nremovable discontinuity\n359, 359,\n1241\nRestricting the domain\n143\nresultant\n893\nrevenue function\n933\nRichter Scale\n444\nright triangle\n672\nright triangles\n610\nright-hand limit\n1219, 1241\nroots\n263\nrose curve\n845\nrow\n975\nrow matrix\n976\nrow operations\n990, 992, 995,\n1005, 1006, 1007, 1007\nrow-echelon form\n990, 992, 993\nrow-equivalent\n990\nS\nsample space\n1194\nSAS (side-angle-side) triangle\n805\nscalar\n894, 978\nscalar multiple\n895, 978\nScalar multiplication\n894, 978\nscatter plot\n225\nsecant\n595, 656\nsecant function\n656\nsecant line\n1253\nsector of a circle\n565\nsequence\n1126, 1127, 1141, 1215\nseries\n1161\nset-builder notation\n39\nsigma\n1161\nsimple harmonic motion\n764, 764\nsine\n695, 733, 735\nsine function\n574, 599, 632, 634,\n637, 643, 646\nsinusoidal function\n635, 756\nslope\n165, 168\nslope of the curve\n1253\nslope of the tangent\n1255\nIndex\n1449",
+          "page_number": 1459
+        },
+        {
+          "type": "paragraph",
+          "text": "slope-intercept form\n164\nsmooth curve\n295\nsolution set\n942\nsolving systems of linear\nequations\n926\nspecial angles\n582, 613, 704\nsquare matrix\n976, 1017\nSSA (side-side-angle)\n788\nSSS (side-side-side) triangle\n805\nstandard form of a quadratic\nfunction\n266\nstandard position\n551, 552, 889\nstepwise function\n1238\nstretch\n435\nstretching/compressing factor\n654, 655\nsubstitution method\n925\nsum and difference formulas for\ncosine\n705\nsum and difference formulas for\nsine\n707\nsum and difference formulas for\ntangent\n709\nsum-to-product formulas\n735, 735\nsummation notation\n1162\nsurface area\n377\nsymmetry test\n834\nsynthetic division\n329, 340\nsystem of equations\n988, 989, 992,\n993, 1009\nsystem of linear equations\n217,\n922, 924, 925\nsystem of nonlinear equations\n953\nsystem of nonlinear inequalities\n960\nsystem of three equations in three\nvariables\n1021\nT\ntangent\n594, 651, 653\ntangent function\n652, 653, 654,\n666, 696\ntangent line\n1253\nterm\n1126, 1141\nterm of a polynomial function\n288\nterminal point\n889, 892\nterminal side\n551\ntransformation\n89\ntransformations\n189\ntranslation\n1046\ntransverse axis\n1059\ntrigonometric equations\n871\ntrigonometric functions\n610\ntrigonometric identities\n806\nturning point\n293, 312\ntwo-sided limit\n1219, 1255\nU\nunion of two events\n1195\nunit circle\n557, 574, 574, 580, 583,\n599, 610, 741\nunit vector\n897\nupper limit of summation\n1162\nupper triangular form\n941\nV\nvaries directly\n390\nvaries inversely\n392\nvector\n889\nvector addition\n893\nvelocity\n1255, 1268\nvertex\n263, 550, 1043, 1044, 1077,\n1085\nvertex form of a quadratic\nfunction\n264\nvertical asymptote\n353, 356, 362,\n673\nvertical compression\n105\nvertical line\n196\nvertical line test\n22\nvertical reflection\n98\nvertical shift\n90, 189, 433, 459, 505,\n638\nvertical stretch\n105, 189, 461\nvertical tangent\n1265\nvertices\n1043, 1045\nvolume of a sphere\n283\nX\nx-intercept\n194\nY\ny-intercept\n165, 188\nZ\nzeros\n263, 304, 308, 340, 838\n1450\nIndex\nAccess for free at openstax.org",
+          "page_number": 1460
+        }
+      ]
+    }
+  ]
+}

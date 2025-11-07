@@ -1,0 +1,27 @@
+# Dockerfile for running Playwright E2E tests on Cloud Run
+# Tests the complete RAG content generation flow in production
+
+FROM mcr.microsoft.com/playwright:v1.40.0-jammy
+
+WORKDIR /tests
+
+# Copy package files from tests/e2e directory
+COPY tests/e2e/package*.json tests/e2e/package-lock.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Install Playwright browsers (already in base image, but ensure deps are present)
+RUN npx playwright install-deps
+
+# Copy test files
+COPY tests/e2e/*.spec.ts ./tests/e2e/
+COPY tests/e2e/playwright.config.ts ./
+
+# Set environment variables (can be overridden at runtime)
+ENV TEST_BASE_URL=""
+ENV TEST_API_URL=""
+ENV CHECK_LOGS="false"
+
+# Default command: run tests and output results
+CMD ["npx", "playwright", "test", "--reporter=list,html"]

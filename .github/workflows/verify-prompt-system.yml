@@ -1,0 +1,410 @@
+# Enterprise Prompt System Migration Verification Workflow
+#
+# This comprehensive workflow validates the Enterprise Prompt Management System
+# following Andrew Ng's principle: "Build it right, test everything"
+#
+# Verification Steps:
+# 1. Schema validation (tables, indexes, triggers, views)
+# 2. Seed data validation (prompt templates, guardrails)
+# 3. Database functionality tests
+# 4. Integration tests (backwards compatibility)
+# 5. Performance benchmarks
+#
+# Triggers:
+# - Manual dispatch
+# - After database migrations
+# - Daily scheduled runs (monitoring)
+
+name: Verify Enterprise Prompt System
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to verify'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      run_integration_tests:
+        description: 'Run integration tests'
+        required: true
+        default: true
+        type: boolean
+      run_performance_tests:
+        description: 'Run performance benchmarks'
+        required: true
+        default: false
+        type: boolean
+
+  # Run after migrations complete
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      run_integration_tests:
+        required: false
+        type: boolean
+        default: true
+      run_performance_tests:
+        required: false
+        type: boolean
+        default: false
+
+  # Daily monitoring at 6 AM UTC
+  schedule:
+    - cron: '0 6 * * *'
+
+env:
+  PYTHON_VERSION: '3.11'
+  GCP_PROJECT_ID: 'vividly-${{ inputs.environment || 'dev' }}-rich'
+  GCP_REGION: 'us-central1'
+
+jobs:
+  verify-schema:
+    name: Verify Database Schema
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          pip install --upgrade pip
+          pip install psycopg2-binary
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Get DATABASE_URL from Secret Manager
+        id: get-db-url
+        run: |
+          DATABASE_URL=$(gcloud secrets versions access latest \
+            --secret="database-url-${{ inputs.environment || 'dev' }}" \
+            --project="${{ env.GCP_PROJECT_ID }}")
+          echo "::add-mask::$DATABASE_URL"
+          echo "DATABASE_URL=$DATABASE_URL" >> $GITHUB_OUTPUT
+
+      - name: Run schema verification
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ steps.get-db-url.outputs.DATABASE_URL }}
+        run: |
+          python verify_prompt_system_migration.py | tee verification_results.txt
+
+      - name: Upload verification results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: schema-verification-results
+          path: backend/verification_results.txt
+          retention-days: 30
+
+      - name: Check verification status
+        working-directory: backend
+        run: |
+          if grep -q "ALL VERIFICATION CHECKS PASSED" verification_results.txt; then
+            echo "✅ Schema verification PASSED"
+            exit 0
+          else
+            echo "❌ Schema verification FAILED"
+            cat verification_results.txt
+            exit 1
+          fi
+
+  test-prompt-operations:
+    name: Test Prompt Template Operations
+    runs-on: ubuntu-latest
+    needs: verify-schema
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Get DATABASE_URL from Secret Manager
+        id: get-db-url
+        run: |
+          DATABASE_URL=$(gcloud secrets versions access latest \
+            --secret="database-url-${{ inputs.environment || 'dev' }}" \
+            --project="${{ env.GCP_PROJECT_ID }}")
+          echo "::add-mask::$DATABASE_URL"
+          echo "DATABASE_URL=$DATABASE_URL" >> $GITHUB_OUTPUT
+
+      - name: Run prompt template tests
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ steps.get-db-url.outputs.DATABASE_URL }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          ALGORITHM: HS256
+          DEBUG: true
+        run: |
+          pytest tests/test_prompt_template_operations.py \
+            -v \
+            --tb=short \
+            --junitxml=test-results.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prompt-operations-test-results
+          path: backend/test-results.xml
+          retention-days: 30
+
+  test-backwards-compatibility:
+    name: Test Backwards Compatibility
+    runs-on: ubuntu-latest
+    needs: verify-schema
+    if: inputs.run_integration_tests || github.event_name == 'schedule'
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Get DATABASE_URL from Secret Manager
+        id: get-db-url
+        run: |
+          DATABASE_URL=$(gcloud secrets versions access latest \
+            --secret="database-url-${{ inputs.environment || 'dev' }}" \
+            --project="${{ env.GCP_PROJECT_ID }}")
+          echo "::add-mask::$DATABASE_URL"
+          echo "DATABASE_URL=$DATABASE_URL" >> $GITHUB_OUTPUT
+
+      - name: Run backwards compatibility tests
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ steps.get-db-url.outputs.DATABASE_URL }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          ALGORITHM: HS256
+          DEBUG: true
+        run: |
+          pytest tests/test_prompt_backwards_compatibility.py \
+            -v \
+            --tb=short \
+            --junitxml=compatibility-test-results.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backwards-compatibility-test-results
+          path: backend/compatibility-test-results.xml
+          retention-days: 30
+
+  performance-benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: verify-schema
+    if: inputs.run_performance_tests
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-benchmark
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Get DATABASE_URL from Secret Manager
+        id: get-db-url
+        run: |
+          DATABASE_URL=$(gcloud secrets versions access latest \
+            --secret="database-url-${{ inputs.environment || 'dev' }}" \
+            --project="${{ env.GCP_PROJECT_ID }}")
+          echo "::add-mask::$DATABASE_URL"
+          echo "DATABASE_URL=$DATABASE_URL" >> $GITHUB_OUTPUT
+
+      - name: Run performance benchmarks
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ steps.get-db-url.outputs.DATABASE_URL }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        run: |
+          pytest tests/test_prompt_performance.py \
+            --benchmark-only \
+            --benchmark-json=benchmark-results.json
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-benchmark-results
+          path: backend/benchmark-results.json
+          retention-days: 90
+
+      - name: Comment benchmark results on PR
+        if: github.event_name == 'pull_request'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'pytest'
+          output-file-path: backend/benchmark-results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+
+  verify-monitoring:
+    name: Verify Monitoring & Observability
+    runs-on: ubuntu-latest
+    needs: verify-schema
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Verify logging configuration
+        run: |
+          echo "Verifying Cloud Logging for prompt system..."
+          gcloud logging read \
+            'resource.type="cloud_run_job" AND jsonPayload.service="prompt-system"' \
+            --limit=10 \
+            --project="${{ env.GCP_PROJECT_ID }}" \
+            --format=json | jq '.[] | {timestamp, severity, message: .jsonPayload.message}'
+
+      - name: Verify metrics dashboards
+        run: |
+          echo "Verifying monitoring dashboards exist..."
+          gcloud monitoring dashboards list \
+            --project="${{ env.GCP_PROJECT_ID }}" \
+            --filter="displayName:prompt" \
+            --format="table(displayName,createTime)"
+
+      - name: Verify alerting policies
+        run: |
+          echo "Verifying alert policies..."
+          gcloud alpha monitoring policies list \
+            --project="${{ env.GCP_PROJECT_ID }}" \
+            --filter="displayName:prompt" \
+            --format="table(displayName,enabled,conditions)"
+
+  summary:
+    name: Verification Summary
+    runs-on: ubuntu-latest
+    needs: [verify-schema, test-prompt-operations, test-backwards-compatibility, verify-monitoring]
+    if: always()
+
+    steps:
+      - name: Check job statuses
+        run: |
+          echo "## Enterprise Prompt System Verification Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ inputs.environment || 'dev' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Results:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Schema Verification | ${{ needs.verify-schema.result == 'success' && '✅ PASSED' || '❌ FAILED' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Prompt Operations | ${{ needs.test-prompt-operations.result == 'success' && '✅ PASSED' || '❌ FAILED' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backwards Compatibility | ${{ needs.test-backwards-compatibility.result == 'success' && '✅ PASSED' || needs.test-backwards-compatibility.result == 'skipped' && '⏭️  SKIPPED' || '❌ FAILED' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Monitoring & Observability | ${{ needs.verify-monitoring.result == 'success' && '✅ PASSED' || '❌ FAILED' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Overall status
+          if [[ "${{ needs.verify-schema.result }}" == "success" ]] && \
+             [[ "${{ needs.test-prompt-operations.result }}" == "success" ]] && \
+             [[ "${{ needs.verify-monitoring.result }}" == "success" ]]; then
+            echo "### Overall Status: ✅ **ALL CHECKS PASSED**" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          else
+            echo "### Overall Status: ❌ **SOME CHECKS FAILED**" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi

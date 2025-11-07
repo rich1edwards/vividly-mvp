@@ -102,7 +102,10 @@
       "Bash(black:*)",
       "Bash(mypy:*)",
       "Bash(env DATABASE_URL=\"sqlite:///:memory:\" SECRET_KEY=\"test_secret_key_12345\" PYTHONPATH=/Users/richedwards/AI-Dev-Projects/Vividly/backend /Users/richedwards/AI-Dev-Projects/Vividly/backend/venv_test/bin/python -m pytest:*)",
-      "Bash(env DATABASE_URL=\"sqlite:///:memory:\" SECRET_KEY=\"test_secret_key_12345\" PYTHONPATH=/Users/richedwards/AI-Dev-Projects/Vividly/backend /Users/richedwards/AI-Dev-Projects/Vividly/backend/venv_test/bin/python:*)"
+      "Bash(env DATABASE_URL=\"sqlite:///:memory:\" SECRET_KEY=\"test_secret_key_12345\" PYTHONPATH=/Users/richedwards/AI-Dev-Projects/Vividly/backend /Users/richedwards/AI-Dev-Projects/Vividly/backend/venv_test/bin/python:*)",
+      "Bash(/opt/homebrew/share/google-cloud-sdk/bin/gcloud pubsub subscriptions pull:*)",
+      "Bash(/opt/homebrew/share/google-cloud-sdk/bin/gcloud run jobs executions list:*)",
+      "Bash(/opt/homebrew/share/google-cloud-sdk/bin/gcloud artifacts docker images describe:*)"
     ],
     "deny": [],
     "ask": []

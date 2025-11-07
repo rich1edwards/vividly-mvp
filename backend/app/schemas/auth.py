@@ -379,3 +379,34 @@ class PasswordResetConfirm(BaseModel):
 
     token: str
     new_password: str = Field(..., min_length=8)
+
+
+class LogoutResponse(BaseModel):
+    """Logout response."""
+
+    message: str = "Successfully logged out"
+
+
+class ChangePasswordRequest(BaseModel):
+    """Change password request for authenticated users."""
+
+    current_password: str = Field(..., description="Current password")
+    new_password: str = Field(..., min_length=8, description="New password")
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_password_strength(cls, v):
+        """Validate password contains mixed case, number."""
+        if not re.search(r"[a-z]", v):
+            raise ValueError("Password must contain at least one lowercase letter")
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"\d", v):
+            raise ValueError("Password must contain at least one number")
+        return v
+
+
+class ChangePasswordResponse(BaseModel):
+    """Change password response."""
+
+    message: str = "Password changed successfully"

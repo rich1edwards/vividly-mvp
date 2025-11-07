@@ -3,9 +3,12 @@ Rate Limiting Middleware
 
 Implements token bucket algorithm for API rate limiting using Redis.
 Prevents abuse and ensures fair resource allocation.
+
+Includes metrics tracking for Sprint 2 observability requirements.
 """
 
 import os
+import time
 from typing import Optional
 from datetime import datetime, timedelta
 
@@ -13,6 +16,12 @@ from fastapi import HTTPException, status, Request
 from fastapi.responses import JSONResponse
 import redis
 from functools import wraps
+
+from app.core.metrics import get_metrics_client
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
+metrics = get_metrics_client()
 
 
 class RateLimiter:
@@ -226,10 +235,15 @@ async def rate_limit_middleware(request: Request, call_next):
 
     Applies general API rate limits to all requests.
     Individual endpoints can have stricter limits using decorators.
+
+    Includes metrics tracking for Sprint 2 observability.
     """
     # Skip rate limiting for health checks
     if request.url.path in ["/health", "/api/v1/health"]:
         return await call_next(request)
+
+    # Capture start time for middleware latency metrics
+    start_time = time.time()
 
     redis_client = request.app.state.redis
 
@@ -242,10 +256,20 @@ async def rate_limit_middleware(request: Request, call_next):
 
         identifier = f"ip:{get_client_ip(request)}"
 
+    # Extract IP for metrics
+    from app.middleware.auth import get_client_ip
+    ip_address = get_client_ip(request)
+
     # Apply per-minute limit
     limiter = RateLimiter(redis_client)
 
     try:
+        # Record rate limit hit metric
+        metrics.increment_rate_limit_hits(
+            endpoint=request.url.path,
+            ip_address=ip_address
+        )
+
         await limiter.check_request(
             request, f"{identifier}:minute", API_RATE_LIMIT_PER_MINUTE, 60
         )
@@ -256,10 +280,30 @@ async def rate_limit_middleware(request: Request, call_next):
         )
 
     except HTTPException as e:
+        # Record rate limit exceeded metric
+        metrics.increment_rate_limit_exceeded(
+            endpoint=request.url.path,
+            ip_address=ip_address
+        )
+
+        # Record middleware latency even for rate limited requests
+        latency_ms = (time.time() - start_time) * 1000
+        metrics.record_rate_limit_middleware_latency(
+            endpoint=request.url.path,
+            latency_ms=latency_ms
+        )
+
         # Return rate limit error
         return JSONResponse(
             status_code=e.status_code, content={"detail": e.detail}, headers=e.headers
         )
+
+    # Record middleware latency
+    latency_ms = (time.time() - start_time) * 1000
+    metrics.record_rate_limit_middleware_latency(
+        endpoint=request.url.path,
+        latency_ms=latency_ms
+    )
 
     # Process request
     response = await call_next(request)

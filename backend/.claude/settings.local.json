@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gcloud run jobs list:*)",
+      "Bash(gcloud logging read:*)",
+      "Bash(python3:*)",
+      "Bash(gcloud pubsub subscriptions describe:*)",
+      "Bash(gcloud sql instances describe:*)",
+      "Bash(gcloud sql databases list:*)",
+      "Bash(gcloud run jobs:*)",
+      "Read(//Users/richedwards/AI-Dev-Projects/Vividly/terraform/**)",
+      "Bash(gcloud pubsub topics publish:*)",
+      "Bash(bash:*)",
+      "Bash(gcloud builds submit:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Read(//Users/richedwards/AI-Dev-Projects/Vividly/**)",
+      "Bash(curl:*)",
+      "WebFetch(domain:openstax.org)",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "Bash(chmod:*)",
+      "Bash(./01_download_openstax_pdf.sh)",
+      "Bash(pip3 install:*)",
+      "Bash(export GOOGLE_CLOUD_PROJECT=vividly-dev-rich)",
+      "Bash(gcloud ai models list:*)",
+      "Bash(find:*)",
+      "Bash(gcloud artifacts docker images describe:*)",
+      "Bash(docker run:*)",
+      "Bash(cat:*)",
+      "Read(//private/tmp/**)",
+      "Bash(tee:*)",
+      "Bash(docker pull:*)",
+      "Bash(gcloud builds log:*)",
+      "Bash(npm install:*)",
+      "Bash(gcloud builds describe:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

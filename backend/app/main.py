@@ -11,23 +11,21 @@ from sqlalchemy.exc import SQLAlchemyError
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-import logging
 
 from app.core.config import settings
+from app.core.logging import setup_logging, get_logger
 from app.api.v1.api import api_router
 from app.middleware.security import (
     SecurityHeadersMiddleware,
     BruteForceProtectionMiddleware,
     RateLimitMiddleware,
 )
+from app.middleware.logging_middleware import LoggingContextMiddleware
 
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO if not settings.DEBUG else logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger(__name__)
+# Configure structured logging
+setup_logging()
+logger = get_logger(__name__)
 
 
 # Initialize rate limiter
@@ -49,6 +47,9 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+
+# Request context middleware (must be first to wrap entire request lifecycle)
+app.add_middleware(LoggingContextMiddleware)
 
 # Security middleware (order matters - first in, last out)
 import os

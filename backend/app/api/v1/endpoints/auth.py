@@ -3,7 +3,7 @@ Authentication Endpoints
 
 FastAPI router for authentication operations.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from typing import Annotated
 
@@ -17,6 +17,7 @@ from app.schemas.auth import (
     UserResponse,
     PasswordResetRequest,
     PasswordResetConfirm,
+    RefreshTokenRequest,
 )
 from app.services import auth_service
 from app.models.user import User
@@ -72,15 +73,31 @@ def login(
 
 @router.post("/refresh", response_model=Token)
 def refresh_token(
+    refresh_request: RefreshTokenRequest,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     """
     Refresh access token using refresh token.
+
+    Validates the refresh token and issues new access and refresh tokens.
+    Implements token rotation for enhanced security.
+
+    Following Andrew Ng's methodology:
+    - Build it right: Proper validation and token rotation
+    - Test everything: Comprehensive error handling
+    - Think about the future: Security best practices prevent token reuse attacks
     """
-    # TODO: Implement refresh token logic
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Refresh token endpoint not yet implemented",
+    # Extract IP and user agent for audit trail
+    ip_address = request.client.host if request.client else None
+    user_agent = request.headers.get("user-agent")
+
+    # Call service layer to refresh token
+    return auth_service.refresh_access_token(
+        db=db,
+        refresh_token=refresh_request.refresh_token,
+        ip_address=ip_address,
+        user_agent=user_agent,
     )
 
 

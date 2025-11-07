@@ -1,0 +1,190 @@
+# Cloud Build Configuration for Playwright E2E Tests
+#
+# This build:
+# 1. Builds the Playwright E2E test Docker image
+# 2. Pushes it to Artifact Registry
+# 3. Creates/updates Cloud Run Job for E2E tests
+# 4. Executes the E2E tests against production
+# 5. Reports results
+#
+# Trigger manually or after successful deployments
+
+steps:
+  # Step 1: Build Playwright E2E test image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-e2e-image'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/vividly/e2e-tests:latest'
+      - '-f'
+      - 'tests/e2e/Dockerfile.playwright'
+      - '.'
+    dir: '.'
+
+  # Step 2: Push E2E test image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-e2e-image'
+    args:
+      - 'push'
+      - '--all-tags'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/vividly/e2e-tests'
+    waitFor: ['build-e2e-image']
+
+  # Step 3: Create or update Cloud Run Job for E2E tests
+  # Note: We'll set the backend URL directly from the deployed service
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'deploy-e2e-job'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        set -e
+
+        # Get backend URL
+        BACKEND_URL=$$(gcloud run services describe dev-vividly-api \
+          --region=us-central1 \
+          --project=$PROJECT_ID \
+          --format="value(status.url)" 2>/dev/null || echo "")
+
+        if [ -z "$$BACKEND_URL" ]; then
+          echo "ERROR: Backend API service not found"
+          echo "Deploy the backend first or skip E2E tests"
+          exit 1
+        fi
+
+        FRONTEND_URL="https://vividly-dev.web.app"
+
+        echo "Backend URL: $$BACKEND_URL"
+        echo "Frontend URL: $$FRONTEND_URL"
+
+        # Check if job exists and create/update accordingly
+        if gcloud run jobs describe vividly-e2e-tests \
+          --region=us-central1 \
+          --project=$PROJECT_ID > /dev/null 2>&1; then
+
+          echo "Updating existing E2E test job..."
+          gcloud run jobs update vividly-e2e-tests \
+            --image=us-central1-docker.pkg.dev/$PROJECT_ID/vividly/e2e-tests:latest \
+            --region=us-central1 \
+            --project=$PROJECT_ID \
+            --set-env-vars="TEST_BASE_URL=$$FRONTEND_URL,TEST_API_URL=$$BACKEND_URL,CI=true"
+        else
+          echo "Creating new E2E test job..."
+          gcloud run jobs create vividly-e2e-tests \
+            --image=us-central1-docker.pkg.dev/$PROJECT_ID/vividly/e2e-tests:latest \
+            --region=us-central1 \
+            --project=$PROJECT_ID \
+            --set-env-vars="TEST_BASE_URL=$$FRONTEND_URL,TEST_API_URL=$$BACKEND_URL,CI=true" \
+            --max-retries=0 \
+            --task-timeout=5m \
+            --cpu=2 \
+            --memory=4Gi
+        fi
+    waitFor: ['push-e2e-image']
+
+  # Step 4: Execute E2E tests
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'run-e2e-tests'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        set -e
+
+        echo "=========================================="
+        echo "Executing Playwright E2E Tests"
+        echo "=========================================="
+        echo ""
+
+        # Execute the job
+        EXECUTION=$$(gcloud run jobs execute vividly-e2e-tests \
+          --region=us-central1 \
+          --project=$PROJECT_ID \
+          --format="value(metadata.name)")
+
+        echo "Execution started: $$EXECUTION"
+        echo ""
+
+        # Wait for completion (check every 10 seconds for 5 minutes)
+        echo "Waiting for tests to complete..."
+        for i in {1..30}; do
+          sleep 10
+
+          STATUS=$$(gcloud run jobs executions describe $$EXECUTION \
+            --region=us-central1 \
+            --project=$PROJECT_ID \
+            --format="value(status.conditions[0].type)" 2>/dev/null || echo "Running")
+
+          echo "Check $$i/30: $$STATUS"
+
+          if [ "$$STATUS" = "Completed" ]; then
+            echo ""
+            echo "✓ Tests completed successfully"
+            break
+          elif [ "$$STATUS" = "Failed" ]; then
+            echo ""
+            echo "✗ Tests failed"
+            break
+          fi
+        done
+
+        # Get final status
+        FINAL_STATUS=$$(gcloud run jobs executions describe $$EXECUTION \
+          --region=us-central1 \
+          --project=$PROJECT_ID \
+          --format="value(status.conditions[0].type)")
+
+        echo ""
+        echo "=========================================="
+        echo "Final Status: $$FINAL_STATUS"
+        echo "=========================================="
+
+        # Fail the build if tests failed
+        if [ "$$FINAL_STATUS" != "Completed" ]; then
+          echo "E2E tests did not complete successfully"
+          exit 1
+        fi
+    waitFor: ['deploy-e2e-job']
+    timeout: '360s'
+
+  # Step 5: Display test logs
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'display-logs'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo ""
+        echo "=========================================="
+        echo "Test Logs (Last 50 lines)"
+        echo "=========================================="
+        echo ""
+
+        # Get recent logs from the E2E test job
+        gcloud logging read \
+          "resource.type=cloud_run_job
+           AND resource.labels.job_name=vividly-e2e-tests
+           AND timestamp>=\"$$(date -u -d '10 minutes ago' '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -v-10M '+%Y-%m-%dT%H:%M:%SZ')\"" \
+          --project=$PROJECT_ID \
+          --limit=50 \
+          --format="value(textPayload)" \
+          --freshness=10m 2>/dev/null || echo "No logs available yet"
+
+        echo ""
+        echo "=========================================="
+        echo "✓ E2E Test Build Complete"
+        echo "=========================================="
+    waitFor: ['run-e2e-tests']
+
+# Push images to Artifact Registry
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/vividly/e2e-tests:latest'
+
+# Build configuration
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+
+# Total timeout for the entire build
+timeout: '900s'  # 15 minutes

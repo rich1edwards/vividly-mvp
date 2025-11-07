@@ -4,10 +4,9 @@ Following Andrew Ng's principle: "Build it right, think about the future"
 Created: 2025-11-06
 """
 from sqlalchemy import (
-    Column, String, Integer, Boolean, Float, Text, TIMESTAMP, ARRAY,
+    Column, String, Integer, Boolean, Float, Text, TIMESTAMP,
     ForeignKey, CheckConstraint, UniqueConstraint
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -15,6 +14,7 @@ from typing import Optional, List, Dict, Any
 import uuid
 
 from app.core.database import Base
+from app.core.database_types import GUID, JSON
 
 
 class PromptTemplate(Base):
@@ -31,7 +31,7 @@ class PromptTemplate(Base):
     __tablename__ = "prompt_templates"
 
     # Primary key
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
 
     # Template identity
     name = Column(String(255), nullable=False, index=True)
@@ -40,11 +40,11 @@ class PromptTemplate(Base):
 
     # Template content
     template_text = Column(Text, nullable=False)
-    variables = Column(JSONB, default=[])  # Array of required variable names
+    variables = Column(JSON, default=[])  # Array of required variable names
 
     # Versioning
     version = Column(Integer, nullable=False, default=1)
-    parent_version_id = Column(UUID(as_uuid=True), ForeignKey('prompt_templates.id', ondelete='SET NULL'), nullable=True)
+    parent_version_id = Column(GUID, ForeignKey('prompt_templates.id', ondelete='SET NULL'), nullable=True)
     is_active = Column(Boolean, default=False, index=True)
 
     # A/B Testing
@@ -127,21 +127,21 @@ class PromptExecution(Base):
     __tablename__ = "prompt_executions"
 
     # Primary key
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
 
     # Template reference
-    template_id = Column(UUID(as_uuid=True), ForeignKey('prompt_templates.id', ondelete='CASCADE'), nullable=False, index=True)
+    template_id = Column(GUID, ForeignKey('prompt_templates.id', ondelete='CASCADE'), nullable=False, index=True)
     template_name = Column(String(255), nullable=False, index=True)
     template_version = Column(Integer, nullable=False)
     ab_test_group = Column(String(50))
 
     # Execution context
     user_id = Column(String(255), index=True)
-    request_id = Column(UUID(as_uuid=True), index=True)  # Links to content_requests
+    request_id = Column(GUID, index=True)  # Links to content_requests
     session_id = Column(String(255))
 
     # Input/Output
-    input_variables = Column(JSONB, nullable=False)
+    input_variables = Column(JSON, nullable=False)
     rendered_prompt = Column(Text, nullable=False)
     model_response = Column(Text)
 
@@ -156,7 +156,7 @@ class PromptExecution(Base):
     error_type = Column(String(100))
 
     # Guardrails
-    guardrail_violations = Column(JSONB, default=[])
+    guardrail_violations = Column(JSON, default=[])
     guardrail_action = Column(String(50))  # 'allow', 'block', 'warn'
 
     # Metadata
@@ -201,7 +201,7 @@ class PromptGuardrail(Base):
     __tablename__ = "prompt_guardrails"
 
     # Primary key
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
 
     # Guardrail identity
     name = Column(String(255), nullable=False, unique=True, index=True)
@@ -214,11 +214,12 @@ class PromptGuardrail(Base):
     action = Column(String(50), nullable=False)  # 'block', 'warn', 'log'
 
     # Rule definition (flexible JSON structure)
-    config = Column(JSONB, nullable=False)
+    config = Column(JSON, nullable=False)
 
     # Applicability
-    applies_to_templates = Column(ARRAY(String(255)), default=[])  # Empty = applies to all
-    applies_to_categories = Column(ARRAY(String(100)), default=[])
+    # Using JSON type for arrays to support both PostgreSQL and SQLite
+    applies_to_templates = Column(JSON, default=[])  # Empty = applies to all
+    applies_to_categories = Column(JSON, default=[])
 
     # Performance tracking
     total_checks = Column(Integer, default=0)
@@ -266,7 +267,7 @@ class ABTestExperiment(Base):
     __tablename__ = "ab_test_experiments"
 
     # Primary key
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
 
     # Experiment identity
     name = Column(String(255), nullable=False, unique=True, index=True)
@@ -277,11 +278,12 @@ class ABTestExperiment(Base):
     status = Column(String(50), nullable=False, index=True)  # 'draft', 'active', 'paused', 'completed', 'cancelled'
 
     # Experiment configuration
-    control_template_id = Column(UUID(as_uuid=True), ForeignKey('prompt_templates.id', ondelete='RESTRICT'), nullable=False)
-    variant_template_ids = Column(ARRAY(UUID(as_uuid=True)), nullable=False)
+    control_template_id = Column(GUID, ForeignKey('prompt_templates.id', ondelete='RESTRICT'), nullable=False)
+    # Using JSON type for GUID array to support both PostgreSQL and SQLite
+    variant_template_ids = Column(JSON, nullable=False)
 
     # Traffic allocation
-    traffic_allocation = Column(JSONB, nullable=False)  # {"control": 50, "variant_a": 25, "variant_b": 25}
+    traffic_allocation = Column(JSON, nullable=False)  # {"control": 50, "variant_a": 25, "variant_b": 25}
 
     # Success metrics
     primary_metric = Column(String(100), nullable=False)  # 'success_rate', 'avg_response_time_ms', etc.
@@ -291,10 +293,10 @@ class ABTestExperiment(Base):
     # Statistical tracking
     total_executions = Column(Integer, default=0)
     control_executions = Column(Integer, default=0)
-    variant_executions = Column(JSONB, default={})  # {"variant_a": 500, "variant_b": 500}
+    variant_executions = Column(JSON, default={})  # {"variant_a": 500, "variant_b": 500}
 
     control_metric_value = Column(Float)
-    variant_metric_values = Column(JSONB, default={})  # {"variant_a": 0.85, "variant_b": 0.90}
+    variant_metric_values = Column(JSON, default={})  # {"variant_a": 0.85, "variant_b": 0.90}
 
     statistical_significance = Column(Float)  # p-value
     confidence_level = Column(Float, default=0.95)

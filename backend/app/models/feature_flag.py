@@ -22,11 +22,10 @@ from sqlalchemy import (
     TIMESTAMP,
     text,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
+from app.core.database import Base
+from app.core.database_types import GUID, JSON
 
 
 class FeatureFlag(Base):
@@ -42,7 +41,7 @@ class FeatureFlag(Base):
     __tablename__ = "feature_flags"
 
     id = Column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+        GUID, primary_key=True
     )
     key = Column(String(255), nullable=False)
     name = Column(String(255), nullable=False)
@@ -60,8 +59,11 @@ class FeatureFlag(Base):
     )
 
     # Organization-specific (NULL = global)
+    # NOTE: FK constraint temporarily removed - organizations table doesn't exist yet
+    # Will restore FK when organizations table is created
     organization_id = Column(
-        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE")
+        GUID, nullable=True, index=True
+        # ForeignKey("organizations.id", ondelete="CASCADE")  # Temporarily disabled
     )
 
     # Metadata
@@ -69,7 +71,10 @@ class FeatureFlag(Base):
     updated_at = Column(
         TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
-    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    # NOTE: FK constraint temporarily removed - users.id uses user_id not id
+    # Will restore FK when proper user ID reference is determined
+    created_by = Column(GUID, nullable=True)
+    # ForeignKey("users.id")  # Temporarily disabled
 
     # Relationships
     organization = relationship("Organization", back_populates="feature_flags")
@@ -120,15 +125,18 @@ class FeatureFlagOverride(Base):
     __tablename__ = "feature_flag_overrides"
 
     id = Column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+        GUID, primary_key=True
     )
     flag_id = Column(
-        UUID(as_uuid=True),
+        GUID,
         ForeignKey("feature_flags.id", ondelete="CASCADE"),
         nullable=False,
     )
+    # NOTE: FK constraint temporarily removed - users.id uses user_id not id
+    # Will restore FK when proper user ID reference is determined
     user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+        GUID, nullable=False
+        # ForeignKey("users.id", ondelete="CASCADE")  # Temporarily disabled
     )
 
     # Override state
@@ -136,7 +144,9 @@ class FeatureFlagOverride(Base):
 
     # Metadata
     created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False)
-    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    # NOTE: FK constraint temporarily removed - users.id uses user_id not id
+    created_by = Column(GUID, nullable=True)
+    # ForeignKey("users.id")  # Temporarily disabled
     reason = Column(Text)
 
     # Relationships
@@ -174,10 +184,10 @@ class FeatureFlagAudit(Base):
     __tablename__ = "feature_flag_audit"
 
     id = Column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
+        GUID, primary_key=True
     )
     flag_id = Column(
-        UUID(as_uuid=True),
+        GUID,
         ForeignKey("feature_flags.id", ondelete="CASCADE"),
         nullable=False,
     )
@@ -186,11 +196,13 @@ class FeatureFlagAudit(Base):
     action = Column(
         String(50), nullable=False
     )  # 'created', 'enabled', 'disabled', 'rollout_changed', 'deleted'
-    old_value = Column(JSONB)
-    new_value = Column(JSONB)
+    old_value = Column(JSON)
+    new_value = Column(JSON)
 
     # Actor
-    changed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    # NOTE: FK constraint temporarily removed - users.id uses user_id not id
+    changed_by = Column(GUID, nullable=True)
+    # ForeignKey("users.id")  # Temporarily disabled
     changed_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False)
 
     # Context

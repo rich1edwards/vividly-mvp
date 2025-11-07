@@ -5,6 +5,9 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from datetime import datetime, timedelta
 import secrets
+import logging
+
+logger = logging.getLogger(__name__)
 
 from app.models.user import User, UserRole, UserStatus
 from app.models.session import Session as SessionModel
@@ -264,3 +267,162 @@ def revoke_user_sessions(db: Session, user_id: str, all_sessions: bool = False) 
             session.revoked_at = datetime.utcnow()
 
     db.commit()
+
+
+def refresh_access_token(
+    db: Session, refresh_token: str, ip_address: str = None, user_agent: str = None
+) -> Token:
+    """
+    Refresh access token using a valid refresh token.
+
+    Validates the refresh token, checks session status, and issues new tokens.
+    Implements token rotation for enhanced security - old refresh token is revoked
+    and a new one is issued.
+
+    Args:
+        db: Database session
+        refresh_token: Refresh token from client
+        ip_address: Client IP address (optional)
+        user_agent: Client user agent (optional)
+
+    Returns:
+        Token: New access and refresh tokens
+
+    Raises:
+        HTTPException: 401 if token is invalid, expired, or session revoked
+
+    Following Andrew Ng's methodology:
+    - Build it right: Proper validation, token rotation, session management
+    - Test everything: Comprehensive error handling for all failure modes
+    - Think about the future: Token rotation prevents token reuse attacks
+    """
+    from app.core.security import decode_token, create_access_token, create_refresh_token
+
+    try:
+        # Decode and validate refresh token
+        payload = decode_token(refresh_token)
+        token_type = payload.get("type")
+
+        # Verify it's a refresh token (not access token)
+        if token_type != "refresh":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token type. Expected refresh token.",
+            )
+
+        user_id = payload.get("sub")
+        session_id = payload.get("sid")
+
+        if not user_id or not session_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token payload",
+            )
+
+        # Verify user exists and is active
+        user = db.query(User).filter(User.user_id == user_id).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found",
+            )
+
+        if user.status != UserStatus.ACTIVE:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Account is {user.status.value}",
+            )
+
+        # Verify session exists and is valid
+        session = (
+            db.query(SessionModel)
+            .filter(
+                SessionModel.session_id == session_id,
+                SessionModel.user_id == user_id,
+                SessionModel.revoked == False,
+            )
+            .first()
+        )
+
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Session has been revoked or does not exist",
+            )
+
+        # Check if session is expired
+        if session.expires_at < datetime.utcnow():
+            # Mark as revoked for cleanup
+            session.revoked = True
+            session.revoked_at = datetime.utcnow()
+            db.commit()
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Session has expired",
+            )
+
+        # Verify refresh token matches the one stored in session
+        if not verify_password(refresh_token, session.refresh_token_hash):
+            # Token doesn't match - possible replay attack
+            logger.warning(
+                f"Refresh token mismatch for session {session_id}. Possible replay attack."
+            )
+            session.revoked = True
+            session.revoked_at = datetime.utcnow()
+            db.commit()
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid refresh token",
+            )
+
+        # Token rotation: Revoke old session and create new one with new tokens
+        # This prevents token reuse attacks
+        session.revoked = True
+        session.revoked_at = datetime.utcnow()
+
+        # Generate new session ID
+        new_session_id = generate_session_id()
+
+        # Create new tokens with new session ID
+        new_access_token = create_access_token(
+            data={"sub": user.user_id, "sid": new_session_id}
+        )
+        new_refresh_token = create_refresh_token(
+            data={"sub": user.user_id, "sid": new_session_id}
+        )
+
+        # Create new session record
+        new_session = SessionModel(
+            session_id=new_session_id,
+            user_id=user.user_id,
+            refresh_token_hash=get_password_hash(new_refresh_token),
+            ip_address=ip_address or session.ip_address,  # Keep original if not provided
+            user_agent=user_agent or session.user_agent,
+            expires_at=datetime.utcnow() + timedelta(days=30),
+        )
+
+        db.add(new_session)
+        db.commit()
+
+        logger.info(
+            f"Token refresh successful for user {user_id}. "
+            f"Old session {session_id} revoked, new session {new_session_id} created."
+        )
+
+        return Token(
+            access_token=new_access_token,
+            refresh_token=new_refresh_token,
+            token_type="bearer",
+            expires_in=1440 * 60,  # 24 hours in seconds
+        )
+
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
+    except Exception as e:
+        # Catch any other unexpected errors
+        logger.error(f"Token refresh failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate refresh token",
+        )

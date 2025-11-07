@@ -1,0 +1,25 @@
+# Dockerfile for Push Worker Service
+# Handles Pub/Sub push messages via HTTP for real-time content generation
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY app/ ./app/
+
+# Expose port for Cloud Run
+EXPOSE 8080
+
+# Run push worker service
+CMD ["python", "-m", "app.workers.push_worker"]
