@@ -76,14 +76,7 @@
             },
             "chartOptions": {
               "mode": "COLOR"
-            },
-            "thresholds": [{
-              "value": 10.0,
-              "direction": "ABOVE"
-            }, {
-              "value": 50.0,
-              "direction": "ABOVE"
-            }]
+            }
           }
         }
       },
@@ -116,14 +109,7 @@
             },
             "chartOptions": {
               "mode": "COLOR"
-            },
-            "thresholds": [{
-              "value": 50.0,
-              "direction": "ABOVE"
-            }, {
-              "value": 100.0,
-              "direction": "ABOVE"
-            }]
+            }
           }
         }
       },
@@ -189,14 +175,7 @@
             },
             "chartOptions": {
               "mode": "COLOR"
-            },
-            "thresholds": [{
-              "value": 5.0,
-              "direction": "ABOVE"
-            }, {
-              "value": 20.0,
-              "direction": "ABOVE"
-            }]
+            }
           }
         }
       },
@@ -348,14 +327,7 @@
             },
             "chartOptions": {
               "mode": "COLOR"
-            },
-            "thresholds": [{
-              "value": 1.0,
-              "direction": "ABOVE"
-            }, {
-              "value": 3.0,
-              "direction": "ABOVE"
-            }]
+            }
           }
         }
       },
