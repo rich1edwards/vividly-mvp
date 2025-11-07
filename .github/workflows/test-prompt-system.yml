@@ -1,0 +1,237 @@
+name: Prompt System Tests
+
+# Test the enterprise prompt management system
+# Including template loading, execution logging, and analytics
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/app/core/prompt_templates.py'
+      - 'backend/app/models/prompt_template.py'
+      - 'backend/app/services/nlu_service.py'
+      - 'backend/app/services/clarification_service.py'
+      - 'backend/app/services/script_generation_service.py'
+      - 'backend/tests/test_prompt_*.py'
+      - 'backend/migrations/enterprise_prompt_system_*.sql'
+      - '.github/workflows/test-prompt-system.yml'
+
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'backend/app/core/prompt_templates.py'
+      - 'backend/app/models/prompt_template.py'
+      - 'backend/app/services/**/*_service.py'
+      - 'backend/tests/test_prompt_*.py'
+      - 'backend/migrations/enterprise_prompt_system_*.sql'
+
+  # Run daily at 2 AM UTC to catch regressions
+  schedule:
+    - cron: '0 2 * * *'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  PYTHONPATH: /Users/richedwards/AI-Dev-Projects/Vividly/backend
+
+jobs:
+  test-prompt-templates:
+    name: Prompt Template Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov
+
+      - name: Run prompt template tests
+        env:
+          DATABASE_URL: "sqlite:///:memory:"
+          SECRET_KEY: "test_secret_key_for_ci_cd_pipeline_12345"
+          ALGORITHM: "HS256"
+          DEBUG: "True"
+          CORS_ORIGINS: "http://localhost"
+        run: |
+          cd backend
+          python -m pytest tests/test_prompt_backwards_compatibility.py -v --cov=app/core/prompt_templates --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: ./backend/coverage.xml
+          flags: prompt-templates
+          name: prompt-templates-coverage
+
+  test-prompt-execution-logging:
+    name: Prompt Execution Logging Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov
+
+      - name: Run prompt execution logging tests
+        env:
+          DATABASE_URL: "sqlite:///:memory:"
+          SECRET_KEY: "test_secret_key_for_ci_cd_pipeline_12345"
+          ALGORITHM: "HS256"
+          DEBUG: "True"
+          CORS_ORIGINS: "http://localhost"
+        run: |
+          cd backend
+          python -m pytest tests/test_prompt_execution_logging.py -v --cov=app/core/prompt_templates --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: ./backend/coverage.xml
+          flags: prompt-execution-logging
+          name: prompt-execution-logging-coverage
+
+  test-nlu-service-integration:
+    name: NLU Service with Logging Integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov
+
+      - name: Run NLU service tests
+        env:
+          DATABASE_URL: "sqlite:///:memory:"
+          SECRET_KEY: "test_secret_key_for_ci_cd_pipeline_12345"
+          GCP_PROJECT_ID: "test-project"
+        run: |
+          cd backend
+          python -m pytest tests/ -k "nlu" -v --cov=app/services/nlu_service --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: ./backend/coverage.xml
+          flags: nlu-service
+          name: nlu-service-coverage
+
+  test-cost-calculation:
+    name: Cost Calculation Accuracy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Test cost calculation
+        run: |
+          cd backend
+          python -c "
+from app.core.prompt_templates import calculate_gemini_cost
+
+# Test case 1: Known values
+cost = calculate_gemini_cost(1000, 500, 'gemini-2.5-flash')
+expected = (1000 / 1_000_000) * 0.075 + (500 / 1_000_000) * 0.30
+assert abs(cost - expected) < 0.000001, f'Cost mismatch: {cost} vs {expected}'
+print(f'✓ Test 1 passed: {cost:.6f} USD')
+
+# Test case 2: Large volume
+cost = calculate_gemini_cost(100_000, 50_000, 'gemini-2.5-flash')
+expected = (100_000 / 1_000_000) * 0.075 + (50_000 / 1_000_000) * 0.30
+assert abs(cost - expected) < 0.000001, f'Cost mismatch: {cost} vs {expected}'
+print(f'✓ Test 2 passed: {cost:.6f} USD')
+
+# Test case 3: Zero tokens
+cost = calculate_gemini_cost(0, 0, 'gemini-2.5-flash')
+assert cost == 0.0, f'Expected 0, got {cost}'
+print(f'✓ Test 3 passed: {cost:.6f} USD')
+
+print('✓ All cost calculation tests passed')
+          "
+
+  integration-test-summary:
+    name: Integration Test Summary
+    runs-on: ubuntu-latest
+    needs: [test-prompt-templates, test-prompt-execution-logging, test-nlu-service-integration, test-cost-calculation]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          echo "## Prompt System Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Prompt Templates | ${{ needs.test-prompt-templates.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Execution Logging | ${{ needs.test-prompt-execution-logging.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| NLU Integration | ${{ needs.test-nlu-service-integration.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cost Calculation | ${{ needs.test-cost-calculation.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.test-prompt-templates.result }}" == "success" && \
+                "${{ needs.test-prompt-execution-logging.result }}" == "success" && \
+                "${{ needs.test-nlu-service-integration.result }}" == "success" && \
+                "${{ needs.test-cost-calculation.result }}" == "success" ]]; then
+            echo "✅ All prompt system tests passed!" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          else
+            echo "❌ Some tests failed. Please review the logs above." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
