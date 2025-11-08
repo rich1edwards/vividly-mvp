@@ -5,9 +5,10 @@
  * - Submits request to backend (returns 202 Accepted)
  * - Navigates to status tracker for polling
  * - Supports grade level selection and optional interest override
+ * - Phase 1.2.4: Dynamic estimated time display based on complexity
  */
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { contentApi } from '../api/content'
 import { interestsApi } from '../api/interests'
@@ -15,6 +16,8 @@ import type { User, Interest, AsyncContentRequest } from '../types'
 import { Button } from './ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './ui/Card'
 import { InterestTagGrid } from './InterestTag'
+import { calculateEstimatedTime, checkSystemLoad, getHighLoadWarning, type TimeEstimate } from '../utils/timeEstimation'
+import { Clock, AlertTriangle } from 'lucide-react'
 
 interface ContentRequestFormProps {
   user: User
@@ -40,10 +43,31 @@ export const ContentRequestForm: React.FC<ContentRequestFormProps> = ({
   const [interests, setInterests] = useState<Interest[]>([])
   const [isLoadingInterests, setIsLoadingInterests] = useState(false)
 
+  // Phase 1.2.4: Time estimation state
+  const [isHighLoad, setIsHighLoad] = useState(false)
+
   // Load student's interests on mount
   useEffect(() => {
     fetchStudentInterests()
   }, [])
+
+  // Phase 1.2.4: Check system load on mount
+  useEffect(() => {
+    const checkLoad = async () => {
+      const highLoad = await checkSystemLoad()
+      setIsHighLoad(highLoad)
+    }
+    checkLoad()
+  }, [])
+
+  // Phase 1.2.4: Calculate estimated time based on form state
+  const timeEstimate: TimeEstimate = useMemo(() => {
+    return calculateEstimatedTime({
+      queryLength: query.trim().length,
+      gradeLevel,
+      hasInterest: selectedInterest !== null,
+    })
+  }, [query, gradeLevel, selectedInterest])
 
   const fetchStudentInterests = async () => {
     try {
@@ -246,32 +270,45 @@ export const ContentRequestForm: React.FC<ContentRequestFormProps> = ({
             </div>
           )}
 
-          {/* Estimated Time Notice */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <svg
-                className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-blue-900">
-                  Video generation takes 2-3 minutes
-                </p>
-                <p className="text-xs text-blue-700 mt-1">
-                  You'll be able to track progress in real-time. We'll notify you when it's ready!
-                </p>
+          {/* Phase 1.2.4: Dynamic Estimated Time Display */}
+          {query.trim().length >= 10 && (
+            <div className={`rounded-lg p-4 border ${
+              isHighLoad
+                ? 'bg-amber-50 border-amber-200'
+                : 'bg-blue-50 border-blue-200'
+            }`}>
+              <div className="flex items-start gap-3">
+                {isHighLoad ? (
+                  <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                ) : (
+                  <Clock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                )}
+                <div className="flex-1">
+                  <p className={`text-sm font-medium ${
+                    isHighLoad ? 'text-amber-900' : 'text-blue-900'
+                  }`}>
+                    {isHighLoad
+                      ? getHighLoadWarning(timeEstimate.estimatedMinutes)
+                      : `Estimated generation time: ${timeEstimate.displayText}`
+                    }
+                  </p>
+                  <p className={`text-xs mt-1 ${
+                    isHighLoad ? 'text-amber-700' : 'text-blue-700'
+                  }`}>
+                    {isHighLoad
+                      ? 'Your request will be prioritized based on submission time.'
+                      : "You'll be able to track progress in real-time. We'll notify you when it's ready!"
+                    }
+                  </p>
+                  {!isHighLoad && timeEstimate.confidenceLevel !== 'high' && (
+                    <p className="text-xs text-muted-foreground mt-1 italic">
+                      Time estimate will improve as you provide more detail in your query.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </form>
       </CardContent>
 
