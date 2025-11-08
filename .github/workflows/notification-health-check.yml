@@ -1,0 +1,424 @@
+name: Notification System Health Check
+
+# Purpose: Continuous health monitoring of Phase 1.4 notification system in deployed environments
+# Runs: Every 30 minutes, on manual trigger, and on notification-related PRs
+# Architecture: Tests SSE connection, Redis connectivity, notification delivery, and system metrics
+
+on:
+  schedule:
+    # Run every 30 minutes during business hours (Mon-Fri 8am-8pm UTC)
+    - cron: '*/30 8-20 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      test_type:
+        description: 'Type of health check'
+        required: true
+        type: choice
+        options:
+          - quick
+          - comprehensive
+          - load
+  pull_request:
+    paths:
+      - 'backend/app/services/notification_service.py'
+      - 'backend/app/api/v1/endpoints/notifications.py'
+      - 'frontend/src/hooks/useNotifications.ts'
+      - 'frontend/src/components/NotificationCenter.tsx'
+      - '.github/workflows/notification-health-check.yml'
+
+env:
+  DEV_API_URL: https://dev-vividly-api-rm2v4spyrq-uc.a.run.app
+  STAGING_API_URL: https://staging-vividly-api-XXXXX.a.run.app
+  PROD_API_URL: https://api.vividly.app
+
+jobs:
+  # ============================================================================
+  # Job 1: Backend Health Check
+  # ============================================================================
+
+  backend-health:
+    name: Backend Notification Health Check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [dev]  # Add staging, prod when deployed
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set API URL
+        id: set-url
+        run: |
+          if [ "${{ matrix.environment }}" == "dev" ]; then
+            echo "API_URL=${{ env.DEV_API_URL }}" >> $GITHUB_OUTPUT
+          elif [ "${{ matrix.environment }}" == "staging" ]; then
+            echo "API_URL=${{ env.STAGING_API_URL }}" >> $GITHUB_OUTPUT
+          else
+            echo "API_URL=${{ env.PROD_API_URL }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Test Notification Health Endpoint
+        id: health-check
+        run: |
+          echo "Testing notification system health at ${{ steps.set-url.outputs.API_URL }}"
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            ${{ steps.set-url.outputs.API_URL }}/api/v1/notifications/health)
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Response Body: $BODY"
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ Health check failed with status $HTTP_CODE"
+            echo "::error::Notification health endpoint returned $HTTP_CODE"
+            exit 1
+          fi
+
+          # Parse response JSON
+          STATUS=$(echo "$BODY" | jq -r '.status')
+          REDIS_CONNECTED=$(echo "$BODY" | jq -r '.redis_connected')
+          ACTIVE_CONNECTIONS=$(echo "$BODY" | jq -r '.active_connections')
+
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "redis_connected=$REDIS_CONNECTED" >> $GITHUB_OUTPUT
+          echo "active_connections=$ACTIVE_CONNECTIONS" >> $GITHUB_OUTPUT
+
+          # Check if healthy
+          if [ "$STATUS" != "healthy" ]; then
+            echo "❌ System status is $STATUS (expected: healthy)"
+            echo "::warning::Notification system status is $STATUS"
+          else
+            echo "✅ System is healthy"
+          fi
+
+          if [ "$REDIS_CONNECTED" != "true" ]; then
+            echo "❌ Redis is not connected"
+            echo "::error::Redis connection failed"
+            exit 1
+          else
+            echo "✅ Redis is connected"
+          fi
+
+      - name: Test SSE Connection (Anonymous)
+        run: |
+          echo "Testing SSE endpoint accessibility..."
+
+          # Should return 401 without auth
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            ${{ steps.set-url.outputs.API_URL }}/api/v1/notifications/stream)
+
+          if [ "$HTTP_CODE" == "401" ]; then
+            echo "✅ SSE endpoint requires authentication (expected 401)"
+          else
+            echo "❌ SSE endpoint returned unexpected status: $HTTP_CODE"
+            echo "::warning::SSE endpoint authentication check unexpected: $HTTP_CODE"
+          fi
+
+      - name: Check Service Metrics
+        run: |
+          echo "Fetching notification service metrics..."
+
+          RESPONSE=$(curl -s ${{ steps.set-url.outputs.API_URL }}/api/v1/notifications/health)
+
+          PUBLISHED=$(echo "$RESPONSE" | jq -r '.service_metrics.notifications_published')
+          DELIVERED=$(echo "$RESPONSE" | jq -r '.service_metrics.notifications_delivered')
+          PUBLISH_ERRORS=$(echo "$RESPONSE" | jq -r '.service_metrics.publish_errors')
+          SUBSCRIBE_ERRORS=$(echo "$RESPONSE" | jq -r '.service_metrics.subscribe_errors')
+
+          echo "📊 Notifications Published: $PUBLISHED"
+          echo "📊 Notifications Delivered: $DELIVERED"
+          echo "❌ Publish Errors: $PUBLISH_ERRORS"
+          echo "❌ Subscribe Errors: $SUBSCRIBE_ERRORS"
+
+          # Calculate error rate
+          TOTAL_OPERATIONS=$((PUBLISHED + PUBLISH_ERRORS + SUBSCRIBE_ERRORS))
+          if [ $TOTAL_OPERATIONS -gt 0 ]; then
+            TOTAL_ERRORS=$((PUBLISH_ERRORS + SUBSCRIBE_ERRORS))
+            ERROR_RATE=$(awk "BEGIN {printf \"%.2f\", ($TOTAL_ERRORS / $TOTAL_OPERATIONS) * 100}")
+
+            echo "📈 Error Rate: ${ERROR_RATE}%"
+
+            # Alert if error rate > 5%
+            if (( $(echo "$ERROR_RATE > 5.0" | bc -l) )); then
+              echo "::warning::High error rate detected: ${ERROR_RATE}%"
+            fi
+          fi
+
+      - name: Post Health Check Summary
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ steps.health-check.outputs.status }}'
+            const redisConnected = '${{ steps.health-check.outputs.redis_connected }}'
+            const activeConnections = '${{ steps.health-check.outputs.active_connections }}'
+            const environment = '${{ matrix.environment }}'
+
+            const statusEmoji = status === 'healthy' ? '✅' : status === 'degraded' ? '⚠️' : '❌'
+            const redisEmoji = redisConnected === 'true' ? '✅' : '❌'
+
+            const summary = `
+            ## Notification System Health Check - ${environment}
+
+            | Metric | Status |
+            |--------|--------|
+            | System Status | ${statusEmoji} ${status} |
+            | Redis Connection | ${redisEmoji} ${redisConnected === 'true' ? 'Connected' : 'Disconnected'} |
+            | Active Connections | 🔗 ${activeConnections} |
+            | Environment | ${environment} |
+            | Timestamp | ${new Date().toISOString()} |
+            `
+
+            await core.summary.addRaw(summary).write()
+
+  # ============================================================================
+  # Job 2: SSE Connection Test (Authenticated)
+  # ============================================================================
+
+  sse-connection-test:
+    name: SSE Connection Test
+    runs-on: ubuntu-latest
+    needs: backend-health
+    if: github.event_name != 'schedule'  # Only on manual trigger or PR
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install requests sseclient-py
+
+      - name: Test SSE Connection
+        env:
+          API_URL: ${{ env.DEV_API_URL }}
+          TEST_USER_EMAIL: student@vividly-test.com
+          TEST_USER_PASSWORD: Test123!Student
+        run: |
+          cat << 'EOF' > test_sse.py
+          import requests
+          import json
+          import os
+          import time
+          from sseclient import SSEClient
+
+          API_URL = os.environ['API_URL']
+          EMAIL = os.environ['TEST_USER_EMAIL']
+          PASSWORD = os.environ['TEST_USER_PASSWORD']
+
+          print(f"🔐 Authenticating as {EMAIL}...")
+
+          # Login
+          login_response = requests.post(
+              f"{API_URL}/api/v1/auth/login",
+              json={"email": EMAIL, "password": PASSWORD}
+          )
+
+          if login_response.status_code != 200:
+              print(f"❌ Login failed: {login_response.status_code}")
+              exit(1)
+
+          token = login_response.json()['access_token']
+          print(f"✅ Authenticated successfully")
+
+          # Test SSE connection
+          print(f"🔌 Connecting to SSE endpoint...")
+
+          headers = {
+              'Authorization': f'Bearer {token}',
+              'Accept': 'text/event-stream'
+          }
+
+          try:
+              response = requests.get(
+                  f"{API_URL}/api/v1/notifications/stream",
+                  headers=headers,
+                  stream=True,
+                  timeout=30
+              )
+
+              if response.status_code != 200:
+                  print(f"❌ SSE connection failed: {response.status_code}")
+                  exit(1)
+
+              print(f"✅ SSE connection established")
+
+              # Read first event (should be connection.established)
+              client = SSEClient(response)
+
+              event_count = 0
+              start_time = time.time()
+
+              for event in client.events():
+                  event_count += 1
+                  print(f"📨 Received event: {event.event}")
+
+                  try:
+                      data = json.loads(event.data)
+                      print(f"   Data: {json.dumps(data, indent=2)}")
+                  except:
+                      pass
+
+                  # Exit after receiving connection.established event
+                  if event.event == 'connection.established':
+                      print(f"✅ Received connection confirmation")
+                      break
+
+                  # Timeout after 20 seconds
+                  if time.time() - start_time > 20:
+                      print(f"⏱️  Timeout reached")
+                      break
+
+              if event_count == 0:
+                  print(f"❌ No events received")
+                  exit(1)
+
+              print(f"✅ SSE connection test successful ({event_count} events)")
+
+          except Exception as e:
+              print(f"❌ SSE connection error: {e}")
+              exit(1)
+          EOF
+
+          python test_sse.py
+
+  # ============================================================================
+  # Job 3: Load Test (Manual only)
+  # ============================================================================
+
+  load-test:
+    name: Notification Load Test
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'load'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install Locust
+        run: |
+          pip install locust
+
+      - name: Run Load Test
+        env:
+          API_URL: ${{ env.DEV_API_URL }}
+        run: |
+          # Create Locust test file
+          cat << 'EOF' > locustfile.py
+          from locust import HttpUser, task, between
+          import json
+
+          class NotificationUser(HttpUser):
+              wait_time = between(1, 5)
+
+              def on_start(self):
+                  # Login
+                  response = self.client.post("/api/v1/auth/login", json={
+                      "email": "student@vividly-test.com",
+                      "password": "Test123!Student"
+                  })
+                  self.token = response.json()['access_token']
+
+              @task
+              def check_health(self):
+                  self.client.get("/api/v1/notifications/health")
+
+              @task(weight=2)
+              def connect_sse(self):
+                  headers = {
+                      'Authorization': f'Bearer {self.token}',
+                      'Accept': 'text/event-stream'
+                  }
+                  # Note: This is just a connection test, not full SSE streaming
+                  self.client.get(
+                      "/api/v1/notifications/stream",
+                      headers=headers,
+                      timeout=5,
+                      catch_response=True
+                  )
+          EOF
+
+          # Run load test (50 users, 2 minutes)
+          locust -f locustfile.py \
+            --host=$API_URL \
+            --users=50 \
+            --spawn-rate=10 \
+            --run-time=2m \
+            --headless \
+            --csv=locust_results
+
+      - name: Upload Load Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results
+          path: locust_results*.csv
+
+  # ============================================================================
+  # Job 4: Alert on Failures
+  # ============================================================================
+
+  alert-on-failure:
+    name: Alert on Health Check Failure
+    runs-on: ubuntu-latest
+    needs: [backend-health, sse-connection-test]
+    if: failure() && github.event_name == 'schedule'
+
+    steps:
+      - name: Create Issue on Failure
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '🚨 Notification System Health Check Failed'
+            const body = `
+            ## Notification System Health Check Failure
+
+            **Workflow Run**: ${context.payload.workflow_run.html_url}
+            **Time**: ${new Date().toISOString()}
+            **Environment**: dev
+
+            ### Action Required
+
+            The automated health check for the Phase 1.4 notification system has failed.
+
+            **Immediate Steps**:
+            1. Check Cloud Monitoring dashboard
+            2. Review Cloud Logging for errors
+            3. Verify Redis connection status
+            4. Check Cloud Run service health
+
+            **Troubleshooting Guide**: See \`PHASE_1_4_DEPLOYMENT_GUIDE.md\` (Troubleshooting section)
+
+            ---
+
+            *This issue was automatically created by the notification-health-check workflow*
+            `
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['bug', 'phase-1.4', 'notification-system', 'automated']
+            })
