@@ -8,16 +8,20 @@
  * - Phase 1.2.4: Dynamic estimated time display based on complexity
  */
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { contentApi } from '../api/content'
 import { interestsApi } from '../api/interests'
 import type { User, Interest, AsyncContentRequest } from '../types'
+import type { SimilarContentItem } from '../api/content'
 import { Button } from './ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './ui/Card'
 import { InterestTagGrid } from './InterestTag'
 import { calculateEstimatedTime, checkSystemLoad, getHighLoadWarning, type TimeEstimate } from '../utils/timeEstimation'
+import { debounce } from '../utils/debounce'
 import { Clock, AlertTriangle } from 'lucide-react'
+import QueryAutocomplete from './QueryAutocomplete'
+import SimilarContentBanner from './SimilarContentBanner'
 
 interface ContentRequestFormProps {
   user: User
@@ -39,12 +43,21 @@ export const ContentRequestForm: React.FC<ContentRequestFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Phase 1.2.1: Query autocomplete handler
+  const handleAutocompleteSelect = (suggestion: string) => {
+    setQuery(suggestion)
+  }
+
   // Interests
   const [interests, setInterests] = useState<Interest[]>([])
   const [isLoadingInterests, setIsLoadingInterests] = useState(false)
 
   // Phase 1.2.4: Time estimation state
   const [isHighLoad, setIsHighLoad] = useState(false)
+
+  // Phase 1.2.2: Similar content detection state
+  const [similarContent, setSimilarContent] = useState<SimilarContentItem[]>([])
+  const [showSimilarBanner, setShowSimilarBanner] = useState(false)
 
   // Load student's interests on mount
   useEffect(() => {
@@ -86,6 +99,50 @@ export const ContentRequestForm: React.FC<ContentRequestFormProps> = ({
       setIsLoadingInterests(false)
     }
   }
+
+  // Phase 1.2.2: Debounced similar content check
+  const checkForSimilarContent = useCallback(
+    debounce(async (queryText: string, interest: string | null) => {
+      // Only check if query is long enough
+      if (queryText.trim().length < 10) {
+        setSimilarContent([])
+        setShowSimilarBanner(false)
+        return
+      }
+
+      try {
+        const result = await contentApi.checkSimilarContent({
+          student_query: queryText.trim(),
+          interest: interest || undefined,
+          limit: 3
+        })
+
+        if (result.total_found > 0) {
+          setSimilarContent(result.similar_content)
+          setShowSimilarBanner(true)
+        } else {
+          setSimilarContent([])
+          setShowSimilarBanner(false)
+        }
+      } catch (error) {
+        console.error('Failed to check similar content:', error)
+        // Graceful degradation - don't block form
+        setSimilarContent([])
+        setShowSimilarBanner(false)
+      }
+    }, 500),
+    []
+  )
+
+  // Phase 1.2.2: Trigger similar content check when query or interest changes
+  useEffect(() => {
+    if (query.trim().length >= 10) {
+      checkForSimilarContent(query, selectedInterest?.name || null)
+    } else {
+      setSimilarContent([])
+      setShowSimilarBanner(false)
+    }
+  }, [query, selectedInterest, checkForSimilarContent])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -162,8 +219,8 @@ export const ContentRequestForm: React.FC<ContentRequestFormProps> = ({
 
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Query Input */}
-          <div>
+          {/* Query Input with Autocomplete - Phase 1.2.1 */}
+          <div className="relative">
             <label htmlFor="query" className="block text-sm font-medium mb-2">
               What would you like to learn?
             </label>
@@ -197,6 +254,13 @@ export const ContentRequestForm: React.FC<ContentRequestFormProps> = ({
                 {characterCount} / 500
               </p>
             </div>
+
+            {/* Phase 1.2.1: Autocomplete component */}
+            <QueryAutocomplete
+              query={query}
+              onSelect={handleAutocompleteSelect}
+              className="mt-2"
+            />
           </div>
 
           {/* Grade Level Selector */}
@@ -261,6 +325,16 @@ export const ContentRequestForm: React.FC<ContentRequestFormProps> = ({
                   : "Select an interest or we'll auto-select based on your profile"}
               </p>
             </div>
+          )}
+
+          {/* Phase 1.2.2: Similar Content Banner */}
+          {showSimilarBanner && similarContent.length > 0 && (
+            <SimilarContentBanner
+              similarContent={similarContent}
+              hasHighSimilarity={similarContent.some(item => item.similarity_score >= 60)}
+              onGenerateAnyway={() => setShowSimilarBanner(false)}
+              onDismiss={() => setShowSimilarBanner(false)}
+            />
           )}
 
           {/* Error Display */}

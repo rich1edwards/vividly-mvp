@@ -19,6 +19,8 @@ from app.schemas.content import (
     ContentFeedbackSubmit,
     ContentFeedbackResponse,
     ContentFeedbackSummary,
+    SimilarContentRequest,
+    SimilarContentResponse,
 )
 from app.schemas.content_delivery import (
     SignedURLRequest,
@@ -50,6 +52,7 @@ from app.services.request_monitoring_service import (
 from app.services.pubsub_service import get_pubsub_service
 from app.services.content_request_service import ContentRequestService
 from app.services.clarification_service import get_clarification_service
+from app.services.content_similarity_service import get_similarity_service
 from app.utils.dependencies import get_current_user
 from app.models.user import User
 
@@ -149,6 +152,80 @@ async def check_content_exists(
     )
 
     return result
+
+
+@router.post("/check-similar", response_model=SimilarContentResponse)
+async def check_similar_content(
+    request: SimilarContentRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Check for similar existing content before generating new content.
+
+    Helps students discover relevant existing videos and reduces
+    unnecessary duplicate content generation.
+
+    **Phase 1.2.2: Similar Content Detection**
+
+    **Request Body**:
+    - topic_id: Optional topic ID to filter by
+    - interest: Optional interest to match
+    - student_query: Optional query text for keyword matching
+    - limit: Maximum results to return (default: 5, max: 10)
+
+    **Returns**:
+    - similar_content: List of similar videos with scores
+    - total_found: Number of similar items found
+    - has_high_similarity: True if any video has score >= 60 (likely duplicate)
+
+    **Similarity Algorithm**:
+    - Same topic: +50 points
+    - Same interest: +30 points
+    - Shared keywords: +10 points each
+    - Recent content (<7 days): +5 points
+    - Student's own content: +5 bonus points
+    """
+    try:
+        similarity_service = get_similarity_service()
+
+        similar_results = similarity_service.find_similar_content(
+            db=db,
+            topic_id=request.topic_id,
+            interest=request.interest,
+            student_query=request.student_query,
+            student_id=current_user.user_id,
+            limit=request.limit,
+        )
+
+        formatted_results = [
+            similarity_service.format_similarity_result(result)
+            for result in similar_results
+        ]
+
+        has_high_similarity = any(
+            item["similarity_score"] >= similarity_service.HIGH_SIMILARITY_THRESHOLD
+            for item in formatted_results
+        )
+
+        logger.info(
+            f"Similar content check for user {current_user.user_id}: "
+            f"found {len(formatted_results)} results, "
+            f"high similarity: {has_high_similarity}"
+        )
+
+        return SimilarContentResponse(
+            similar_content=formatted_results,
+            total_found=len(formatted_results),
+            has_high_similarity=has_high_similarity,
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to check similar content: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to check for similar content",
+        )
 
 
 @router.get("/recent", response_model=ContentListResponse)

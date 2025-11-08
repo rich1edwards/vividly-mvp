@@ -110,3 +110,50 @@ class ContentFeedbackSummary(BaseModel):
     average_rating: float
     rating_distribution: dict
     feedback_types: dict
+
+
+# Similar Content Detection Schemas (Phase 1.2.2)
+
+
+class SimilarContentRequest(BaseModel):
+    """Request to find similar content before generation."""
+
+    topic_id: Optional[str] = None
+    interest: Optional[str] = None
+    student_query: Optional[str] = None
+    limit: int = Field(default=5, ge=1, le=10, description="Maximum similar items to return")
+
+
+class SimilarContentItem(BaseModel):
+    """Single similar content item with similarity score."""
+
+    content_id: str
+    cache_key: str
+    title: str
+    description: Optional[str] = None
+    topic_id: str
+    topic_name: str
+    interest: Optional[str] = None
+    video_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    duration_seconds: Optional[int] = None
+    created_at: str
+    views: int
+    average_rating: Optional[float] = None
+    similarity_score: int
+    similarity_level: str = Field(..., pattern="^(high|medium)$")
+    is_own_content: bool
+
+    class Config:
+        from_attributes = True
+
+
+class SimilarContentResponse(BaseModel):
+    """Response with list of similar content."""
+
+    similar_content: List[SimilarContentItem]
+    total_found: int
+    has_high_similarity: bool = Field(
+        ...,
+        description="True if any content has similarity_score >= 60 (likely duplicate)"
+    )

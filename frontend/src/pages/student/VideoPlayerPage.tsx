@@ -2,6 +2,9 @@
  * Video Player Page
  *
  * Video playback page with Plyr.js integration
+ * Enhanced with:
+ * - Related Videos Sidebar (Phase 1.5.1)
+ * - Post-Video Feedback Modal (Phase 1.5.2)
  */
 
 import React, { useEffect, useState, useRef } from 'react'
@@ -15,6 +18,8 @@ import { contentApi } from '../../api/content'
 import type { GeneratedContent } from '../../types'
 import Plyr from 'plyr'
 import 'plyr/dist/plyr.css'
+import RelatedVideosSidebar from '../../components/RelatedVideosSidebar'
+import VideoFeedbackModal from '../../components/VideoFeedbackModal'
 
 export const VideoPlayerPage: React.FC = () => {
   const { cacheKey } = useParams<{ cacheKey: string }>()
@@ -25,10 +30,14 @@ export const VideoPlayerPage: React.FC = () => {
 
   const [content, setContent] = useState<GeneratedContent | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [allVideos, setAllVideos] = useState<GeneratedContent[]>([])
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   useEffect(() => {
     if (cacheKey) {
       loadContent(cacheKey)
+      loadAllVideos()
     }
 
     // Cleanup Plyr instance on unmount
@@ -58,6 +67,11 @@ export const VideoPlayerPage: React.FC = () => {
         speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
         quality: { default: 720, options: [1080, 720, 480, 360] }
       })
+
+      // Listen for video end event to show feedback modal
+      playerRef.current.on('ended', () => {
+        setShowFeedbackModal(true)
+      })
     }
   }, [content])
 
@@ -71,6 +85,31 @@ export const VideoPlayerPage: React.FC = () => {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const loadAllVideos = async () => {
+    try {
+      const history = await contentApi.getContentHistory()
+      setAllVideos(history)
+    } catch (error: any) {
+      console.error('Failed to load video history:', error)
+    }
+  }
+
+  const handleVideoSelect = (selectedCacheKey: string) => {
+    navigate(`/student/videos/${selectedCacheKey}`)
+  }
+
+  const handleRequestSimilar = () => {
+    navigate('/student/content/request', {
+      state: {
+        prefill: {
+          topic: content?.topic,
+          subject: content?.subject,
+          interests: content?.interests
+        }
+      }
+    })
   }
 
   if (isLoading) {
@@ -208,6 +247,16 @@ export const VideoPlayerPage: React.FC = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Related Videos Sidebar */}
+            <RelatedVideosSidebar
+              currentVideo={content}
+              allVideos={allVideos}
+              onVideoSelect={handleVideoSelect}
+              onRequestSimilar={handleRequestSimilar}
+              collapsed={sidebarCollapsed}
+              onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+            />
+
             {/* Actions */}
             <Card>
               <CardHeader>
@@ -284,6 +333,18 @@ export const VideoPlayerPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Video Feedback Modal */}
+      <VideoFeedbackModal
+        video={content}
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        onRequestSimilar={handleRequestSimilar}
+        onFeedbackSubmitted={(rating, feedback) => {
+          console.log('Feedback submitted:', { rating, feedback })
+          // TODO: Send to backend when API is ready
+        }}
+      />
     </DashboardLayout>
   )
 }

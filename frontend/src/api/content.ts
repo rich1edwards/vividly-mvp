@@ -122,5 +122,57 @@ export const contentApi = {
       ENDPOINTS.CONTENT_REQUEST_STATUS(requestId)
     )
     return response.data
+  },
+
+  /**
+   * Cancel a pending content request
+   * Only works if request is still in pending/validating/generating status
+   */
+  async cancelRequest(requestId: string): Promise<void> {
+    await apiClient.delete(`/content/requests/${requestId}`)
+  },
+
+  /**
+   * Check for similar existing content before generating new content
+   * Helps students discover relevant existing videos and reduces duplicate generation
+   * Phase 1.2.2: Similar Content Detection
+   */
+  async checkSimilarContent(params: {
+    topic_id?: string
+    interest?: string
+    student_query?: string
+    limit?: number
+  }): Promise<SimilarContentResponse> {
+    const response = await apiClient.post<SimilarContentResponse>(
+      '/content/check-similar',
+      params
+    )
+    return response.data
   }
+}
+
+// Similar Content Detection Types (Phase 1.2.2)
+export interface SimilarContentItem {
+  content_id: string
+  cache_key: string
+  title: string
+  description?: string
+  topic_id: string
+  topic_name: string
+  interest?: string
+  video_url?: string
+  thumbnail_url?: string
+  duration_seconds?: number
+  created_at: string
+  views: number
+  average_rating?: number
+  similarity_score: number
+  similarity_level: 'high' | 'medium'
+  is_own_content: boolean
+}
+
+export interface SimilarContentResponse {
+  similar_content: SimilarContentItem[]
+  total_found: number
+  has_high_similarity: boolean
 }
