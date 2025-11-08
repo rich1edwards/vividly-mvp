@@ -1,17 +1,18 @@
-"""
-Pub/Sub Infrastructure for Async Content Generation
-
-This file defines the Pub/Sub topics and subscriptions needed for async content generation:
-- Topic: content-requests-{environment} - Receives content generation requests from API
-- Subscription: content-worker-sub-{environment} - Worker reads messages from this subscription
-- Dead Letter Topic: content-requests-dlq-{environment} - Failed messages for investigation
-- IAM: Proper permissions for API to publish, Worker to subscribe
-
-Architecture:
-API → Pub/Sub Topic → Subscription → Content Worker → Database
-                          ↓ (after max retries)
-                       Dead Letter Queue
-"""
+# ============================================================================
+# Pub/Sub Infrastructure for Async Content Generation
+# ============================================================================
+#
+# This file defines the Pub/Sub topics and subscriptions needed for async content generation:
+# - Topic: content-requests-{environment} - Receives content generation requests from API
+# - Subscription: content-worker-sub-{environment} - Worker reads messages from this subscription
+# - Dead Letter Topic: content-requests-dlq-{environment} - Failed messages for investigation
+# - IAM: Proper permissions for API to publish, Worker to subscribe
+#
+# Architecture:
+# API → Pub/Sub Topic → Subscription → Content Worker → Database
+#                          ↓ (after max retries)
+#                       Dead Letter Queue
+# ============================================================================
 
 # ============================================================================
 # Pub/Sub Topic for Content Generation Requests

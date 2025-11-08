@@ -113,7 +113,7 @@ output "cloud_run_service_account" {
 
 output "artifact_registry_repository" {
   description = "Artifact Registry repository for Vividly images"
-  value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.vividly_images.repository_id}"
+  value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.vividly.repository_id}"
 }
 
 output "content_worker_job_name" {

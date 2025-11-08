@@ -25,7 +25,7 @@ resource "google_compute_network" "redis_network" {
 # Subnet for Redis instance
 resource "google_compute_subnetwork" "redis_subnet" {
   name          = "${var.environment}-vividly-redis-subnet"
-  ip_cidr_range = var.redis_subnet_cidr  # e.g., "10.10.0.0/24"
+  ip_cidr_range = var.redis_subnet_cidr # e.g., "10.10.0.0/24"
   region        = var.region
   network       = google_compute_network.redis_network.id
   project       = var.project_id
@@ -43,7 +43,7 @@ resource "google_compute_subnetwork" "redis_subnet" {
 # Subnet for VPC Serverless Connector (Cloud Run → Redis)
 resource "google_compute_subnetwork" "serverless_connector_subnet" {
   name          = "${var.environment}-vividly-serverless-connector-subnet"
-  ip_cidr_range = var.serverless_connector_cidr  # e.g., "10.10.1.0/28" (16 IPs)
+  ip_cidr_range = var.serverless_connector_cidr # e.g., "10.10.1.0/28" (16 IPs)
   region        = var.region
   network       = google_compute_network.redis_network.id
   project       = var.project_id
@@ -63,7 +63,7 @@ resource "google_compute_firewall" "allow_redis_from_serverless" {
 
   allow {
     protocol = "tcp"
-    ports    = ["6379"]  # Redis default port
+    ports    = ["6379"] # Redis default port
   }
 
   source_ranges = [var.serverless_connector_cidr]
@@ -99,33 +99,33 @@ resource "google_compute_firewall" "allow_health_checks" {
 # -----------------------------------------------------------------------------
 
 resource "google_redis_instance" "notifications_redis" {
-  name               = "${var.environment}-vividly-notifications-redis"
-  tier               = var.redis_tier  # "BASIC" for dev, "STANDARD_HA" for prod
-  memory_size_gb     = var.redis_memory_size_gb  # 1 GB for dev, 5 GB for prod
-  region             = var.region
-  project            = var.project_id
+  name           = "${var.environment}-vividly-notifications-redis"
+  tier           = var.redis_tier           # "BASIC" for dev, "STANDARD_HA" for prod
+  memory_size_gb = var.redis_memory_size_gb # 1 GB for dev, 5 GB for prod
+  region         = var.region
+  project        = var.project_id
 
   # Redis version (6.x for modern features, 7.x for latest)
-  redis_version      = "REDIS_7_0"
+  redis_version = "REDIS_7_0"
 
   # Network configuration
   authorized_network = google_compute_network.redis_network.id
   connect_mode       = "DIRECT_PEERING"
 
   # Display name for GCP Console
-  display_name       = "${var.environment} Vividly Notifications Redis"
+  display_name = "${var.environment} Vividly Notifications Redis"
 
   # Configuration for performance and reliability
   redis_configs = {
     # Pub/Sub optimizations
-    "maxmemory-policy"      = "volatile-lru"  # Evict expired keys first
+    "maxmemory-policy"       = "volatile-lru" # Evict expired keys first
     "notify-keyspace-events" = "Ex"           # Enable expiration notifications
 
     # Connection limits (adjust based on expected load)
-    "maxclients"            = var.redis_max_clients  # 10000 for dev, 50000 for prod
+    "maxclients" = var.redis_max_clients # 10000 for dev, 50000 for prod
 
     # Timeout for idle connections (5 minutes)
-    "timeout"               = "300"
+    "timeout" = "300"
   }
 
   # Maintenance window (Sunday 2 AM UTC = Saturday 6 PM PST)
@@ -150,7 +150,7 @@ resource "google_redis_instance" "notifications_redis" {
 
   # Lifecycle management
   lifecycle {
-    prevent_destroy = false  # Set to true for production after initial deployment
+    prevent_destroy = false # Set to true for production after initial deployment
 
     # Ignore changes to labels that might be added via GCP Console
     ignore_changes = [
@@ -172,9 +172,9 @@ resource "google_redis_instance" "notifications_redis" {
 # -----------------------------------------------------------------------------
 
 resource "google_vpc_access_connector" "serverless_to_redis" {
-  name          = "${var.environment}-vividly-serverless-redis-connector"
-  region        = var.region
-  project       = var.project_id
+  name    = "${var.environment}-vividly-serverless-redis-connector"
+  region  = var.region
+  project = var.project_id
 
   # Use dedicated subnet
   subnet {
@@ -288,9 +288,9 @@ resource "google_monitoring_alert_policy" "redis_high_memory" {
 
     condition_threshold {
       filter          = "resource.type = \"redis_instance\" AND resource.labels.instance_id = \"${google_redis_instance.notifications_redis.id}\" AND metric.type = \"redis.googleapis.com/stats/memory/usage_ratio\""
-      duration        = "300s"  # 5 minutes
+      duration        = "300s" # 5 minutes
       comparison      = "COMPARISON_GT"
-      threshold_value = 0.8  # 80%
+      threshold_value = 0.8 # 80%
 
       aggregations {
         alignment_period   = "60s"
@@ -302,7 +302,7 @@ resource "google_monitoring_alert_policy" "redis_high_memory" {
   notification_channels = var.alert_notification_channels
 
   alert_strategy {
-    auto_close = "604800s"  # 7 days
+    auto_close = "604800s" # 7 days
   }
 
   documentation {
@@ -361,7 +361,7 @@ resource "google_monitoring_dashboard" "redis_dashboard" {
                 timeSeriesFilter = {
                   filter = "resource.type=\"redis_instance\" AND resource.labels.instance_id=\"${google_redis_instance.notifications_redis.id}\" AND metric.type=\"redis.googleapis.com/stats/memory/usage_ratio\""
                   aggregation = {
-                    alignmentPeriod = "60s"
+                    alignmentPeriod  = "60s"
                     perSeriesAligner = "ALIGN_MEAN"
                   }
                 }
@@ -378,7 +378,7 @@ resource "google_monitoring_dashboard" "redis_dashboard" {
                 timeSeriesFilter = {
                   filter = "resource.type=\"redis_instance\" AND resource.labels.instance_id=\"${google_redis_instance.notifications_redis.id}\" AND metric.type=\"redis.googleapis.com/clients/connected\""
                   aggregation = {
-                    alignmentPeriod = "60s"
+                    alignmentPeriod  = "60s"
                     perSeriesAligner = "ALIGN_MEAN"
                   }
                 }
@@ -395,7 +395,7 @@ resource "google_monitoring_dashboard" "redis_dashboard" {
                 timeSeriesFilter = {
                   filter = "resource.type=\"redis_instance\" AND resource.labels.instance_id=\"${google_redis_instance.notifications_redis.id}\" AND metric.type=\"redis.googleapis.com/commands/total_commands\""
                   aggregation = {
-                    alignmentPeriod = "60s"
+                    alignmentPeriod  = "60s"
                     perSeriesAligner = "ALIGN_RATE"
                   }
                 }
@@ -413,7 +413,7 @@ resource "google_monitoring_dashboard" "redis_dashboard" {
                   timeSeriesFilter = {
                     filter = "resource.type=\"redis_instance\" AND resource.labels.instance_id=\"${google_redis_instance.notifications_redis.id}\" AND metric.type=\"redis.googleapis.com/stats/network_traffic\""
                     aggregation = {
-                      alignmentPeriod = "60s"
+                      alignmentPeriod  = "60s"
                       perSeriesAligner = "ALIGN_RATE"
                     }
                   }

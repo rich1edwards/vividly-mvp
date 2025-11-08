@@ -12,9 +12,9 @@ resource "google_vertex_ai_index" "content_index" {
     contents_delta_uri = "gs://${google_storage_bucket.oer_content.name}/index-data/"
 
     config {
-      dimensions              = 768  # text-embedding-gecko@003
+      dimensions                  = 768 # text-embedding-gecko@003
       approximate_neighbors_count = 150
-      distance_measure_type = "DOT_PRODUCT_DISTANCE"
+      distance_measure_type       = "DOT_PRODUCT_DISTANCE"
 
       algorithm_config {
         tree_ah_config {
@@ -39,7 +39,7 @@ resource "google_vertex_ai_index_endpoint" "content_endpoint" {
   description  = "Index endpoint for content retrieval"
   region       = var.region
 
-  public_endpoint_enabled = false  # Private VPC access only
+  public_endpoint_enabled = false # Private VPC access only
   network                 = google_compute_network.vpc.id
 
   depends_on = [

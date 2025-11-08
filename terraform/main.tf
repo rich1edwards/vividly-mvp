@@ -177,7 +177,7 @@ resource "google_secret_manager_secret" "database_url" {
 }
 
 resource "google_secret_manager_secret_version" "database_url" {
-  secret = google_secret_manager_secret.database_url.id
+  secret      = google_secret_manager_secret.database_url.id
   secret_data = "postgresql://${google_sql_user.vividly.name}:${google_sql_user.vividly.password}@${google_sql_database_instance.postgres.private_ip_address}:5432/${google_sql_database.vividly.name}"
 }
 
@@ -314,16 +314,13 @@ resource "google_compute_backend_bucket" "video_cdn" {
   cdn_policy {
     cache_mode        = "CACHE_ALL_STATIC"
     client_ttl        = 3600
-    default_ttl       = 86400    # 24 hours
-    max_ttl           = 2592000  # 30 days
+    default_ttl       = 86400   # 24 hours
+    max_ttl           = 2592000 # 30 days
     negative_caching  = true
     serve_while_stale = 86400
 
-    cache_key_policy {
-      include_host           = true
-      include_protocol       = true
-      include_query_string   = false
-    }
+    # Cache key policy moved to newer provider versions
+    # Note: cache_key_policy requires google provider >= 5.0
 
     negative_caching_policy {
       code = 404
@@ -396,36 +393,7 @@ resource "google_compute_global_forwarding_rule" "cdn_http_forwarding_rule" {
   ip_address            = google_compute_global_address.cdn_ip.id
 }
 
-# Pub/Sub Topics and Subscriptions
-resource "google_pubsub_topic" "content_requests" {
-  name = "content-requests-${var.environment}"
-
-  message_retention_duration = "604800s" # 7 days
-}
-
-resource "google_pubsub_subscription" "content_requests_dlq" {
-  name  = "content-requests-${var.environment}-dlq"
-  topic = google_pubsub_topic.content_requests.name
-
-  ack_deadline_seconds = 600
-
-  dead_letter_policy {
-    dead_letter_topic     = google_pubsub_topic.content_requests_dlq.id
-    max_delivery_attempts = 5
-  }
-
-  retry_policy {
-    minimum_backoff = "10s"
-    maximum_backoff = "600s"
-  }
-}
-
-resource "google_pubsub_topic" "content_requests_dlq" {
-  name = "content-requests-${var.environment}-dlq"
-
-  message_retention_duration = "604800s" # 7 days
-}
-
+# Note: Pub/Sub Topics and Subscriptions moved to pubsub.tf
 # Note: Artifact Registry for Docker Images moved to cloud_run.tf
 
 # Service Accounts

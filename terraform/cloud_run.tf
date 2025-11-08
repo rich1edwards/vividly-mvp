@@ -121,7 +121,7 @@ resource "google_cloud_run_v2_service" "backend_api" {
     }
 
     # Timeout and concurrency
-    timeout         = "300s"
+    timeout                          = "300s"
     max_instance_request_concurrency = 80
 
     containers {
@@ -188,15 +188,18 @@ resource "google_cloud_run_v2_service" "backend_api" {
       }
 
       # JWT Secret
-      env {
-        name = "SECRET_KEY"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.jwt_secret.secret_id
-            version = "latest"
-          }
-        }
-      }
+      # TODO: Create jwt_secret in Secret Manager manually with:
+      #   gcloud secrets create jwt-secret --data-file=- --project=PROJECT_ID
+      # Then uncomment:
+      # env {
+      #   name = "SECRET_KEY"
+      #   value_source {
+      #     secret_key_ref {
+      #       secret  = "jwt-secret"
+      #       version = "latest"
+      #     }
+      #   }
+      # }
 
       # Storage buckets
       env {
@@ -297,9 +300,10 @@ resource "google_cloud_run_v2_job" "content_worker" {
       # Timeout
       timeout = "1800s" # 30 minutes for video rendering
 
-      # Parallelism
+      # Max retries
       max_retries = 3
-      parallelism = 1
+      # Note: parallelism is set at the job execution level, not template level
+      task_count = 1 # Number of tasks to run
 
       containers {
         # Image will be updated via CI/CD
