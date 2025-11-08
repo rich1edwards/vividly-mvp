@@ -59,7 +59,7 @@ interface NotificationStore {
 }
 
 // Zustand store for notifications (with localStorage persistence for notifications only)
-const useNotificationStore = create<NotificationStore>((set, get) => {
+const useNotificationStore = create<NotificationStore>((set) => {
   // Load notifications from localStorage on initialization
   const storedNotifications = localStorage.getItem('vividly-notifications')
   const initialNotifications: Notification[] = storedNotifications
@@ -135,7 +135,7 @@ export function useNotifications(): UseNotificationsReturn {
   const store = useNotificationStore()
   const eventSourceRef = useRef<EventSource | null>(null)
   const retryCountRef = useRef(0)
-  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const retryTimeoutRef = useRef<number | null>(null)
   const isManualDisconnectRef = useRef(false)
 
   /**

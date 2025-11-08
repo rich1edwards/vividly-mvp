@@ -61,6 +61,24 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: str = "INFO"
 
+    # Phase 1.4: Redis for Real-Time Notifications (SSE)
+    REDIS_URL: str = Field(
+        default="redis://localhost:6379/0",
+        description="Redis connection URL for notification pub/sub"
+    )
+    SSE_HEARTBEAT_INTERVAL: int = Field(
+        default=30,
+        description="SSE heartbeat interval in seconds"
+    )
+    SSE_CONNECTION_TIMEOUT: int = Field(
+        default=300,
+        description="SSE connection timeout in seconds (5 minutes)"
+    )
+    SSE_MAX_BACKLOG_MESSAGES: int = Field(
+        default=100,
+        description="Maximum backlog messages per notification channel"
+    )
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v):
