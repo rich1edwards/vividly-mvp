@@ -1,12 +1,25 @@
 /**
- * Teacher API Service
+ * Teacher API Service (Phase 2.2)
  *
  * API methods for teacher class and student management
+ * Updated: 2025-01-08 - Added Phase 2.2 endpoints
  */
 
 import apiClient from './client'
 import { ENDPOINTS } from './config'
 import type {
+  // New Phase 2.2 types
+  TeacherDashboard,
+  ClassResponse,
+  ClassSummary,
+  RosterResponse,
+  StudentInRoster,
+  UpdateClassRequest,
+  ClassMetrics,
+  StudentDetail,
+  BulkContentRequest,
+  BulkContentRequestResponse,
+  // Legacy types (backwards compatibility)
   Class,
   ClassRoster,
   StudentInClass,
@@ -136,5 +149,140 @@ export const teacherApi = {
    */
   async removeStudentFromClass(classId: string, studentId: string): Promise<void> {
     await apiClient.delete(`${ENDPOINTS.TEACHER_CLASS_ROSTER(classId)}/${studentId}`)
-  }
+  },
+
+  // ============================================================================
+  // Phase 2.2: New Dashboard & Class Management APIs
+  // ============================================================================
+
+  /**
+   * Get teacher dashboard data (Phase 2.2)
+   * Matches backend GET /teachers/{teacher_id}/dashboard
+   */
+  async getTeacherDashboard(teacherId: string): Promise<TeacherDashboard> {
+    const response = await apiClient.get<TeacherDashboard>(
+      `/api/v1/teachers/${teacherId}/dashboard`
+    )
+    return response.data
+  },
+
+  /**
+   * Get class details (Phase 2.2)
+   * Matches backend GET /classes/{class_id}
+   */
+  async getClass(classId: string): Promise<ClassResponse> {
+    const response = await apiClient.get<ClassResponse>(
+      `/api/v1/classes/${classId}`
+    )
+    return response.data
+  },
+
+  /**
+   * Update class (Phase 2.2)
+   * Matches backend PATCH /classes/{class_id}
+   */
+  async patchClass(classId: string, data: UpdateClassRequest): Promise<ClassResponse> {
+    const response = await apiClient.patch<ClassResponse>(
+      `/api/v1/classes/${classId}`,
+      data
+    )
+    return response.data
+  },
+
+  /**
+   * Archive class (Phase 2.2)
+   * Matches backend DELETE /classes/{class_id}
+   */
+  async archiveClass(classId: string): Promise<ClassResponse> {
+    const response = await apiClient.delete<ClassResponse>(
+      `/api/v1/classes/${classId}`
+    )
+    return response.data
+  },
+
+  /**
+   * Get class roster (Phase 2.2)
+   * Matches backend GET /classes/{class_id}/students
+   */
+  async getRoster(classId: string): Promise<RosterResponse> {
+    const response = await apiClient.get<RosterResponse>(
+      `/api/v1/classes/${classId}/students`
+    )
+    return response.data
+  },
+
+  /**
+   * Get class metrics for dashboard cards (Phase 2.2)
+   * NOTE: This endpoint needs to be implemented in backend
+   */
+  async getClassMetrics(classId: string): Promise<ClassMetrics> {
+    const response = await apiClient.get<ClassMetrics>(
+      `/api/v1/classes/${classId}/metrics`
+    )
+    return response.data
+  },
+
+  /**
+   * Get student details (Phase 2.3)
+   * NOTE: This endpoint needs to be implemented in backend
+   */
+  async getStudentDetail(studentId: string): Promise<StudentDetail> {
+    const response = await apiClient.get<StudentDetail>(
+      `/api/v1/students/${studentId}/detail`
+    )
+    return response.data
+  },
+
+  /**
+   * Bulk content request for multiple students (Phase 2.4)
+   * NOTE: This endpoint needs to be implemented in backend
+   */
+  async bulkContentRequest(
+    classId: string,
+    data: BulkContentRequest
+  ): Promise<BulkContentRequestResponse> {
+    const response = await apiClient.post<BulkContentRequestResponse>(
+      `/api/v1/classes/${classId}/bulk-content-request`,
+      data
+    )
+    return response.data
+  },
+
+  /**
+   * Get class analytics (Phase 2.5)
+   * Enhanced version with date range
+   */
+  async getAnalytics(
+    classId: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<ClassAnalytics> {
+    const params = new URLSearchParams()
+    if (startDate) params.append('start_date', startDate)
+    if (endDate) params.append('end_date', endDate)
+
+    const url = `/api/v1/classes/${classId}/analytics${
+      params.toString() ? `?${params.toString()}` : ''
+    }`
+
+    const response = await apiClient.get<ClassAnalytics>(url)
+    return response.data
+  },
+
+  /**
+   * Export class data to CSV (Phase 2.5)
+   * NOTE: This endpoint needs to be implemented in backend
+   */
+  async exportClassData(
+    classId: string,
+    dataType: 'roster' | 'analytics' | 'requests'
+  ): Promise<Blob> {
+    const response = await apiClient.get(
+      `/api/v1/classes/${classId}/export/${dataType}`,
+      {
+        responseType: 'blob',
+      }
+    )
+    return response.data
+  },
 }
