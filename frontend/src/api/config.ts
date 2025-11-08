@@ -62,5 +62,8 @@ export const ENDPOINTS = {
   ADMIN_ANALYTICS: '/admin/analytics',
 
   // Monitoring (Super Admin only)
-  MONITORING: '/monitoring'
+  MONITORING: '/monitoring',
+
+  // Notifications (Phase 1.4 - Real-time notifications via SSE)
+  NOTIFICATIONS_STREAM: '/notifications/stream'
 } as const

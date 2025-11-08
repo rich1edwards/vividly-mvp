@@ -45,6 +45,10 @@ google-cloud-pubsub==2.18.0
 # Vertex AI & ML
 redis==5.0.1
 
+# Phase 1.4: Real-Time Notifications (SSE + Redis Pub/Sub)
+# redis[hiredis]==5.0.1  # Already included above, hiredis parser for performance
+sse-starlette==1.8.2    # Server-Sent Events for FastAPI
+
 # TTS & Video Generation
 moviepy==1.0.3
 imageio-ffmpeg==0.4.9

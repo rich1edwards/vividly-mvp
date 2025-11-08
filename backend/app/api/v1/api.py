@@ -15,6 +15,7 @@ from app.api.v1.endpoints import (
     content,
     cache,
     notifications,
+    notification_monitoring,
     nlu,
     interests,
     monitoring,
@@ -56,6 +57,13 @@ api_router.include_router(nlu.router, tags=["NLU & Topic Extraction"])
 
 # Monitoring endpoints (Super Admin only)
 api_router.include_router(monitoring.router, prefix="/monitoring", tags=["Monitoring"])
+
+# Phase 1.4: Notification system monitoring endpoints (Admin only)
+api_router.include_router(
+    notification_monitoring.router,
+    prefix="/monitoring/notifications",
+    tags=["Notification Monitoring"],
+)
 
 # Health check endpoints (public)
 api_router.include_router(health.router, tags=["Health Checks"])

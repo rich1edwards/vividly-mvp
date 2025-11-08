@@ -1,0 +1,604 @@
+name: Notification System Tests
+
+on:
+  # Run on push to main and feature branches
+  push:
+    branches:
+      - main
+      - 'feature/**'
+      - 'phase-1.4/**'
+    paths:
+      - 'backend/app/services/notification_service.py'
+      - 'backend/app/api/v1/endpoints/notifications.py'
+      - 'backend/app/workers/push_worker.py'
+      - 'frontend/src/hooks/useNotifications.ts'
+      - 'frontend/src/components/NotificationCenter.tsx'
+      - 'backend/tests/test_notification_service.py'
+      - 'backend/tests/test_notifications_endpoint.py'
+      - 'frontend/src/**/*.test.ts'
+      - 'frontend/src/**/*.test.tsx'
+      - '.github/workflows/notification-system-tests.yml'
+
+  # Run on PRs targeting main
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'backend/app/services/notification_service.py'
+      - 'backend/app/api/v1/endpoints/notifications.py'
+      - 'backend/app/workers/push_worker.py'
+      - 'frontend/src/hooks/useNotifications.ts'
+      - 'frontend/src/components/NotificationCenter.tsx'
+      - 'backend/tests/**'
+      - 'frontend/src/**/*.test.*'
+
+  # Allow manual trigger with environment selection
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      test_level:
+        description: 'Test level'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - unit
+          - integration
+          - e2e
+          - all
+
+  # Run daily at 3 AM UTC for regression testing
+  schedule:
+    - cron: '0 3 * * *'
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+
+jobs:
+  # Job 1: Backend Unit Tests for NotificationService
+  backend-unit-tests:
+    name: Backend Unit Tests - NotificationService
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_level == 'unit' || github.event.inputs.test_level == 'all' || github.event_name != 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: 'backend/requirements*.txt'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install redis pytest pytest-asyncio pytest-cov fakeredis
+
+      - name: Run NotificationService unit tests
+        working-directory: backend
+        env:
+          PYTHONPATH: /home/runner/work/Vividly/Vividly/backend
+          DATABASE_URL: sqlite:///:memory:
+          SECRET_KEY: test_secret_key_for_ci
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+        run: |
+          pytest tests/test_notification_service.py \
+            -v \
+            --cov=app/services/notification_service \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --cov-report=html \
+            --junitxml=test-results/notification-service-junit.xml
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./backend/coverage.xml
+          flags: backend-notification-service
+          name: notification-service-coverage
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-unit-test-results
+          path: backend/test-results/
+
+      - name: Comment on PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: py-cov-action/python-coverage-comment-action@v3
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+          MINIMUM_GREEN: 80
+          MINIMUM_ORANGE: 60
+
+  # Job 2: Backend Integration Tests for SSE Endpoint
+  backend-integration-tests:
+    name: Backend Integration Tests - SSE Endpoint
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_level == 'integration' || github.event.inputs.test_level == 'all' || github.event_name != 'workflow_dispatch'
+
+    services:
+      # Real Redis instance for integration tests
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      # PostgreSQL for database tests
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: vividly_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: 'backend/requirements*.txt'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install redis pytest pytest-asyncio httpx
+
+      - name: Wait for services to be ready
+        run: |
+          timeout 30 bash -c 'until redis-cli -h localhost ping; do sleep 1; done'
+          timeout 30 bash -c 'until pg_isready -h localhost -p 5432; do sleep 1; done'
+
+      - name: Run database migrations
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/vividly_test
+        run: |
+          # Apply migrations (assuming Alembic or similar)
+          # alembic upgrade head
+
+      - name: Run SSE endpoint integration tests
+        working-directory: backend
+        env:
+          PYTHONPATH: /home/runner/work/Vividly/Vividly/backend
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/vividly_test
+          SECRET_KEY: test_secret_key_for_ci
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          ALGORITHM: HS256
+          DEBUG: true
+        run: |
+          pytest tests/test_notifications_endpoint.py \
+            -v \
+            --cov=app/api/v1/endpoints/notifications \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --junitxml=test-results/notifications-endpoint-junit.xml
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./backend/coverage.xml
+          flags: backend-notifications-endpoint
+          name: notifications-endpoint-coverage
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-integration-test-results
+          path: backend/test-results/
+
+  # Job 3: Frontend Unit Tests for useNotifications Hook
+  frontend-unit-tests:
+    name: Frontend Unit Tests - useNotifications Hook
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_level == 'unit' || github.event.inputs.test_level == 'all' || github.event_name != 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run useNotifications hook tests
+        working-directory: frontend
+        run: |
+          npm run test -- \
+            --testPathPattern="useNotifications.test" \
+            --coverage \
+            --coverageDirectory=coverage \
+            --coverageReporters=text,lcov,json
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./frontend/coverage/lcov.info
+          flags: frontend-use-notifications-hook
+          name: use-notifications-hook-coverage
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-unit-test-results
+          path: frontend/coverage/
+
+  # Job 4: Frontend Component Tests for NotificationCenter
+  frontend-component-tests:
+    name: Frontend Component Tests - NotificationCenter
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_level == 'unit' || github.event.inputs.test_level == 'all' || github.event_name != 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run NotificationCenter component tests
+        working-directory: frontend
+        run: |
+          npm run test -- \
+            --testPathPattern="NotificationCenter.test" \
+            --coverage \
+            --coverageDirectory=coverage \
+            --coverageReporters=text,lcov,json
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./frontend/coverage/lcov.info
+          flags: frontend-notification-center
+          name: notification-center-coverage
+
+  # Job 5: E2E Notification Flow Tests
+  e2e-notification-tests:
+    name: E2E Notification Flow Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_level == 'e2e' || github.event.inputs.test_level == 'all' || github.event_name != 'workflow_dispatch'
+
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      ENVIRONMENT: ${{ github.event.inputs.environment || 'dev' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: 'latest'
+
+      - name: Get Backend URL
+        id: backend-url
+        run: |
+          BACKEND_URL=$(gcloud run services describe ${{ env.ENVIRONMENT }}-vividly-api \
+            --region=us-central1 \
+            --project=vividly-${{ env.ENVIRONMENT }}-rich \
+            --format="value(status.url)")
+          echo "url=$BACKEND_URL" >> $GITHUB_OUTPUT
+          echo "Backend URL: $BACKEND_URL"
+
+      - name: Get Frontend URL
+        id: frontend-url
+        run: |
+          FRONTEND_URL=$(gcloud run services describe ${{ env.ENVIRONMENT }}-vividly-frontend \
+            --region=us-central1 \
+            --project=vividly-${{ env.ENVIRONMENT }}-rich \
+            --format="value(status.url)")
+          echo "url=$FRONTEND_URL" >> $GITHUB_OUTPUT
+          echo "Frontend URL: $FRONTEND_URL"
+
+      - name: Run E2E notification flow tests
+        working-directory: frontend
+        env:
+          BACKEND_URL: ${{ steps.backend-url.outputs.url }}
+          FRONTEND_URL: ${{ steps.frontend-url.outputs.url }}
+          TEST_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+        run: |
+          npx playwright test tests/e2e/notifications.spec.ts \
+            --reporter=html,json,github \
+            --output=test-results/e2e \
+            --trace=on
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 30
+
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: frontend/test-results/
+
+  # Job 6: Performance Tests for SSE Connections
+  performance-tests:
+    name: Performance Tests - SSE Connection Load
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_level == 'e2e' || github.event.inputs.test_level == 'all' || github.event_name == 'schedule'
+
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      ENVIRONMENT: ${{ github.event.inputs.environment || 'dev' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install locust httpx
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: 'latest'
+
+      - name: Get Backend URL
+        id: backend-url
+        run: |
+          BACKEND_URL=$(gcloud run services describe ${{ env.ENVIRONMENT }}-vividly-api \
+            --region=us-central1 \
+            --project=vividly-${{ env.ENVIRONMENT }}-rich \
+            --format="value(status.url)")
+          echo "url=$BACKEND_URL" >> $GITHUB_OUTPUT
+
+      - name: Run SSE load test
+        env:
+          BACKEND_URL: ${{ steps.backend-url.outputs.url }}
+          TEST_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+        run: |
+          # Create test script for SSE load testing
+          cat > locustfile.py << 'EOF'
+          from locust import HttpUser, task, between
+          import json
+
+          class NotificationUser(HttpUser):
+              wait_time = between(1, 3)
+
+              def on_start(self):
+                  # Login to get token
+                  response = self.client.post("/api/v1/auth/login", json={
+                      "email": "$TEST_EMAIL",
+                      "password": "$TEST_PASSWORD"
+                  })
+                  self.token = response.json()["access_token"]
+                  self.headers = {"Authorization": f"Bearer {self.token}"}
+
+              @task
+              def connect_sse(self):
+                  # Test SSE connection
+                  with self.client.get(
+                      "/api/v1/notifications/stream",
+                      headers=self.headers,
+                      stream=True,
+                      catch_response=True
+                  ) as response:
+                      if response.status_code == 200:
+                          response.success()
+                      else:
+                          response.failure(f"Failed with status {response.status_code}")
+          EOF
+
+          # Run locust in headless mode with moderate load
+          locust -f locustfile.py \
+            --host=$BACKEND_URL \
+            --users=50 \
+            --spawn-rate=10 \
+            --run-time=2m \
+            --headless \
+            --html=performance-report.html \
+            --csv=performance-results
+
+      - name: Upload performance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-test-results
+          path: |
+            performance-report.html
+            performance-results*.csv
+
+  # Job 7: Security Tests for SSE Endpoint
+  security-tests:
+    name: Security Tests - SSE Authorization
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_level == 'integration' || github.event.inputs.test_level == 'all' || github.event_name != 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install pytest pytest-asyncio httpx
+
+      - name: Run security tests
+        working-directory: backend
+        env:
+          PYTHONPATH: /home/runner/work/Vividly/Vividly/backend
+          DATABASE_URL: sqlite:///:memory:
+          SECRET_KEY: test_secret_key_for_ci
+        run: |
+          pytest tests/test_notification_security.py \
+            -v \
+            --junitxml=test-results/notification-security-junit.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-test-results
+          path: backend/test-results/
+
+  # Job 8: Test Summary and Notification
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [backend-unit-tests, backend-integration-tests, frontend-unit-tests, frontend-component-tests, e2e-notification-tests]
+    if: always()
+
+    steps:
+      - name: Download all test artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Generate test summary
+        run: |
+          echo "# Notification System Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Status" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend Unit Tests: ${{ needs.backend-unit-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend Integration Tests: ${{ needs.backend-integration-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend Unit Tests: ${{ needs.frontend-unit-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend Component Tests: ${{ needs.frontend-component-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- E2E Notification Tests: ${{ needs.e2e-notification-tests.result }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const testResults = {
+              backendUnit: '${{ needs.backend-unit-tests.result }}',
+              backendIntegration: '${{ needs.backend-integration-tests.result }}',
+              frontendUnit: '${{ needs.frontend-unit-tests.result }}',
+              frontendComponent: '${{ needs.frontend-component-tests.result }}',
+              e2e: '${{ needs.e2e-notification-tests.result }}'
+            };
+
+            const emoji = (result) => result === 'success' ? '✅' : '❌';
+
+            const body = `## Notification System Test Results
+
+            | Test Suite | Status |
+            |------------|--------|
+            | Backend Unit Tests | ${emoji(testResults.backendUnit)} ${testResults.backendUnit} |
+            | Backend Integration Tests | ${emoji(testResults.backendIntegration)} ${testResults.backendIntegration} |
+            | Frontend Unit Tests | ${emoji(testResults.frontendUnit)} ${testResults.frontendUnit} |
+            | Frontend Component Tests | ${emoji(testResults.frontendComponent)} ${testResults.frontendComponent} |
+            | E2E Notification Tests | ${emoji(testResults.e2e)} ${testResults.e2e} |
+
+            [View detailed results](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Fail workflow if any test failed
+        if: needs.backend-unit-tests.result == 'failure' || needs.backend-integration-tests.result == 'failure' || needs.frontend-unit-tests.result == 'failure' || needs.frontend-component-tests.result == 'failure' || needs.e2e-notification-tests.result == 'failure'
+        run: exit 1

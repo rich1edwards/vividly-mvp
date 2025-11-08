@@ -9,6 +9,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { Button } from './ui/Button'
 import { UserRole } from '../types'
+import { NotificationCenter } from './NotificationCenter'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -304,6 +305,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
             {/* User Menu */}
             <div className="flex items-center gap-4">
+              {/* Notification Center (Phase 1.4) */}
+              <NotificationCenter />
+
               <div className="hidden sm:block text-sm">
                 <div className="font-medium">{`${user.first_name} ${user.last_name}`}</div>
                 <div className="text-muted-foreground capitalize">{user.role.replace('_', ' ')}</div>

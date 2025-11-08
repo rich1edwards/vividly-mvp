@@ -1,0 +1,253 @@
+name: E2E Notification Tests (Phase 1.4)
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'frontend/src/components/NotificationCenter.tsx'
+      - 'frontend/src/hooks/useNotifications.ts'
+      - 'frontend/src/types/notification.ts'
+      - 'frontend/e2e/notifications/**'
+      - 'backend/app/api/v1/endpoints/notifications.py'
+      - 'backend/app/services/notification_service.py'
+      - 'backend/app/workers/push_worker.py'
+      - '.github/workflows/e2e-notification-tests.yml'
+
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'frontend/src/components/NotificationCenter.tsx'
+      - 'frontend/src/hooks/useNotifications.ts'
+      - 'frontend/src/types/notification.ts'
+      - 'frontend/e2e/notifications/**'
+      - 'backend/app/api/v1/endpoints/notifications.py'
+      - 'backend/app/services/notification_service.py'
+      - 'backend/app/workers/push_worker.py'
+
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  e2e-notification-tests:
+    name: Run E2E Notification Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+        shard: [1/4, 2/4, 3/4, 4/4]  # Parallel execution for faster results
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/vividly_test
+      REDIS_URL: redis://localhost:6379/0
+      SECRET_KEY: test_secret_key_for_ci_cd_testing_phase_1_4
+      ALGORITHM: HS256
+      DEBUG: 'False'
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      VITE_API_URL: http://localhost:8000
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: vividly_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: 'backend/requirements.txt'
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Install Python dependencies
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Run database migrations
+        working-directory: ./backend
+        run: |
+          alembic upgrade head
+
+      - name: Start backend API server
+        working-directory: ./backend
+        run: |
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          echo "Backend PID: $!"
+          # Wait for backend to be ready
+          timeout 60 bash -c 'until curl -s http://localhost:8000/health > /dev/null; do sleep 1; done' || exit 1
+          echo "Backend server is ready"
+
+      - name: Start push_worker for notifications
+        working-directory: ./backend
+        env:
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          python -m app.workers.push_worker &
+          echo "Push worker PID: $!"
+          # Wait a moment for worker to initialize
+          sleep 5
+          echo "Push worker started"
+
+      - name: Build frontend
+        working-directory: ./frontend
+        env:
+          VITE_API_URL: http://localhost:8000
+        run: |
+          npm run build
+
+      - name: Start frontend dev server
+        working-directory: ./frontend
+        run: |
+          npm run preview -- --port 5173 --host &
+          echo "Frontend PID: $!"
+          # Wait for frontend to be ready
+          timeout 60 bash -c 'until curl -s http://localhost:5173 > /dev/null; do sleep 1; done' || exit 1
+          echo "Frontend server is ready"
+
+      - name: Run E2E notification tests
+        working-directory: ./frontend
+        env:
+          BASE_URL: http://localhost:5173
+          CI: 'true'
+        run: |
+          npx playwright test e2e/notifications/notification-flow.spec.ts \
+            --project=${{ matrix.browser }} \
+            --shard=${{ matrix.shard }} \
+            --reporter=html,json,junit \
+            --output=test-results/${{ matrix.browser }}-${{ matrix.shard }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results-${{ matrix.browser }}-${{ matrix.shard }}
+          path: frontend/test-results/
+          retention-days: 7
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.browser }}-${{ matrix.shard }}
+          path: frontend/playwright-report/
+          retention-days: 7
+
+      - name: Upload test artifacts (videos, screenshots)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts-${{ matrix.browser }}-${{ matrix.shard }}
+          path: |
+            frontend/test-results/**/video.webm
+            frontend/test-results/**/*.png
+          retention-days: 7
+
+      - name: Collect backend logs
+        if: failure()
+        run: |
+          echo "=== Backend Logs ===" > backend-logs.txt
+          journalctl -u uvicorn >> backend-logs.txt || echo "No systemd logs available" >> backend-logs.txt
+
+      - name: Upload backend logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-logs-${{ matrix.browser }}-${{ matrix.shard }}
+          path: backend-logs.txt
+          retention-days: 7
+
+  test-summary:
+    name: Generate Test Summary
+    runs-on: ubuntu-latest
+    needs: e2e-notification-tests
+    if: always()
+
+    steps:
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          path: all-test-results
+          pattern: playwright-results-*
+
+      - name: Generate summary
+        run: |
+          echo "## E2E Notification Tests Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Results by Browser" >> $GITHUB_STEP_SUMMARY
+
+          for browser in chromium firefox webkit; do
+            echo "#### ${browser^}" >> $GITHUB_STEP_SUMMARY
+
+            total_tests=0
+            passed_tests=0
+            failed_tests=0
+
+            # Count tests from all shards for this browser
+            for result in all-test-results/playwright-results-$browser-*/results.json; do
+              if [ -f "$result" ]; then
+                # Parse JSON and count tests (simplified)
+                cat "$result" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+
+            echo "" >> $GITHUB_STEP_SUMMARY
+          done
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync(process.env.GITHUB_STEP_SUMMARY, 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## E2E Notification Tests Results\n\n${summary}\n\n[View full test results](${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
+            });

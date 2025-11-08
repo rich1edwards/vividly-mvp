@@ -36,6 +36,11 @@ from sqlalchemy.orm import sessionmaker, Session
 
 from app.services.content_generation_service import ContentGenerationService
 from app.services.content_request_service import ContentRequestService
+from app.services.notification_service import (
+    NotificationService,
+    NotificationPayload,
+    NotificationEventType,
+)
 from app.core.config import settings
 
 logging.basicConfig(
@@ -58,6 +63,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Service instances
 content_service = ContentGenerationService()
 request_service = ContentRequestService()
+notification_service = NotificationService()
 
 
 @app.get("/")
@@ -268,6 +274,26 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
             current_stage="Starting content generation pipeline"
         )
 
+        # Phase 1.4: Publish "generation started" notification
+        try:
+            await notification_service.publish_notification(
+                user_id=str(student_id),
+                notification=NotificationPayload(
+                    event_type=NotificationEventType.CONTENT_GENERATION_STARTED,
+                    content_request_id=str(request_id),
+                    title="Video generation started",
+                    message=f"We're creating your video about: {student_query[:100]}...",
+                    progress_percentage=10,
+                    metadata={
+                        "query": student_query,
+                        "grade_level": grade_level,
+                        "interest": interest,
+                    }
+                )
+            )
+        except Exception as e:
+            logger.warning(f"Failed to publish start notification: {e}")
+
         # Generate content through the AI pipeline
         # This calls: NLU → RAG → Script Generation → TTS → Video Assembly
         result = await content_service.generate_content_from_query(
@@ -286,6 +312,25 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
             progress_percentage=90,
             current_stage="Finalizing video and uploading to storage"
         )
+
+        # Phase 1.4: Publish progress notification
+        try:
+            await notification_service.publish_notification(
+                user_id=str(student_id),
+                notification=NotificationPayload(
+                    event_type=NotificationEventType.CONTENT_GENERATION_PROGRESS,
+                    content_request_id=str(request_id),
+                    title="Video generation in progress",
+                    message="Finalizing your video and uploading to storage...",
+                    progress_percentage=90,
+                    metadata={
+                        "stage": "finalizing_video",
+                        "query": student_query,
+                    }
+                )
+            )
+        except Exception as e:
+            logger.warning(f"Failed to publish progress notification: {e}")
 
         # Handle different result statuses
         if result.get("status") == "completed":
@@ -311,6 +356,26 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
                 progress_percentage=100,
                 current_stage="Complete"
             )
+
+            # Phase 1.4: Publish "generation completed" notification
+            try:
+                await notification_service.publish_notification(
+                    user_id=str(student_id),
+                    notification=NotificationPayload(
+                        event_type=NotificationEventType.CONTENT_GENERATION_COMPLETED,
+                        content_request_id=str(request_id),
+                        title="Video ready!",
+                        message=f"Your video about '{student_query[:50]}...' is ready to watch",
+                        progress_percentage=100,
+                        metadata={
+                            "video_url": video_url,
+                            "thumbnail_url": thumbnail_url,
+                            "query": student_query,
+                        }
+                    )
+                )
+            except Exception as e:
+                logger.warning(f"Failed to publish completion notification: {e}")
 
             duration = time.time() - start_time
             logger.info(
@@ -441,6 +506,26 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
                     "correlation_id": correlation_id
                 }
             )
+
+            # Phase 1.4: Publish "generation failed" notification
+            try:
+                await notification_service.publish_notification(
+                    user_id=str(student_id),
+                    notification=NotificationPayload(
+                        event_type=NotificationEventType.CONTENT_GENERATION_FAILED,
+                        content_request_id=str(request_id),
+                        title="Video generation failed",
+                        message=f"We encountered an error while creating your video. Our team has been notified.",
+                        progress_percentage=0,
+                        metadata={
+                            "error_message": str(e),
+                            "error_type": type(e).__name__,
+                            "query": student_query if 'student_query' in locals() else "Unknown",
+                        }
+                    )
+                )
+            except Exception as notify_error:
+                logger.warning(f"Failed to publish failure notification: {notify_error}")
 
         # Return False to trigger retry (Pub/Sub will retry up to max_delivery_attempts)
         return False
