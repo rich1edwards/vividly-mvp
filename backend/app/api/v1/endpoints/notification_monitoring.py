@@ -41,7 +41,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.services.notification_service import NotificationService, get_notification_service
-from app.utils.dependencies import get_current_user, require_super_admin
+from app.utils.dependencies import get_current_user, get_current_active_admin
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
