@@ -29,6 +29,7 @@ import type {
 export const teacherApi = {
   /**
    * Get all classes for the teacher
+   * @deprecated Use getTeacherDashboard() which includes classes list
    */
   async getClasses(): Promise<Class[]> {
     const response = await apiClient.get<Class[]>(ENDPOINTS.TEACHER_CLASSES)
@@ -37,6 +38,7 @@ export const teacherApi = {
 
   /**
    * Get details for a specific class
+   * @deprecated Use getClass() instead (Phase 2.2 - correct API path)
    */
   async getClassDetail(classId: string): Promise<Class> {
     const response = await apiClient.get<Class>(ENDPOINTS.TEACHER_CLASS_DETAIL(classId))
@@ -45,6 +47,7 @@ export const teacherApi = {
 
   /**
    * Get roster for a specific class
+   * @deprecated Use getRoster() instead (Phase 2.2 - correct API path and types)
    */
   async getClassRoster(classId: string): Promise<ClassRoster> {
     const response = await apiClient.get<ClassRoster>(
@@ -104,6 +107,7 @@ export const teacherApi = {
 
   /**
    * Update class details
+   * @deprecated Use patchClass() instead (Phase 2.2 - uses PATCH and correct types)
    */
   async updateClass(
     classId: string,
@@ -123,6 +127,7 @@ export const teacherApi = {
 
   /**
    * Delete a class
+   * @deprecated Use archiveClass() instead (Phase 2.2 - soft delete with better semantics)
    */
   async deleteClass(classId: string): Promise<void> {
     await apiClient.delete(ENDPOINTS.TEACHER_CLASS_DETAIL(classId))

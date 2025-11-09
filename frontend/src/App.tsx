@@ -30,6 +30,7 @@ import VideoPlayerPage from './pages/student/VideoPlayerPage'
 // Teacher Pages
 import TeacherDashboard from './pages/TeacherDashboard'
 import TeacherClassesPage from './pages/teacher/TeacherClassesPage'
+import TeacherClassDashboard from './pages/teacher/TeacherClassDashboard'
 
 // Admin Pages
 import AdminDashboard from './pages/AdminDashboard'
@@ -126,6 +127,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[UserRole.TEACHER]}>
               <TeacherClassesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/class/:classId"
+          element={
+            <ProtectedRoute allowedRoles={[UserRole.TEACHER]}>
+              <TeacherClassDashboard />
             </ProtectedRoute>
           }
         />
