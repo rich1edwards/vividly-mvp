@@ -282,3 +282,6 @@ local.env
 # Performance profiling
 *.prof
 *.pyprof
+
+# Large data files - should not be in git
+backend/scripts/oer_ingestion/data/raw_pdf/*.pdf
