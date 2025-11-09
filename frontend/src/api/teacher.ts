@@ -11,9 +11,7 @@ import type {
   // New Phase 2.2 types
   TeacherDashboard,
   ClassResponse,
-  ClassSummary,
   RosterResponse,
-  StudentInRoster,
   UpdateClassRequest,
   ClassMetrics,
   StudentDetail,

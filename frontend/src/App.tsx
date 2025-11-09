@@ -1,16 +1,20 @@
 /**
- * Main App Component
+ * Main App Component (Phase 2.2)
  *
- * Application entry point with routing
+ * Application entry point with routing and global providers.
+ * Updated: 2025-01-08 - Added React Query provider for server state management
  */
 
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ToastProvider, ToastViewport } from './components/ui/Toast'
 import { useToast } from './hooks/useToast'
 import { Toast, ToastTitle, ToastDescription, ToastClose } from './components/ui/Toast'
 import ProtectedRoute, { UnauthorizedPage } from './components/ProtectedRoute'
 import { UserRole } from './types'
+import { queryClient } from './lib/queryClient'
 
 // Auth Pages
 import LoginPage from './pages/Login'
@@ -56,9 +60,10 @@ const ToastContainer: React.FC = () => {
 
 function App() {
   return (
-    <BrowserRouter>
-      <ToastContainer />
-      <Routes>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <ToastContainer />
+        <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Navigate to="/auth/login" replace />} />
         <Route path="/auth/login" element={<LoginPage />} />
@@ -197,6 +202,9 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+    {/* React Query DevTools - only in development */}
+    {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+  </QueryClientProvider>
   )
 }
 
