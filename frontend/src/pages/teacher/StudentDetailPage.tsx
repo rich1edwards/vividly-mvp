@@ -28,8 +28,10 @@ import {
 } from 'lucide-react'
 import { teacherApi } from '../../api/teacher'
 import { useNotifications } from '../../hooks/useNotifications'
+import { useToast } from '../../hooks/useToast'
 import { StatsCard } from '../../components/StatsCard'
 import { ActivityTimeline } from '../../components/ActivityTimeline'
+import { BulkContentRequestModal } from '../../components/BulkContentRequestModal'
 import type { StudentDetail } from '../../types/teacher'
 
 /**
@@ -54,7 +56,9 @@ export const StudentDetailPage: React.FC = () => {
   const { studentId } = useParams<{ studentId: string }>()
   const navigate = useNavigate()
   const { notifications } = useNotifications()
+  const { toast } = useToast()
   const [activeTab, setActiveTab] = useState<'timeline' | 'library'>('timeline')
+  const [isContentRequestModalOpen, setIsContentRequestModalOpen] = useState(false)
 
   // Fetch student details
   const {
@@ -212,10 +216,7 @@ export const StudentDetailPage: React.FC = () => {
             {/* Quick Actions */}
             <div className="flex flex-col gap-2">
               <button
-                onClick={() => {
-                  // TODO: Implement request content for student modal (Phase 2.4)
-                  console.log('Request content for student:', studentId)
-                }}
+                onClick={() => setIsContentRequestModalOpen(true)}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 whitespace-nowrap"
               >
                 <Sparkles className="w-4 h-4" />
@@ -345,6 +346,40 @@ export const StudentDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Bulk Content Request Modal (for single student) */}
+      {studentData.classes.length > 0 && (
+        <BulkContentRequestModal
+          isOpen={isContentRequestModalOpen}
+          onClose={() => setIsContentRequestModalOpen(false)}
+          classId={studentData.classes[0].class_id}
+          students={[
+            {
+              user_id: student.user_id,
+              email: student.email,
+              first_name: student.first_name,
+              last_name: student.last_name,
+              grade_level: student.grade_level,
+              enrolled_at: studentData.classes[0].enrolled_at,
+              progress_summary: {
+                videos_requested: student.metrics.content_requests,
+                videos_watched: student.metrics.videos_watched,
+                last_active: studentData.activity_timeline[0]?.timestamp || new Date().toISOString(),
+              },
+            },
+          ]}
+          preSelectedStudentIds={[student.user_id]}
+          onSuccess={(response) => {
+            toast({
+              title: 'Content Requested',
+              description: `Created content request for ${student.first_name} ${student.last_name}`,
+              variant: 'success',
+            })
+            refetch()
+            setIsContentRequestModalOpen(false)
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -35,6 +35,7 @@ import { useToast } from '../../hooks/useToast'
 import { StatsCard } from '../../components/StatsCard'
 import { EditClassModal } from '../../components/EditClassModal'
 import { StudentRosterTable } from '../../components/StudentRosterTable'
+import { BulkContentRequestModal } from '../../components/BulkContentRequestModal'
 
 /**
  * Tab navigation options
@@ -61,6 +62,8 @@ export const TeacherClassDashboard: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<TabType>('students')
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isBulkRequestModalOpen, setIsBulkRequestModalOpen] = useState(false)
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([])
 
   // Fetch class details
   const {
@@ -373,8 +376,8 @@ export const TeacherClassDashboard: React.FC = () => {
                   console.log('Send announcement to:', studentIds)
                 }}
                 onAssignContent={(studentIds) => {
-                  // TODO: Implement assign content
-                  console.log('Assign content to:', studentIds)
+                  setSelectedStudentIds(studentIds)
+                  setIsBulkRequestModalOpen(true)
                 }}
               />
             )}
@@ -403,6 +406,33 @@ export const TeacherClassDashboard: React.FC = () => {
         onClose={() => setIsEditModalOpen(false)}
         classData={classData}
       />
+
+      {/* Bulk Content Request Modal */}
+      {rosterData && (
+        <BulkContentRequestModal
+          isOpen={isBulkRequestModalOpen}
+          onClose={() => {
+            setIsBulkRequestModalOpen(false)
+            setSelectedStudentIds([])
+          }}
+          classId={classId!}
+          students={rosterData.students}
+          preSelectedStudentIds={selectedStudentIds}
+          onSuccess={(response) => {
+            toast({
+              title: 'Success',
+              description: `Created ${response.successful} content request${
+                response.successful > 1 ? 's' : ''
+              }`,
+              variant: 'success',
+            })
+            // Refresh roster data to show updated metrics
+            refetchRoster()
+            setIsBulkRequestModalOpen(false)
+            setSelectedStudentIds([])
+          }}
+        />
+      )}
     </div>
   )
 }
