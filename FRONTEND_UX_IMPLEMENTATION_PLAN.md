@@ -1154,6 +1154,8 @@
 
 ### 3.4 Organization Overview (Week 2-3)
 
+**Status**: ⏸️ DEFERRED (Organizations disabled in backend)
+
 #### 3.4.1 OrganizationOverview Page
 **File**: `frontend/src/pages/super-admin/OrganizationOverview.tsx`
 
@@ -1169,10 +1171,18 @@
   - [ ] Recent activity
 - [ ] Add export to CSV
 
+**Backend Requirements**:
+- Organizations are currently disabled (`organization.py.disabled`)
+- Requires backend to re-enable organization model
+- Requires organization CRUD API endpoints
+- Requires organization metrics endpoints
+
 **Acceptance Criteria**:
 - Table sortable by all metrics
 - Growth metrics accurate
 - Export includes all data
+
+**Note**: This feature requires backend organization support which is currently disabled. Phase 3.4 is deferred until backend implementation is complete.
 
 ---
 
