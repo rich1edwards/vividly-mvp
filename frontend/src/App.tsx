@@ -35,6 +35,7 @@ import StudentDetailPage from './pages/teacher/StudentDetailPage'
 
 // Admin Pages
 import AdminDashboard from './pages/AdminDashboard'
+import UserManagement from './pages/admin/UserManagement'
 
 // Super Admin Pages
 import SuperAdminDashboard from './pages/SuperAdminDashboard'
@@ -162,6 +163,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
+              <UserManagement />
             </ProtectedRoute>
           }
         />
