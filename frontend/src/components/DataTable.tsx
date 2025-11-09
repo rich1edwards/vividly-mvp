@@ -221,11 +221,17 @@ const DataTableSkeleton: React.FC<{ rows?: number; columns?: number }> = ({
   columns = 4,
 }) => {
   return (
-    <div className="space-y-3 animate-pulse">
+    <div
+      className="space-y-3 animate-pulse"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label="Loading table data"
+    >
       {/* Header */}
       <div className="flex gap-2">
         {Array.from({ length: columns }).map((_, i) => (
-          <div key={i} className="h-10 bg-gray-200 rounded flex-1" />
+          <div key={i} className="h-10 bg-gray-200 rounded flex-1" aria-hidden="true" />
         ))}
       </div>
 
@@ -233,10 +239,11 @@ const DataTableSkeleton: React.FC<{ rows?: number; columns?: number }> = ({
       {Array.from({ length: rows }).map((_, i) => (
         <div key={i} className="flex gap-2">
           {Array.from({ length: columns }).map((_, j) => (
-            <div key={j} className="h-12 bg-gray-100 rounded flex-1" />
+            <div key={j} className="h-12 bg-gray-100 rounded flex-1" aria-hidden="true" />
           ))}
         </div>
       ))}
+      <span className="sr-only">Loading data, please wait...</span>
     </div>
   )
 }

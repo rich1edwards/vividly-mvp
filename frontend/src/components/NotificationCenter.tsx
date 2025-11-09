@@ -131,9 +131,14 @@ function NotificationItem({ notification, onMarkAsRead, onClear }: NotificationI
                   <div
                     className="h-full bg-vividly-blue transition-all duration-300"
                     style={{ width: `${notification.progress_percentage}%` }}
+                    role="progressbar"
+                    aria-valuenow={notification.progress_percentage}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`Content generation progress: ${notification.progress_percentage}%`}
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 mt-1" aria-hidden="true">
                   {notification.progress_percentage}% complete
                 </p>
               </div>
@@ -185,28 +190,44 @@ function ConnectionStatus({ connectionState, onReconnect }: ConnectionStatusProp
   switch (connectionState) {
     case ConnectionState.CONNECTED:
       return (
-        <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
-          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+        <div
+          className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg"
+          role="status"
+          aria-live="polite"
+          aria-label="Notification connection status: Connected"
+        >
+          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" aria-hidden="true" />
           <span className="text-xs text-green-700 font-medium">Connected</span>
         </div>
       )
     case ConnectionState.CONNECTING:
       return (
-        <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-          <Loader2 className="h-3 w-3 text-blue-500 animate-spin" />
+        <div
+          className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg"
+          role="status"
+          aria-live="polite"
+          aria-label="Notification connection status: Connecting"
+        >
+          <Loader2 className="h-3 w-3 text-blue-500 animate-spin" aria-hidden="true" />
           <span className="text-xs text-blue-700 font-medium">Connecting...</span>
         </div>
       )
     case ConnectionState.ERROR:
       return (
-        <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
-          <WifiOff className="h-3 w-3 text-red-500" />
+        <div
+          className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg"
+          role="alert"
+          aria-live="assertive"
+          aria-label="Notification connection status: Connection error"
+        >
+          <WifiOff className="h-3 w-3 text-red-500" aria-hidden="true" />
           <span className="text-xs text-red-700 font-medium">Connection error</span>
           <Button
             size="sm"
             variant="ghost"
             onClick={onReconnect}
             className="ml-auto h-6 px-2 text-xs"
+            aria-label="Retry notification connection"
           >
             Retry
           </Button>
@@ -214,14 +235,20 @@ function ConnectionStatus({ connectionState, onReconnect }: ConnectionStatusProp
       )
     case ConnectionState.DISCONNECTED:
       return (
-        <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-          <div className="h-2 w-2 rounded-full bg-gray-400" />
+        <div
+          className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg"
+          role="status"
+          aria-live="polite"
+          aria-label="Notification connection status: Disconnected"
+        >
+          <div className="h-2 w-2 rounded-full bg-gray-400" aria-hidden="true" />
           <span className="text-xs text-gray-700 font-medium">Disconnected</span>
           <Button
             size="sm"
             variant="ghost"
             onClick={onReconnect}
             className="ml-auto h-6 px-2 text-xs"
+            aria-label="Connect to notifications"
           >
             Connect
           </Button>
@@ -265,25 +292,53 @@ export function NotificationCenter() {
   } = useNotifications()
 
   const [isOpen, setIsOpen] = React.useState(false)
+  const [latestNotification, setLatestNotification] = React.useState<Notification | null>(null)
+  const prevNotificationCountRef = React.useRef(notifications.length)
+
+  // Detect new notifications for screen reader announcement
+  React.useEffect(() => {
+    if (notifications.length > prevNotificationCountRef.current) {
+      const newest = notifications[0] // Assuming newest first
+      setLatestNotification(newest)
+
+      // Clear after announcement
+      const timer = setTimeout(() => setLatestNotification(null), 3000)
+      return () => clearTimeout(timer)
+    }
+    prevNotificationCountRef.current = notifications.length
+  }, [notifications])
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <button
-          className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-vividly-blue focus:ring-offset-2"
-          aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+    <>
+      {/* ARIA Live Region for new notification announcements */}
+      {latestNotification && (
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
         >
-          <Bell className="h-5 w-5 text-gray-700" />
-          {unreadCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 h-5 min-w-[20px] flex items-center justify-center px-1 text-xs"
-            >
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </Badge>
-          )}
-        </button>
-      </PopoverTrigger>
+          New notification: {latestNotification.title}. {latestNotification.message}
+        </div>
+      )}
+
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <button
+            className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-vividly-blue focus:ring-offset-2"
+            aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+          >
+            <Bell className="h-5 w-5 text-gray-700" />
+            {unreadCount > 0 && (
+              <Badge
+                variant="destructive"
+                className="absolute -top-1 -right-1 h-5 min-w-[20px] flex items-center justify-center px-1 text-xs"
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </Badge>
+            )}
+          </button>
+        </PopoverTrigger>
 
       <PopoverContent
         align="end"
@@ -341,5 +396,6 @@ export function NotificationCenter() {
         </div>
       </PopoverContent>
     </Popover>
+    </>
   )
 }

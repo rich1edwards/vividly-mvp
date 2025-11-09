@@ -48,10 +48,15 @@ export const PageLoading: React.FC<{ message?: string }> = ({
   message = 'Loading...'
 }) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
       <div className="flex flex-col items-center gap-4">
         <Spinner size="xl" variant="primary" />
-        <p className="text-lg text-muted-foreground">{message}</p>
+        <p className="text-lg text-muted-foreground" aria-label={message}>{message}</p>
       </div>
     </div>
   )
@@ -62,9 +67,15 @@ export const CenteredLoading: React.FC<{ message?: string }> = ({
   message = 'Loading...'
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center py-12 gap-4">
+    <div
+      className="flex flex-col items-center justify-center py-12 gap-4"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label={message}
+    >
       <Spinner size="lg" variant="primary" />
-      {message && <p className="text-sm text-muted-foreground">{message}</p>}
+      {message && <p className="text-sm text-muted-foreground" aria-hidden="true">{message}</p>}
     </div>
   )
 }
@@ -75,9 +86,14 @@ export const InlineLoading: React.FC<{ message?: string; className?: string }> =
   className
 }) => {
   return (
-    <div className={cn('flex items-center gap-2', className)}>
+    <div
+      className={cn('flex items-center gap-2', className)}
+      role="status"
+      aria-live="polite"
+      aria-label={message || 'Loading'}
+    >
       <Spinner size="sm" variant="primary" />
-      {message && <span className="text-sm text-muted-foreground">{message}</span>}
+      {message && <span className="text-sm text-muted-foreground" aria-hidden="true">{message}</span>}
     </div>
   )
 }
@@ -112,20 +128,36 @@ export const SkeletonText: React.FC<{ lines?: number; className?: string }> = ({
   className
 }) => {
   return (
-    <div className={cn('space-y-2', className)}>
+    <div
+      className={cn('space-y-2', className)}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label="Loading content"
+    >
       {Array.from({ length: lines }).map((_, i) => (
-        <Skeleton key={i} variant="text" className={i === lines - 1 ? 'w-3/4' : 'w-full'} />
+        <Skeleton key={i} variant="text" className={i === lines - 1 ? 'w-3/4' : 'w-full'} aria-hidden="true" />
       ))}
+      <span className="sr-only">Loading...</span>
     </div>
   )
 }
 
 export const SkeletonCard: React.FC<{ className?: string }> = ({ className }) => {
   return (
-    <div className={cn('space-y-3 p-4 border rounded-lg', className)}>
-      <Skeleton variant="title" className="w-1/2" />
-      <SkeletonText lines={2} />
-      <Skeleton variant="button" className="w-1/3" />
+    <div
+      className={cn('space-y-3 p-4 border rounded-lg', className)}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label="Loading card"
+    >
+      <Skeleton variant="title" className="w-1/2" aria-hidden="true" />
+      <div aria-hidden="true">
+        <SkeletonText lines={2} />
+      </div>
+      <Skeleton variant="button" className="w-1/3" aria-hidden="true" />
+      <span className="sr-only">Loading card content...</span>
     </div>
   )
 }
