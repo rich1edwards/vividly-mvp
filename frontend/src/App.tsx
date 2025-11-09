@@ -40,6 +40,7 @@ import UserManagement from './pages/admin/UserManagement'
 // Super Admin Pages
 import SuperAdminDashboard from './pages/SuperAdminDashboard'
 import RequestMonitoring from './pages/super-admin/RequestMonitoring'
+import SystemMetricsDashboard from './pages/super-admin/SystemMetricsDashboard'
 
 // Toast Notifications Container
 const ToastContainer: React.FC = () => {
@@ -221,6 +222,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
               <RequestMonitoring />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/super-admin/metrics"
+          element={
+            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
+              <SystemMetricsDashboard />
             </ProtectedRoute>
           }
         />
