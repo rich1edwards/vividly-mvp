@@ -31,6 +31,7 @@ import VideoPlayerPage from './pages/student/VideoPlayerPage'
 import TeacherDashboard from './pages/TeacherDashboard'
 import TeacherClassesPage from './pages/teacher/TeacherClassesPage'
 import TeacherClassDashboard from './pages/teacher/TeacherClassDashboard'
+import StudentDetailPage from './pages/teacher/StudentDetailPage'
 
 // Admin Pages
 import AdminDashboard from './pages/AdminDashboard'
@@ -135,6 +136,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[UserRole.TEACHER]}>
               <TeacherClassDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/student/:studentId"
+          element={
+            <ProtectedRoute allowedRoles={[UserRole.TEACHER]}>
+              <StudentDetailPage />
             </ProtectedRoute>
           }
         />
