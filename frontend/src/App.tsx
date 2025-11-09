@@ -1,11 +1,19 @@
 /**
- * Main App Component (Phase 2.2)
+ * Main App Component (Phase 4.3.1)
  *
  * Application entry point with routing and global providers.
- * Updated: 2025-01-08 - Added React Query provider for server state management
+ * Updated: 2025-01-08 - Added lazy loading for all routes (Phase 4.3.1)
+ * Updated: 2025-01-08 - Added ErrorBoundary integration
+ * Updated: 2025-01-08 - Added Suspense with LoadingFallback
+ *
+ * Performance Optimizations:
+ * - Lazy loading all page components with React.lazy
+ * - Code splitting by route for optimal bundle size
+ * - Suspense boundaries with loading states
+ * - Error boundaries for graceful error handling
  */
 
-import React from 'react'
+import React, { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -15,32 +23,36 @@ import { Toast, ToastTitle, ToastDescription, ToastClose } from './components/ui
 import ProtectedRoute, { UnauthorizedPage } from './components/ProtectedRoute'
 import { UserRole } from './types'
 import { queryClient } from './lib/queryClient'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { LoadingFallback } from './components/LoadingFallback'
+import { SkipToContent } from './components/SkipToContent'
 
-// Auth Pages
+// Lazy load all page components for code splitting
+// Auth Pages - Load immediately (no lazy) as they're the entry point
 import LoginPage from './pages/Login'
 import RegisterPage from './pages/Register'
 
-// Student Pages
-import StudentDashboard from './pages/student/StudentDashboard'
-import StudentProfile from './pages/student/StudentProfile'
-import ContentRequestPage from './pages/student/ContentRequestPage'
-import StudentVideosPage from './pages/student/StudentVideosPage'
-import VideoPlayerPage from './pages/student/VideoPlayerPage'
+// Student Pages - Lazy loaded
+const StudentDashboard = lazy(() => import('./pages/student/StudentDashboard'))
+const StudentProfile = lazy(() => import('./pages/student/StudentProfile'))
+const ContentRequestPage = lazy(() => import('./pages/student/ContentRequestPage'))
+const StudentVideosPage = lazy(() => import('./pages/student/StudentVideosPage'))
+const VideoPlayerPage = lazy(() => import('./pages/student/VideoPlayerPage'))
 
-// Teacher Pages
-import TeacherDashboard from './pages/TeacherDashboard'
-import TeacherClassesPage from './pages/teacher/TeacherClassesPage'
-import TeacherClassDashboard from './pages/teacher/TeacherClassDashboard'
-import StudentDetailPage from './pages/teacher/StudentDetailPage'
+// Teacher Pages - Lazy loaded
+const TeacherDashboard = lazy(() => import('./pages/TeacherDashboard'))
+const TeacherClassesPage = lazy(() => import('./pages/teacher/TeacherClassesPage'))
+const TeacherClassDashboard = lazy(() => import('./pages/teacher/TeacherClassDashboard'))
+const StudentDetailPage = lazy(() => import('./pages/teacher/StudentDetailPage'))
 
-// Admin Pages
-import AdminDashboard from './pages/AdminDashboard'
-import UserManagement from './pages/admin/UserManagement'
+// Admin Pages - Lazy loaded
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
+const UserManagement = lazy(() => import('./pages/admin/UserManagement'))
 
-// Super Admin Pages
-import SuperAdminDashboard from './pages/SuperAdminDashboard'
-import RequestMonitoring from './pages/super-admin/RequestMonitoring'
-import SystemMetricsDashboard from './pages/super-admin/SystemMetricsDashboard'
+// Super Admin Pages - Lazy loaded
+const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard'))
+const RequestMonitoring = lazy(() => import('./pages/super-admin/RequestMonitoring'))
+const SystemMetricsDashboard = lazy(() => import('./pages/super-admin/SystemMetricsDashboard'))
 
 // Toast Notifications Container
 const ToastContainer: React.FC = () => {
@@ -64,10 +76,13 @@ const ToastContainer: React.FC = () => {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ToastContainer />
-        <Routes>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <SkipToContent />
+          <ToastContainer />
+          <Suspense fallback={<LoadingFallback message="Loading application..." />}>
+            <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Navigate to="/auth/login" replace />} />
         <Route path="/auth/login" element={<LoginPage />} />
@@ -236,11 +251,13 @@ function App() {
 
         {/* Catch-all redirect */}
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
-    {/* React Query DevTools - only in development */}
-    {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-  </QueryClientProvider>
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+        {/* React Query DevTools - only in development */}
+        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }
 
