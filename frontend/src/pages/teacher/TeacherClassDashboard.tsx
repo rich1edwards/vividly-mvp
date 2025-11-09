@@ -33,7 +33,8 @@ import { teacherApi } from '../../api/teacher'
 import { useNotifications } from '../../hooks/useNotifications'
 import { useToast } from '../../hooks/useToast'
 import { StatsCard } from '../../components/StatsCard'
-import type { RosterResponse } from '../../types/teacher'
+import { EditClassModal } from '../../components/EditClassModal'
+import { StudentRosterTable } from '../../components/StudentRosterTable'
 
 /**
  * Tab navigation options
@@ -356,10 +357,25 @@ export const TeacherClassDashboard: React.FC = () => {
           {/* Tab Content */}
           <div className="p-6">
             {activeTab === 'students' && rosterData && (
-              <StudentRosterView
+              <StudentRosterTable
                 classId={classId!}
-                roster={rosterData}
+                className={rosterData.class_name}
+                students={rosterData.students}
+                totalStudents={rosterData.total_students}
+                isLoading={rosterLoading}
                 onRefresh={refetchRoster}
+                onRemoveStudent={(studentId) => {
+                  // TODO: Implement remove student mutation
+                  console.log('Remove student:', studentId)
+                }}
+                onSendAnnouncement={(studentIds) => {
+                  // TODO: Implement send announcement
+                  console.log('Send announcement to:', studentIds)
+                }}
+                onAssignContent={(studentIds) => {
+                  // TODO: Implement assign content
+                  console.log('Assign content to:', studentIds)
+                }}
               />
             )}
             {activeTab === 'requests' && (
@@ -381,137 +397,12 @@ export const TeacherClassDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Edit Class Modal - Placeholder */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4">Edit Class</h2>
-            <p className="text-gray-600 mb-4">
-              Edit class modal will be implemented in the next iteration.
-            </p>
-            <button
-              onClick={() => setIsEditModalOpen(false)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-/**
- * Student Roster View Component
- * Displays the roster table within the students tab
- */
-interface StudentRosterViewProps {
-  classId: string
-  roster: RosterResponse
-  onRefresh: () => void
-}
-
-const StudentRosterView: React.FC<StudentRosterViewProps> = ({
-  roster,
-  onRefresh,
-}) => {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Class Roster ({roster.total_students} students)
-        </h3>
-        <button
-          onClick={onRefresh}
-          className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Refresh
-        </button>
-      </div>
-
-      {roster.students.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-          <Users className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-600 font-medium mb-2">No students enrolled yet</p>
-          <p className="text-sm text-gray-500">
-            Share the class code <code className="bg-gray-200 px-2 py-1 rounded">{roster.class_name}</code> with students to get started
-          </p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Student
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Grade
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Videos Requested
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Videos Watched
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Enrolled
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {roster.students.map((student) => (
-                <tr key={student.user_id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {student.first_name} {student.last_name}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-600">{student.email}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-600">
-                      {student.grade_level ? `Grade ${student.grade_level}` : '-'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {student.progress_summary?.videos_requested || 0}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {student.progress_summary?.videos_watched || 0}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-600">
-                      {new Date(student.enrolled_at).toLocaleDateString()}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button className="text-blue-600 hover:text-blue-900 mr-4">
-                      View
-                    </button>
-                    <button className="text-red-600 hover:text-red-900">
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {/* Edit Class Modal */}
+      <EditClassModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        classData={classData}
+      />
     </div>
   )
 }

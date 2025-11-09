@@ -48,10 +48,16 @@ import {
   WifiOff,
   XCircle,
 } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/Card'
 import { Badge } from './ui/badge'
 import { Button } from './ui/Button'
-import { API_URL, getAuthHeaders } from '../api/config'
+import { API_URL, ACCESS_TOKEN_KEY } from '../api/config'
+
+// Helper to get auth headers
+const getAuthHeaders = (): HeadersInit => {
+  const token = localStorage.getItem(ACCESS_TOKEN_KEY)
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
 
 // ============================================================================
 // Types
@@ -316,7 +322,7 @@ export const NotificationSystemHealthMonitor: React.FC = () => {
           <div className="flex flex-col items-center justify-center py-8 gap-4">
             <XCircle className="h-12 w-12 text-red-600" />
             <p className="text-sm text-red-600">{error}</p>
-            <Button onClick={handleRefresh} variant="outline">
+            <Button onClick={handleRefresh} variant="tertiary">
               Retry
             </Button>
           </div>
@@ -340,7 +346,7 @@ export const NotificationSystemHealthMonitor: React.FC = () => {
         <div className="flex items-center gap-2">
           <Button
             onClick={handleRefresh}
-            variant="outline"
+            variant="tertiary"
             size="sm"
             disabled={loading}
           >
@@ -349,7 +355,7 @@ export const NotificationSystemHealthMonitor: React.FC = () => {
           </Button>
           <Button
             onClick={() => setAutoRefresh(!autoRefresh)}
-            variant={autoRefresh ? 'default' : 'outline'}
+            variant={autoRefresh ? 'primary' : 'tertiary'}
             size="sm"
           >
             {autoRefresh ? 'Auto-Refresh: ON' : 'Auto-Refresh: OFF'}
