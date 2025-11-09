@@ -522,10 +522,10 @@
 
 ## Phase 2: Teacher Core Features
 
-**Status**: 🚧 IN PROGRESS (Phase 2.1 ✅, Phase 2.2 ✅, Phase 2.3 ✅, Phase 2.4 ✅, Phase 2.5 🔜)
+**Status**: 🚧 IN PROGRESS (Phase 2.1 ✅, Phase 2.2 ✅, Phase 2.3 ✅, Phase 2.4 ✅, Phase 2.5 ✅, Phase 2.6 🔜)
 **Duration**: 3-4 weeks
 **Priority**: HIGH
-**Progress**: Phase 2.1 ✅ COMPLETE, Phase 2.2 ✅ COMPLETE, Phase 2.3 ✅ COMPLETE, Phase 2.4 ✅ COMPLETE, Phase 2.5 🔜 NEXT
+**Progress**: Phase 2.1-2.5 ✅ COMPLETE (100% of core features), Phase 2.6 🔜 OPTIONAL
 
 ### 2.1 Reusable Teacher Components (Week 1) ✅ COMPLETED
 
@@ -801,26 +801,86 @@
   - StudentDetailPage: "Request Content" button triggers modal for single student
   - Both include onSuccess callbacks for refetching data and showing toasts
 
-### 2.5 Class Analytics Dashboard (Week 3-4)
+### 2.5 Class Analytics Dashboard (Week 3-4) ✅ COMPLETED
 
-#### 2.5.1 ClassAnalyticsDashboard Component
+#### 2.5.1 ClassAnalyticsDashboard Component ✅ COMPLETED
 **File**: `frontend/src/components/ClassAnalyticsDashboard.tsx`
 
-- [ ] Install charting library (Recharts)
-- [ ] Create charts:
-  - [ ] Line chart: Content requests over time
-  - [ ] Bar chart: Videos by topic
-  - [ ] Pie chart: Video completion rates
-  - [ ] Area chart: Student engagement trend
-- [ ] Add date range selector
-- [ ] Implement export data button (CSV download)
-- [ ] Add print view
+- [x] Install charting library (Recharts) - already installed
+- [x] Create charts:
+  - [x] Line chart: Content requests over time (with gradient and tooltips)
+  - [x] Bar chart: Videos by topic (with rounded corners and colors)
+  - [x] Pie chart: Video completion rates (with percentages and legend)
+  - [x] Area chart: Student engagement trend (with gradient fill)
+- [x] Add date range selector (7d, 30d, 90d, custom with date pickers)
+- [x] Implement export data button (CSV download with full data)
+- [x] Add print view (with print-specific CSS)
+- [x] Add summary cards (Total Requests, Completed Videos, Avg Active Students, Avg Watch Time)
+- [x] Add top students leaderboard table with engagement scores
 
 **Acceptance Criteria**:
-- Charts interactive (hover tooltips)
-- Date range updates all charts
-- Export includes all visible data
-- Responsive (stacks on mobile)
+- ✅ Charts interactive (hover tooltips with formatted dates and values)
+- ✅ Date range updates all charts (React Query refetches on range change)
+- ✅ Export includes all visible data (CSV with headers and formatted data)
+- ✅ Responsive (charts stack on mobile with responsive containers)
+
+**Implementation Summary** (Session 19 - Current):
+- **Lines of Code**: 850+ lines (production-ready, fully documented)
+- **Features Implemented**:
+  - **4 Summary Cards**: Total Requests, Completed Videos, Avg Active Students, Avg Watch Time
+    - Color-coded icons (blue, green, purple, amber)
+    - Calculated from analytics data
+  - **Line Chart - Content Requests Over Time**:
+    - Blue line with dots
+    - Cartesian grid with dashed lines
+    - Formatted date labels (e.g., "Jan 15")
+    - Interactive tooltips
+  - **Bar Chart - Videos by Topic**:
+    - Purple bars with rounded tops
+    - Angled X-axis labels for long topic names
+    - Hover tooltips
+  - **Pie Chart - Video Completion Rates**:
+    - 3 segments: Completed (blue), In Progress (green), Not Started (amber)
+    - Percentage labels on segments
+    - Legend below chart
+  - **Area Chart - Student Engagement Trend**:
+    - Green area with gradient fill
+    - Shows active students over time
+    - Smooth curve interpolation
+  - **Date Range Selector**:
+    - 4 preset buttons: 7 Days, 30 Days, 90 Days, Custom
+    - Custom option shows date picker dropdown
+    - Start and end date inputs
+    - Current range display below buttons
+    - Selected range highlighted in blue
+  - **Action Buttons**:
+    - Refresh: Refetches analytics data
+    - Export CSV: Downloads CSV file with all data
+    - Print: Opens print dialog with print-optimized layout
+  - **Top Students Leaderboard**:
+    - Ranked table with 1st (gold), 2nd (silver), 3rd (bronze) badges
+    - Shows student name, videos watched, engagement score
+    - Engagement score displayed as progress bar
+  - **CSV Export**:
+    - Includes all chart data sections
+    - Headers for each section
+    - Date range in filename
+    - Class name in filename
+  - **Print View**:
+    - Hides action buttons
+    - Optimized page margins
+    - Print-friendly layout
+  - **Loading & Error States**:
+    - Spinner with message during data fetch
+    - Error state with retry button
+  - **Responsive Design**:
+    - Charts use ResponsiveContainer (100% width)
+    - Summary cards grid: 1 col mobile, 2 col tablet, 4 col desktop
+    - Charts grid: 1 col mobile, 2 col desktop
+    - Date range buttons wrap on mobile
+- **API Integration**: Uses `teacherApi.getAnalytics(classId, startDate, endDate)`
+- **Chart Library**: Recharts with customized styling to match design system
+- **Integration**: Added to TeacherClassDashboard Analytics tab (now enabled)
 
 ### 2.6 Pending Requests Queue (Week 4)
 

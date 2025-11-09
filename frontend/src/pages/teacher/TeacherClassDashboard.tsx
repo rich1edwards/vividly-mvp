@@ -36,6 +36,7 @@ import { StatsCard } from '../../components/StatsCard'
 import { EditClassModal } from '../../components/EditClassModal'
 import { StudentRosterTable } from '../../components/StudentRosterTable'
 import { BulkContentRequestModal } from '../../components/BulkContentRequestModal'
+import { ClassAnalyticsDashboard } from '../../components/ClassAnalyticsDashboard'
 
 /**
  * Tab navigation options
@@ -197,7 +198,7 @@ export const TeacherClassDashboard: React.FC = () => {
       id: 'analytics',
       label: 'Analytics',
       icon: TrendingUp,
-      disabled: true, // Phase 2.5 - Coming soon
+      disabled: false, // Phase 2.5 - Now available!
     },
   ]
 
@@ -392,9 +393,7 @@ export const TeacherClassDashboard: React.FC = () => {
               </div>
             )}
             {activeTab === 'analytics' && (
-              <div className="text-center py-12 text-gray-500">
-                Analytics dashboard coming in Phase 2.5
-              </div>
+              <ClassAnalyticsDashboard classId={classId!} className={classData.name} />
             )}
           </div>
         </div>
