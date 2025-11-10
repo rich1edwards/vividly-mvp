@@ -69,10 +69,12 @@ else:
     app.add_middleware(SecurityHeadersMiddleware)
 
 # CORS middleware
+# Temporarily allow all origins for development/testing
+# TODO: Lock down to specific domains in production
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
+    allow_origins=["*"],  # Allow all origins temporarily
+    allow_credentials=False,  # Must be False when using "*"
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
