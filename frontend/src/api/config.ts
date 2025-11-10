@@ -4,8 +4,8 @@
  * Centralized API configuration and constants
  */
 
-// API Base URL - defaults to localhost for development
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+// API Base URL - defaults to Cloud Run backend for production
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://dev-vividly-api-rm2v4spyrq-uc.a.run.app'
 
 // API Version
 export const API_VERSION = 'v1'
