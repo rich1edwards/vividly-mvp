@@ -17,28 +17,28 @@
     --popover: 0 0% 100%;                       /* #FFFFFF */
     --popover-foreground: 210 11% 15%;          /* #212529 */
 
-    /* Primary - Vivid Blue #2196F3 */
-    --primary: 207 90% 54%;
+    /* Primary - Vivid Blue #2196F3 → Darker for WCAG AA compliance */
+    --primary: 207 90% 42%;                     /* Darker blue for 4.5:1 contrast with white */
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Warm Coral #FF7043 */
-    --secondary: 14 100% 63%;
+    /* Secondary - Warm Coral #FF7043 → Darker for WCAG AA compliance */
+    --secondary: 14 100% 43%;                   /* Darker coral for 4.5:1 contrast with white */
     --secondary-foreground: 0 0% 100%;
 
     /* Accent - Electric Purple #9C27B0 */
     --accent: 291 64% 42%;
     --accent-foreground: 0 0% 100%;
 
-    /* Success - Fresh Green #4CAF50 */
-    --success: 122 39% 49%;
+    /* Success - Fresh Green #4CAF50 → Darker for WCAG AA compliance */
+    --success: 122 39% 37%;                     /* Darker green for 4.5:1 contrast with white */
     --success-foreground: 0 0% 100%;
 
     /* Warning - Sunny Yellow #FFC107 */
     --warning: 45 100% 51%;
     --warning-foreground: 210 11% 15%;
 
-    /* Error/Destructive - Alert Red #F44336 */
-    --destructive: 4 90% 58%;
+    /* Error/Destructive - Alert Red #F44336 → Darker for WCAG AA compliance */
+    --destructive: 4 90% 47%;                   /* Darker red for 4.5:1 contrast with white */
     --destructive-foreground: 0 0% 100%;
 
     /* Neutral Grays */
