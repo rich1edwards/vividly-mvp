@@ -29,7 +29,7 @@ CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
 FROM node:20-alpine as build
 
 # Build-time argument for API URL
-ARG VITE_API_URL=http://localhost:8000
+ARG VITE_API_URL=https://dev-vividly-api-rm2v4spyrq-uc.a.run.app
 
 WORKDIR /app
 
