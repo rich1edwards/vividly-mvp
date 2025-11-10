@@ -58,9 +58,7 @@ class ContentRequest(Base):
 
     __tablename__ = "content_requests"
 
-    id = Column(
-        GUID, primary_key=True
-    )
+    id = Column(GUID, primary_key=True)
 
     # Correlation ID for distributed tracing
     correlation_id = Column(String(64), nullable=False, unique=True, index=True)
@@ -162,9 +160,7 @@ class RequestStage(Base):
 
     __tablename__ = "request_stages"
 
-    id = Column(
-        GUID, primary_key=True
-    )
+    id = Column(GUID, primary_key=True)
     request_id = Column(
         GUID,
         ForeignKey("content_requests.id", ondelete="CASCADE"),
@@ -231,9 +227,7 @@ class RequestEvent(Base):
 
     __tablename__ = "request_events"
 
-    id = Column(
-        GUID, primary_key=True
-    )
+    id = Column(GUID, primary_key=True)
     request_id = Column(
         GUID,
         ForeignKey("content_requests.id", ondelete="CASCADE"),
@@ -285,9 +279,7 @@ class RequestMetrics(Base):
 
     __tablename__ = "request_metrics"
 
-    id = Column(
-        GUID, primary_key=True
-    )
+    id = Column(GUID, primary_key=True)
 
     # Time bucket (hourly)
     time_bucket = Column(TIMESTAMP, nullable=False, index=True)
@@ -296,7 +288,9 @@ class RequestMetrics(Base):
     # NOTE: Foreign key temporarily removed to allow tests to run without Organization model
     # Re-enable when Organization model is restored
     organization_id = Column(
-        GUID, nullable=True, index=True
+        GUID,
+        nullable=True,
+        index=True
         # ForeignKey("organizations.id"),  # Temporarily disabled
     )
 
@@ -353,9 +347,7 @@ class PipelineStageDefinition(Base):
 
     __tablename__ = "pipeline_stage_definitions"
 
-    id = Column(
-        GUID, primary_key=True
-    )
+    id = Column(GUID, primary_key=True)
     stage_name = Column(String(100), nullable=False, unique=True)
     display_name = Column(String(200), nullable=False)
     stage_order = Column(Integer, nullable=False)

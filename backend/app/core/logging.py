@@ -23,7 +23,9 @@ from app.core.config import settings
 # Context variables for request-scoped logging
 request_id_var: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
 user_id_var: ContextVar[Optional[str]] = ContextVar("user_id", default=None)
-correlation_id_var: ContextVar[Optional[str]] = ContextVar("correlation_id", default=None)
+correlation_id_var: ContextVar[Optional[str]] = ContextVar(
+    "correlation_id", default=None
+)
 
 
 class StructuredFormatter(logging.Formatter):
@@ -38,7 +40,9 @@ class StructuredFormatter(logging.Formatter):
         """Format log record as JSON with contextual metadata."""
         # Base log entry
         log_entry = {
-            "timestamp": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
+            "timestamp": datetime.fromtimestamp(
+                record.created, tz=timezone.utc
+            ).isoformat(),
             "severity": record.levelname,
             "message": record.getMessage(),
             "logger": record.name,
@@ -75,6 +79,7 @@ class StructuredFormatter(logging.Formatter):
         elif record.exc_info == True:
             # exc_info=True means use sys.exc_info()
             import sys
+
             exc_info = sys.exc_info()
             if exc_info[0] is not None:
                 log_entry["exception"] = {
@@ -99,12 +104,12 @@ class DevelopmentFormatter(logging.Formatter):
 
     # ANSI color codes
     COLORS = {
-        "DEBUG": "\033[36m",      # Cyan
-        "INFO": "\033[32m",       # Green
-        "WARNING": "\033[33m",    # Yellow
-        "ERROR": "\033[31m",      # Red
-        "CRITICAL": "\033[35m",   # Magenta
-        "RESET": "\033[0m",       # Reset
+        "DEBUG": "\033[36m",  # Cyan
+        "INFO": "\033[32m",  # Green
+        "WARNING": "\033[33m",  # Yellow
+        "ERROR": "\033[31m",  # Red
+        "CRITICAL": "\033[35m",  # Magenta
+        "RESET": "\033[0m",  # Reset
     }
 
     def format(self, record: logging.LogRecord) -> str:
@@ -324,6 +329,7 @@ def log_execution(logger: logging.Logger, level: str = "DEBUG"):
             # Process payment logic
             pass
     """
+
     def decorator(func):
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
@@ -341,7 +347,9 @@ def log_execution(logger: logging.Logger, level: str = "DEBUG"):
 
             try:
                 result = await func(*args, **kwargs)
-                duration_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
+                duration_ms = (
+                    datetime.now(timezone.utc) - start_time
+                ).total_seconds() * 1000
 
                 log_with_context(
                     logger,
@@ -354,7 +362,9 @@ def log_execution(logger: logging.Logger, level: str = "DEBUG"):
 
                 return result
             except Exception as e:
-                duration_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
+                duration_ms = (
+                    datetime.now(timezone.utc) - start_time
+                ).total_seconds() * 1000
 
                 log_with_context(
                     logger,
@@ -385,7 +395,9 @@ def log_execution(logger: logging.Logger, level: str = "DEBUG"):
 
             try:
                 result = func(*args, **kwargs)
-                duration_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
+                duration_ms = (
+                    datetime.now(timezone.utc) - start_time
+                ).total_seconds() * 1000
 
                 log_with_context(
                     logger,
@@ -398,7 +410,9 @@ def log_execution(logger: logging.Logger, level: str = "DEBUG"):
 
                 return result
             except Exception as e:
-                duration_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
+                duration_ms = (
+                    datetime.now(timezone.utc) - start_time
+                ).total_seconds() * 1000
 
                 log_with_context(
                     logger,
@@ -415,6 +429,7 @@ def log_execution(logger: logging.Logger, level: str = "DEBUG"):
 
         # Return appropriate wrapper based on function type
         import asyncio
+
         if asyncio.iscoroutinefunction(func):
             return async_wrapper
         else:

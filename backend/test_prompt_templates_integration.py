@@ -16,9 +16,9 @@ from app.core.prompt_templates import get_template, render_template, get_model_c
 
 def test_file_based_fallback():
     """Test that the system works with file-based templates (backwards compatibility)."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("TEST 1: File-based fallback (no database)")
-    print("="*80)
+    print("=" * 80)
 
     try:
         # Get template
@@ -51,23 +51,24 @@ def test_file_based_fallback():
         print(f"  Contains query: {'Explain Newton' in rendered}")
         print(f"  Contains grade level: {'Grade 11' in rendered}")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("✓ TEST 1 PASSED: File-based fallback works correctly")
-        print("="*80)
+        print("=" * 80)
         return True
 
     except Exception as e:
         print(f"\n✗ TEST 1 FAILED: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
 
 def test_invalid_template():
     """Test error handling for invalid template keys."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("TEST 2: Error handling for invalid template")
-    print("="*80)
+    print("=" * 80)
 
     try:
         get_template("nonexistent_template")
@@ -84,9 +85,9 @@ def test_invalid_template():
 
 def test_database_integration_when_available():
     """Test database integration (will fallback gracefully if DB not available)."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("TEST 3: Database integration (graceful fallback if unavailable)")
-    print("="*80)
+    print("=" * 80)
 
     try:
         # This will try database first, then fallback to files
@@ -95,35 +96,41 @@ def test_database_integration_when_available():
         print(f"\n✓ Template loaded (database or fallback): {template['name']}")
         print("  Note: Check logs to see if database was attempted")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("✓ TEST 3 PASSED: Database integration has graceful fallback")
-        print("="*80)
+        print("=" * 80)
         return True
 
     except Exception as e:
         print(f"\n✗ TEST 3 FAILED: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
 
 if __name__ == "__main__":
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("PROMPT TEMPLATES INTEGRATION TEST SUITE")
     print("Testing backwards-compatible database integration")
-    print("="*80)
+    print("=" * 80)
 
     results = []
 
     # Run tests
     results.append(("File-based fallback", test_file_based_fallback()))
     results.append(("Invalid template error handling", test_invalid_template()))
-    results.append(("Database integration with fallback", test_database_integration_when_available()))
+    results.append(
+        (
+            "Database integration with fallback",
+            test_database_integration_when_available(),
+        )
+    )
 
     # Summary
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("TEST SUMMARY")
-    print("="*80)
+    print("=" * 80)
 
     passed = sum(1 for _, result in results if result)
     total = len(results)

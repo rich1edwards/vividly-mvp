@@ -52,10 +52,14 @@ def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded) -> Res
         content={
             "error": "rate_limit_exceeded",
             "message": "Too many requests. Please try again later.",
-            "retry_after": str(exc.detail).split(" ")[3] if " " in str(exc.detail) else "60",
+            "retry_after": str(exc.detail).split(" ")[3]
+            if " " in str(exc.detail)
+            else "60",
         },
         headers={
-            "Retry-After": str(exc.detail).split(" ")[3] if " " in str(exc.detail) else "60",
+            "Retry-After": str(exc.detail).split(" ")[3]
+            if " " in str(exc.detail)
+            else "60",
         },
     )
 

@@ -58,9 +58,7 @@ class LoggingContextMiddleware(BaseHTTPMiddleware):
 
         # Set logging context for this request
         set_request_context(
-            request_id=request_id,
-            user_id=user_id,
-            correlation_id=correlation_id
+            request_id=request_id, user_id=user_id, correlation_id=correlation_id
         )
 
         # Log request start
@@ -73,7 +71,7 @@ class LoggingContextMiddleware(BaseHTTPMiddleware):
                     "client_ip": request.client.host if request.client else None,
                     "user_agent": request.headers.get("user-agent"),
                 }
-            }
+            },
         )
 
         try:
@@ -93,19 +91,19 @@ class LoggingContextMiddleware(BaseHTTPMiddleware):
                         "status_code": response.status_code,
                         "duration_seconds": duration_seconds,
                     }
-                }
+                },
             )
 
             # Record metrics to GCP Cloud Monitoring
             metrics.increment_http_request(
                 method=request.method,
                 endpoint=request.url.path,
-                status_code=response.status_code
+                status_code=response.status_code,
             )
             metrics.record_request_duration(
                 method=request.method,
                 endpoint=request.url.path,
-                duration_seconds=duration_seconds
+                duration_seconds=duration_seconds,
             )
 
             # Add request_id to response headers for client-side tracking
@@ -129,19 +127,17 @@ class LoggingContextMiddleware(BaseHTTPMiddleware):
                         "error_message": str(e),
                         "duration_seconds": duration_seconds,
                     }
-                }
+                },
             )
 
             # Record error metrics (status_code 500 for unhandled exceptions)
             metrics.increment_http_request(
-                method=request.method,
-                endpoint=request.url.path,
-                status_code=500
+                method=request.method, endpoint=request.url.path, status_code=500
             )
             metrics.record_request_duration(
                 method=request.method,
                 endpoint=request.url.path,
-                duration_seconds=duration_seconds
+                duration_seconds=duration_seconds,
             )
 
             raise

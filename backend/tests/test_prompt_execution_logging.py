@@ -26,7 +26,7 @@ import os
 from app.core.prompt_templates import log_prompt_execution
 
 # Test configuration
-DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
     pytest.skip("DATABASE_URL not set", allow_module_level=True)
 
@@ -48,7 +48,9 @@ def test_template(db_session):
     template_id = uuid.uuid4()
 
     # Insert test template
-    db_session.execute(text("""
+    db_session.execute(
+        text(
+            """
         INSERT INTO prompt_templates (
             id, name, description, category, template_text,
             variables, version, is_active, model_config, created_at
@@ -56,34 +58,47 @@ def test_template(db_session):
             :id, :name, :description, :category, :template_text,
             :variables, :version, :is_active, :model_config, :created_at
         )
-    """), {
-        "id": str(template_id),
-        "name": "test_nlu_extraction",
-        "description": "Test template for unit testing",
-        "category": "nlu",
-        "template_text": "Test prompt: {user_input}",
-        "variables": ["user_input"],
-        "version": 1,
-        "is_active": True,
-        "model_config": {
-            "model_name": "gemini-2.5-flash",
-            "temperature": 0.2,
-            "max_output_tokens": 512
+    """
+        ),
+        {
+            "id": str(template_id),
+            "name": "test_nlu_extraction",
+            "description": "Test template for unit testing",
+            "category": "nlu",
+            "template_text": "Test prompt: {user_input}",
+            "variables": ["user_input"],
+            "version": 1,
+            "is_active": True,
+            "model_config": {
+                "model_name": "gemini-2.5-flash",
+                "temperature": 0.2,
+                "max_output_tokens": 512,
+            },
+            "created_at": datetime.utcnow(),
         },
-        "created_at": datetime.utcnow()
-    })
+    )
     db_session.commit()
 
     yield template_id
 
     # Cleanup: Delete test executions and template
-    db_session.execute(text("""
+    db_session.execute(
+        text(
+            """
         DELETE FROM prompt_executions WHERE template_id = :template_id
-    """), {"template_id": str(template_id)})
+    """
+        ),
+        {"template_id": str(template_id)},
+    )
 
-    db_session.execute(text("""
+    db_session.execute(
+        text(
+            """
         DELETE FROM prompt_templates WHERE id = :template_id
-    """), {"template_id": str(template_id)})
+    """
+        ),
+        {"template_id": str(template_id)},
+    )
 
     db_session.commit()
 
@@ -105,7 +120,7 @@ class TestPromptExecutionLoggingSuccess:
             input_token_count=150,
             output_token_count=50,
             cost_usd=0.000018,
-            metadata={"user_id": "test_user_123", "request_id": "req_abc"}
+            metadata={"user_id": "test_user_123", "request_id": "req_abc"},
         )
 
         # Verify execution_id returned
@@ -113,13 +128,18 @@ class TestPromptExecutionLoggingSuccess:
         assert isinstance(execution_id, str)
 
         # Verify execution record in database
-        result = db_session.execute(text("""
+        result = db_session.execute(
+            text(
+                """
             SELECT template_id, success, response_time_ms,
                    input_token_count, output_token_count, total_token_count,
                    cost_usd, error_message, metadata
             FROM prompt_executions
             WHERE id = :execution_id
-        """), {"execution_id": execution_id})
+        """
+            ),
+            {"execution_id": execution_id},
+        )
 
         row = result.fetchone()
         assert row is not None
@@ -141,20 +161,23 @@ class TestPromptExecutionLoggingSuccess:
         THEN: Execution record created, optional fields are NULL
         """
         execution_id = log_prompt_execution(
-            template_key="test_nlu_extraction",
-            success=True,
-            response_time_ms=100.0
+            template_key="test_nlu_extraction", success=True, response_time_ms=100.0
         )
 
         assert execution_id is not None
 
         # Verify optional fields are NULL
-        result = db_session.execute(text("""
+        result = db_session.execute(
+            text(
+                """
             SELECT input_token_count, output_token_count, cost_usd,
                    error_message, metadata
             FROM prompt_executions
             WHERE id = :execution_id
-        """), {"execution_id": execution_id})
+        """
+            ),
+            {"execution_id": execution_id},
+        )
 
         row = result.fetchone()
         assert row[0] is None  # input_token_count
@@ -180,17 +203,22 @@ class TestPromptExecutionLoggingFailure:
             success=False,
             response_time_ms=50.0,
             error_message=error_msg,
-            metadata={"retry_count": 3}
+            metadata={"retry_count": 3},
         )
 
         assert execution_id is not None
 
         # Verify error recorded
-        result = db_session.execute(text("""
+        result = db_session.execute(
+            text(
+                """
             SELECT success, error_message, metadata
             FROM prompt_executions
             WHERE id = :execution_id
-        """), {"execution_id": execution_id})
+        """
+            ),
+            {"execution_id": execution_id},
+        )
 
         row = result.fetchone()
         assert row[0] is False  # success
@@ -210,17 +238,22 @@ class TestPromptExecutionLoggingFailure:
             template_key="test_nlu_extraction",
             success=False,
             response_time_ms=10.0,
-            error_message=long_error
+            error_message=long_error,
         )
 
         assert execution_id is not None
 
         # Verify truncation
-        result = db_session.execute(text("""
+        result = db_session.execute(
+            text(
+                """
             SELECT error_message, LENGTH(error_message) as msg_length
             FROM prompt_executions
             WHERE id = :execution_id
-        """), {"execution_id": execution_id})
+        """
+            ),
+            {"execution_id": execution_id},
+        )
 
         row = result.fetchone()
         assert len(row[0]) == 1000  # Truncated to database limit
@@ -237,24 +270,27 @@ class TestPromptExecutionLoggingEdgeCases:
         THEN: Returns None, logs to Cloud Logging, does NOT crash
         """
         execution_id = log_prompt_execution(
-            template_key="nonexistent_template",
-            success=True,
-            response_time_ms=100.0
+            template_key="nonexistent_template", success=True, response_time_ms=100.0
         )
 
         # Should return None when template not found
         assert execution_id is None
 
         # Verify no execution record created
-        result = db_session.execute(text("""
+        result = db_session.execute(
+            text(
+                """
             SELECT COUNT(*) FROM prompt_executions
             WHERE executed_at > :recent
-        """), {"recent": datetime.utcnow() - timedelta(seconds=5)})
+        """
+            ),
+            {"recent": datetime.utcnow() - timedelta(seconds=5)},
+        )
 
         count = result.scalar()
         assert count == 0
 
-    @patch('app.core.prompt_templates.get_db')
+    @patch("app.core.prompt_templates.get_db")
     def test_log_execution_database_unavailable(self, mock_get_db):
         """
         GIVEN: Database connection fails
@@ -266,15 +302,15 @@ class TestPromptExecutionLoggingEdgeCases:
 
         # Should not crash
         execution_id = log_prompt_execution(
-            template_key="test_nlu_extraction",
-            success=True,
-            response_time_ms=100.0
+            template_key="test_nlu_extraction", success=True, response_time_ms=100.0
         )
 
         # Should return None on database failure
         assert execution_id is None
 
-    def test_log_execution_with_token_count_calculation(self, db_session, test_template):
+    def test_log_execution_with_token_count_calculation(
+        self, db_session, test_template
+    ):
         """
         GIVEN: Active template exists
         WHEN: log_prompt_execution() with input/output token counts
@@ -285,14 +321,19 @@ class TestPromptExecutionLoggingEdgeCases:
             success=True,
             response_time_ms=200.0,
             input_token_count=1000,
-            output_token_count=250
+            output_token_count=250,
         )
 
-        result = db_session.execute(text("""
+        result = db_session.execute(
+            text(
+                """
             SELECT input_token_count, output_token_count, total_token_count
             FROM prompt_executions
             WHERE id = :execution_id
-        """), {"execution_id": execution_id})
+        """
+            ),
+            {"execution_id": execution_id},
+        )
 
         row = result.fetchone()
         assert row[0] == 1000  # input
@@ -310,14 +351,19 @@ class TestPromptExecutionLoggingEdgeCases:
             success=True,
             response_time_ms=50.0,
             input_token_count=500,
-            output_token_count=None
+            output_token_count=None,
         )
 
-        result = db_session.execute(text("""
+        result = db_session.execute(
+            text(
+                """
             SELECT total_token_count
             FROM prompt_executions
             WHERE id = :execution_id
-        """), {"execution_id": execution_id})
+        """
+            ),
+            {"execution_id": execution_id},
+        )
 
         total_tokens = result.scalar()
         assert total_tokens == 500
@@ -338,7 +384,7 @@ class TestPromptExecutionLoggingDatabaseTriggers:
             log_prompt_execution(
                 template_key="test_nlu_extraction",
                 success=True,
-                response_time_ms=100.0 + (i * 10)  # 100, 110, 120
+                response_time_ms=100.0 + (i * 10),  # 100, 110, 120
             )
 
         # Log 2 failed executions
@@ -347,18 +393,23 @@ class TestPromptExecutionLoggingDatabaseTriggers:
                 template_key="test_nlu_extraction",
                 success=False,
                 response_time_ms=50.0,
-                error_message="Test error"
+                error_message="Test error",
             )
 
         # Give triggers time to run
         db_session.commit()
 
         # Verify template statistics updated
-        result = db_session.execute(text("""
+        result = db_session.execute(
+            text(
+                """
             SELECT total_executions, success_count, failure_count, avg_response_time_ms
             FROM prompt_templates
             WHERE id = :template_id
-        """), {"template_id": str(test_template)})
+        """
+            ),
+            {"template_id": str(test_template)},
+        )
 
         row = result.fetchone()
         assert row[0] == 5  # total_executions (3 success + 2 failure)
@@ -385,25 +436,27 @@ class TestPromptExecutionLoggingMetadata:
             "grade_level": 10,
             "subject_context": "physics",
             "topics": ["mechanics", "newton_laws"],
-            "session_data": {
-                "duration_seconds": 45,
-                "interactions": 5
-            }
+            "session_data": {"duration_seconds": 45, "interactions": 5},
         }
 
         execution_id = log_prompt_execution(
             template_key="test_nlu_extraction",
             success=True,
             response_time_ms=150.0,
-            metadata=complex_metadata
+            metadata=complex_metadata,
         )
 
         # Verify metadata stored correctly
-        result = db_session.execute(text("""
+        result = db_session.execute(
+            text(
+                """
             SELECT metadata
             FROM prompt_executions
             WHERE id = :execution_id
-        """), {"execution_id": execution_id})
+        """
+            ),
+            {"execution_id": execution_id},
+        )
 
         stored_metadata = result.scalar()
         assert stored_metadata["user_id"] == "user_123"
@@ -431,7 +484,7 @@ class TestPromptExecutionLoggingConcurrency:
                 template_key="test_nlu_extraction",
                 success=True,
                 response_time_ms=100.0 + index,
-                metadata={"thread_id": index}
+                metadata={"thread_id": index},
             )
             with lock:
                 execution_ids.append(exec_id)
@@ -453,9 +506,14 @@ class TestPromptExecutionLoggingConcurrency:
 
         # Verify all execution records exist
         for exec_id in execution_ids:
-            result = db_session.execute(text("""
+            result = db_session.execute(
+                text(
+                    """
                 SELECT id FROM prompt_executions WHERE id = :exec_id
-            """), {"exec_id": exec_id})
+            """
+                ),
+                {"exec_id": exec_id},
+            )
             assert result.fetchone() is not None
 
 
@@ -485,12 +543,17 @@ class TestPromptExecutionLoggingCostTracking:
             response_time_ms=200.0,
             input_token_count=input_tokens,
             output_token_count=output_tokens,
-            cost_usd=total_cost
+            cost_usd=total_cost,
         )
 
-        result = db_session.execute(text("""
+        result = db_session.execute(
+            text(
+                """
             SELECT cost_usd FROM prompt_executions WHERE id = :exec_id
-        """), {"exec_id": execution_id})
+        """
+            ),
+            {"exec_id": execution_id},
+        )
 
         stored_cost = result.scalar()
         assert abs(stored_cost - total_cost) < 0.000001  # Floating point precision
@@ -516,20 +579,25 @@ class TestPromptExecutionLoggingIntegration:
             cost_usd=0.0002025,
             metadata={
                 "user_id": "integration_test_user",
-                "request_id": "req_integration_001"
-            }
+                "request_id": "req_integration_001",
+            },
         )
 
         assert execution_id is not None
 
         # Step 2: Verify execution record
-        result = db_session.execute(text("""
+        result = db_session.execute(
+            text(
+                """
             SELECT e.id, e.success, e.response_time_ms, e.total_token_count, e.cost_usd,
                    t.name, t.version
             FROM prompt_executions e
             JOIN prompt_templates t ON e.template_id = t.id
             WHERE e.id = :exec_id
-        """), {"exec_id": execution_id})
+        """
+            ),
+            {"exec_id": execution_id},
+        )
 
         row = result.fetchone()
         assert row is not None
@@ -542,10 +610,14 @@ class TestPromptExecutionLoggingIntegration:
 
         # Step 3: Query analytics view (if exists)
         try:
-            analytics_result = db_session.execute(text("""
+            analytics_result = db_session.execute(
+                text(
+                    """
                 SELECT * FROM v_template_performance
                 WHERE template_name = 'test_nlu_extraction'
-            """))
+            """
+                )
+            )
             # View should return data if migration created it
             assert analytics_result is not None
         except Exception:

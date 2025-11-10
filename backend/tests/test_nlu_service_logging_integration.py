@@ -40,12 +40,9 @@ class TestNLUServiceLoggingIntegration:
         return response
 
     @pytest.mark.asyncio
-    async def test_successful_execution_logs_all_metrics(
-        self, mock_vertex_response
-    ):
+    async def test_successful_execution_logs_all_metrics(self, mock_vertex_response):
         """Test that successful API calls log timing, tokens, and cost."""
         with patch("app.core.prompt_templates.log_prompt_execution") as mock_log:
-
             # Setup mocks
             mock_model = Mock()
             mock_model.generate_content.return_value = mock_vertex_response
@@ -58,7 +55,7 @@ class TestNLUServiceLoggingIntegration:
             # Execute
             result = await service.extract_topic(
                 student_query="Explain Newton's Third Law with basketball",
-                grade_level=10
+                grade_level=10,
             )
 
             # Verify log_prompt_execution was called
@@ -90,10 +87,11 @@ class TestNLUServiceLoggingIntegration:
     async def test_failed_execution_logs_error(self):
         """Test that API failures are logged with error details."""
         with patch("app.core.prompt_templates.log_prompt_execution") as mock_log:
-
             # Setup mocks to raise exception
             mock_model = Mock()
-            mock_model.generate_content.side_effect = Exception("API Error: Rate limit exceeded")
+            mock_model.generate_content.side_effect = Exception(
+                "API Error: Rate limit exceeded"
+            )
 
             # Create service and manually configure it
             service = NLUService()
@@ -102,8 +100,7 @@ class TestNLUServiceLoggingIntegration:
 
             # Execute (should not raise, should return fallback)
             result = await service.extract_topic(
-                student_query="Explain Newton's Third Law",
-                grade_level=10
+                student_query="Explain Newton's Third Law", grade_level=10
             )
 
             # Verify fallback response returned
@@ -123,14 +120,14 @@ class TestNLUServiceLoggingIntegration:
     @pytest.mark.asyncio
     async def test_retry_logic_logs_successful_attempt(self, mock_vertex_response):
         """Test that retry logic logs the successful attempt number."""
-        with patch("app.core.prompt_templates.log_prompt_execution") as mock_log, \
-             patch("asyncio.sleep"):  # Mock sleep to speed up test
-
+        with patch("app.core.prompt_templates.log_prompt_execution") as mock_log, patch(
+            "asyncio.sleep"
+        ):  # Mock sleep to speed up test
             # Setup mocks - fail first, succeed second
             mock_model = Mock()
             mock_model.generate_content.side_effect = [
                 Exception("Temporary error"),
-                mock_vertex_response
+                mock_vertex_response,
             ]
 
             # Create service and manually configure it
@@ -140,8 +137,7 @@ class TestNLUServiceLoggingIntegration:
 
             # Execute
             result = await service.extract_topic(
-                student_query="Explain Newton's Third Law",
-                grade_level=10
+                student_query="Explain Newton's Third Law", grade_level=10
             )
 
             # Verify success after retry
@@ -155,15 +151,13 @@ class TestNLUServiceLoggingIntegration:
     async def test_mock_mode_does_not_log(self):
         """Test that mock mode (no Vertex AI) does not attempt logging."""
         with patch("app.core.prompt_templates.log_prompt_execution") as mock_log:
-
             # Create service in mock mode
             service = NLUService()
             service.vertex_available = False
 
             # Execute
             result = await service.extract_topic(
-                student_query="Explain Newton's Third Law",
-                grade_level=10
+                student_query="Explain Newton's Third Law", grade_level=10
             )
 
             # Verify mock response returned
@@ -176,7 +170,6 @@ class TestNLUServiceLoggingIntegration:
     async def test_missing_usage_metadata_handles_gracefully(self):
         """Test that missing usage metadata doesn't crash logging."""
         with patch("app.core.prompt_templates.log_prompt_execution") as mock_log:
-
             # Setup response without usage_metadata
             response = Mock()
             response.text = """{
@@ -200,8 +193,7 @@ class TestNLUServiceLoggingIntegration:
 
             # Execute
             result = await service.extract_topic(
-                student_query="Explain Newton's Third Law",
-                grade_level=10
+                student_query="Explain Newton's Third Law", grade_level=10
             )
 
             # Verify execution succeeded
@@ -218,7 +210,6 @@ class TestNLUServiceLoggingIntegration:
     async def test_execution_id_returned_in_logs(self, mock_vertex_response):
         """Test that execution_id from logging is available for tracing."""
         with patch("app.core.prompt_templates.log_prompt_execution") as mock_log:
-
             # Mock log_prompt_execution to return execution_id
             mock_log.return_value = "exec_12345678-1234-1234-1234-123456789abc"
 
@@ -232,8 +223,7 @@ class TestNLUServiceLoggingIntegration:
 
             # Execute
             result = await service.extract_topic(
-                student_query="Explain Newton's Third Law",
-                grade_level=10
+                student_query="Explain Newton's Third Law", grade_level=10
             )
 
             # Verify log was called and returned execution_id

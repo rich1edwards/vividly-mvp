@@ -40,7 +40,10 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.services.notification_service import NotificationService, get_notification_service
+from app.services.notification_service import (
+    NotificationService,
+    get_notification_service,
+)
 from app.utils.dependencies import get_current_user, get_current_active_admin
 from app.models.user import User
 
@@ -58,41 +61,71 @@ router = APIRouter()
 class NotificationHealthStatus(BaseModel):
     """Health status for notification system components."""
 
-    status: str = Field(..., description="Overall status: healthy, degraded, or unavailable")
+    status: str = Field(
+        ..., description="Overall status: healthy, degraded, or unavailable"
+    )
     redis_connected: bool = Field(..., description="Redis connection status")
-    redis_ping_latency_ms: Optional[float] = Field(None, description="Redis ping latency in milliseconds")
+    redis_ping_latency_ms: Optional[float] = Field(
+        None, description="Redis ping latency in milliseconds"
+    )
     active_connections: int = Field(..., description="Number of active SSE connections")
-    service_uptime_seconds: Optional[float] = Field(None, description="Service uptime in seconds")
-    last_heartbeat_cleanup: Optional[str] = Field(None, description="Last heartbeat cleanup timestamp")
-    issues: List[str] = Field(default_factory=list, description="List of current issues")
+    service_uptime_seconds: Optional[float] = Field(
+        None, description="Service uptime in seconds"
+    )
+    last_heartbeat_cleanup: Optional[str] = Field(
+        None, description="Last heartbeat cleanup timestamp"
+    )
+    issues: List[str] = Field(
+        default_factory=list, description="List of current issues"
+    )
 
 
 class NotificationMetrics(BaseModel):
     """Aggregated metrics for notification system."""
 
     # Publishing metrics
-    notifications_published_total: int = Field(..., description="Total notifications published")
-    notifications_delivered_total: int = Field(..., description="Total notifications delivered")
+    notifications_published_total: int = Field(
+        ..., description="Total notifications published"
+    )
+    notifications_delivered_total: int = Field(
+        ..., description="Total notifications delivered"
+    )
     publish_errors_total: int = Field(..., description="Total publish errors")
-    publish_success_rate: float = Field(..., description="Publish success rate (0.0-1.0)")
+    publish_success_rate: float = Field(
+        ..., description="Publish success rate (0.0-1.0)"
+    )
 
     # Connection metrics
-    connections_established_total: int = Field(..., description="Total connections established")
+    connections_established_total: int = Field(
+        ..., description="Total connections established"
+    )
     connections_closed_total: int = Field(..., description="Total connections closed")
-    active_connections_current: int = Field(..., description="Current active connections")
+    active_connections_current: int = Field(
+        ..., description="Current active connections"
+    )
     subscribe_errors_total: int = Field(..., description="Total subscription errors")
 
     # Performance metrics
-    avg_publish_latency_ms: Optional[float] = Field(None, description="Average publish latency in ms")
-    avg_delivery_latency_ms: Optional[float] = Field(None, description="Average delivery latency in ms")
+    avg_publish_latency_ms: Optional[float] = Field(
+        None, description="Average publish latency in ms"
+    )
+    avg_delivery_latency_ms: Optional[float] = Field(
+        None, description="Average delivery latency in ms"
+    )
 
     # SLI (Service Level Indicator) metrics
     sli_availability: float = Field(..., description="Availability SLI (0.0-1.0)")
-    sli_latency_p95_ms: Optional[float] = Field(None, description="95th percentile latency in ms")
+    sli_latency_p95_ms: Optional[float] = Field(
+        None, description="95th percentile latency in ms"
+    )
 
     # Time range
-    collected_at: str = Field(..., description="Metrics collection timestamp (ISO 8601)")
-    period_start: Optional[str] = Field(None, description="Metrics period start (ISO 8601)")
+    collected_at: str = Field(
+        ..., description="Metrics collection timestamp (ISO 8601)"
+    )
+    period_start: Optional[str] = Field(
+        None, description="Metrics period start (ISO 8601)"
+    )
     period_end: Optional[str] = Field(None, description="Metrics period end (ISO 8601)")
 
 
@@ -102,55 +135,91 @@ class ConnectionInfo(BaseModel):
     connection_id: str = Field(..., description="Unique connection ID")
     user_id: str = Field(..., description="User ID")
     connected_at: str = Field(..., description="Connection timestamp (ISO 8601)")
-    last_heartbeat_at: str = Field(..., description="Last heartbeat timestamp (ISO 8601)")
+    last_heartbeat_at: str = Field(
+        ..., description="Last heartbeat timestamp (ISO 8601)"
+    )
     duration_seconds: float = Field(..., description="Connection duration in seconds")
     user_agent: Optional[str] = Field(None, description="Client User-Agent header")
     ip_address: Optional[str] = Field(None, description="Client IP address")
-    is_stale: bool = Field(False, description="Whether connection is stale (no recent heartbeat)")
+    is_stale: bool = Field(
+        False, description="Whether connection is stale (no recent heartbeat)"
+    )
 
 
 class ConnectionStats(BaseModel):
     """Statistics about active connections."""
 
     total_connections: int = Field(..., description="Total active connections")
-    connections_by_user: Dict[str, int] = Field(..., description="Connections grouped by user_id")
-    oldest_connection_age_seconds: Optional[float] = Field(None, description="Age of oldest connection")
-    newest_connection_age_seconds: Optional[float] = Field(None, description="Age of newest connection")
+    connections_by_user: Dict[str, int] = Field(
+        ..., description="Connections grouped by user_id"
+    )
+    oldest_connection_age_seconds: Optional[float] = Field(
+        None, description="Age of oldest connection"
+    )
+    newest_connection_age_seconds: Optional[float] = Field(
+        None, description="Age of newest connection"
+    )
     stale_connections_count: int = Field(0, description="Number of stale connections")
-    connections: List[ConnectionInfo] = Field(..., description="List of all active connections")
+    connections: List[ConnectionInfo] = Field(
+        ..., description="List of all active connections"
+    )
 
 
 class RedisPubSubHealth(BaseModel):
     """Health status for Redis Pub/Sub infrastructure."""
 
-    status: str = Field(..., description="Redis Pub/Sub status: healthy, degraded, unavailable")
+    status: str = Field(
+        ..., description="Redis Pub/Sub status: healthy, degraded, unavailable"
+    )
     redis_connected: bool = Field(..., description="Redis connection status")
-    ping_latency_ms: Optional[float] = Field(None, description="Ping latency in milliseconds")
-    pub_sub_channels_active: int = Field(0, description="Number of active pub/sub channels")
+    ping_latency_ms: Optional[float] = Field(
+        None, description="Ping latency in milliseconds"
+    )
+    pub_sub_channels_active: int = Field(
+        0, description="Number of active pub/sub channels"
+    )
     subscriptions_active: int = Field(0, description="Number of active subscriptions")
-    messages_in_flight: Optional[int] = Field(None, description="Estimated messages in flight")
+    messages_in_flight: Optional[int] = Field(
+        None, description="Estimated messages in flight"
+    )
     redis_info: Optional[Dict[str, Any]] = Field(None, description="Redis server info")
-    issues: List[str] = Field(default_factory=list, description="List of current issues")
+    issues: List[str] = Field(
+        default_factory=list, description="List of current issues"
+    )
 
 
 class AlertConfig(BaseModel):
     """Alert configuration for monitoring thresholds."""
 
-    max_publish_error_rate: float = Field(0.05, description="Max publish error rate (5%)")
-    max_subscribe_error_rate: float = Field(0.02, description="Max subscribe error rate (2%)")
+    max_publish_error_rate: float = Field(
+        0.05, description="Max publish error rate (5%)"
+    )
+    max_subscribe_error_rate: float = Field(
+        0.02, description="Max subscribe error rate (2%)"
+    )
     max_connection_count: int = Field(10000, description="Max concurrent connections")
-    min_availability_sli: float = Field(0.99, description="Minimum availability SLI (99%)")
-    max_latency_p95_ms: float = Field(100.0, description="Max 95th percentile latency (100ms)")
-    stale_connection_threshold_seconds: int = Field(90, description="Stale connection threshold")
+    min_availability_sli: float = Field(
+        0.99, description="Minimum availability SLI (99%)"
+    )
+    max_latency_p95_ms: float = Field(
+        100.0, description="Max 95th percentile latency (100ms)"
+    )
+    stale_connection_threshold_seconds: int = Field(
+        90, description="Stale connection threshold"
+    )
 
 
 class AlertStatus(BaseModel):
     """Current alert status for notification system."""
 
-    alerts_active: List[str] = Field(default_factory=list, description="List of active alerts")
+    alerts_active: List[str] = Field(
+        default_factory=list, description="List of active alerts"
+    )
     alerts_count: int = Field(0, description="Number of active alerts")
     last_alert_time: Optional[str] = Field(None, description="Last alert timestamp")
-    alert_config: AlertConfig = Field(default_factory=AlertConfig, description="Alert thresholds")
+    alert_config: AlertConfig = Field(
+        default_factory=AlertConfig, description="Alert thresholds"
+    )
 
 
 # =============================================================================
@@ -220,7 +289,9 @@ async def check_notification_health(
 
                 # Check if latency is acceptable
                 if redis_ping_latency_ms > 50:
-                    issues.append(f"High Redis ping latency: {redis_ping_latency_ms:.2f}ms")
+                    issues.append(
+                        f"High Redis ping latency: {redis_ping_latency_ms:.2f}ms"
+                    )
 
             except Exception as e:
                 issues.append(f"Redis connection failed: {str(e)}")
@@ -338,12 +409,12 @@ async def get_notification_metrics(
         active_connections = await notification_service.get_connection_count()
 
         # Calculate availability SLI (based on error rates)
-        total_operations = total_publish_attempts + connections_established + subscribe_errors
+        total_operations = (
+            total_publish_attempts + connections_established + subscribe_errors
+        )
         total_errors = publish_errors + subscribe_errors
         sli_availability = (
-            1.0 - (total_errors / total_operations)
-            if total_operations > 0
-            else 1.0
+            1.0 - (total_errors / total_operations) if total_operations > 0 else 1.0
         )
 
         metrics = NotificationMetrics(
@@ -406,7 +477,9 @@ async def get_notification_metrics(
     tags=["notification-monitoring"],
 )
 async def get_active_connections(
-    include_stale: bool = Query(False, description="Include stale connections in results"),
+    include_stale: bool = Query(
+        False, description="Include stale connections in results"
+    ),
     current_user: User = Depends(get_current_user),
     notification_service: NotificationService = Depends(get_notification_service),
 ) -> ConnectionStats:
@@ -442,7 +515,9 @@ async def get_active_connections(
     try:
         # Get all connection keys from Redis
         connection_keys = []
-        async for key in notification_service.redis.scan_iter(match="notifications:connection:*"):
+        async for key in notification_service.redis.scan_iter(
+            match="notifications:connection:*"
+        ):
             connection_keys.append(key)
 
         # Fetch connection details
@@ -470,16 +545,24 @@ async def get_active_connections(
 
                 # Calculate connection duration
                 try:
-                    connected_at = datetime.fromisoformat(connected_at_str.replace("Z", "+00:00"))
-                    duration_seconds = (datetime.utcnow() - connected_at.replace(tzinfo=None)).total_seconds()
+                    connected_at = datetime.fromisoformat(
+                        connected_at_str.replace("Z", "+00:00")
+                    )
+                    duration_seconds = (
+                        datetime.utcnow() - connected_at.replace(tzinfo=None)
+                    ).total_seconds()
                 except Exception:
                     duration_seconds = 0.0
 
                 # Check if stale (no recent heartbeat)
                 is_stale = False
                 try:
-                    last_heartbeat = datetime.fromisoformat(last_heartbeat_str.replace("Z", "+00:00"))
-                    time_since_heartbeat = (datetime.utcnow() - last_heartbeat.replace(tzinfo=None)).total_seconds()
+                    last_heartbeat = datetime.fromisoformat(
+                        last_heartbeat_str.replace("Z", "+00:00")
+                    )
+                    time_since_heartbeat = (
+                        datetime.utcnow() - last_heartbeat.replace(tzinfo=None)
+                    ).total_seconds()
                     is_stale = time_since_heartbeat > stale_threshold
                 except Exception:
                     is_stale = True  # No valid heartbeat = stale
@@ -608,9 +691,13 @@ async def check_redis_pubsub_health(
 
                 # Check latency thresholds
                 if ping_latency_ms > 100:
-                    issues.append(f"High Redis latency: {ping_latency_ms:.2f}ms (threshold: 100ms)")
+                    issues.append(
+                        f"High Redis latency: {ping_latency_ms:.2f}ms (threshold: 100ms)"
+                    )
                 elif ping_latency_ms > 50:
-                    issues.append(f"Elevated Redis latency: {ping_latency_ms:.2f}ms (threshold: 50ms)")
+                    issues.append(
+                        f"Elevated Redis latency: {ping_latency_ms:.2f}ms (threshold: 50ms)"
+                    )
 
                 # Count active pub/sub channels
                 pattern = "notifications:user:*"
@@ -769,9 +856,7 @@ async def get_alert_status(
         total_operations = total_publish_attempts + connections_established
         total_errors = publish_errors + subscribe_errors
         availability_sli = (
-            1.0 - (total_errors / total_operations)
-            if total_operations > 0
-            else 1.0
+            1.0 - (total_errors / total_operations) if total_operations > 0 else 1.0
         )
 
         # Check thresholds and generate alerts
@@ -805,7 +890,9 @@ async def get_alert_status(
         alert_status = AlertStatus(
             alerts_active=alerts_active,
             alerts_count=len(alerts_active),
-            last_alert_time=datetime.utcnow().isoformat() + "Z" if alerts_active else None,
+            last_alert_time=datetime.utcnow().isoformat() + "Z"
+            if alerts_active
+            else None,
             alert_config=alert_config,
         )
 

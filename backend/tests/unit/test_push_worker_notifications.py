@@ -85,7 +85,10 @@ class TestNotificationStarted:
         """Test that started notification is published when generation begins."""
         # Mock services
         mock_content_service.generate_content_from_query = AsyncMock(
-            return_value={"status": "completed", "video_url": "http://example.com/video.mp4"}
+            return_value={
+                "status": "completed",
+                "video_url": "http://example.com/video.mp4",
+            }
         )
         mock_notification_service.publish_notification = AsyncMock(return_value=True)
         mock_request_service.get_request_by_id = MagicMock(return_value=None)
@@ -98,17 +101,21 @@ class TestNotificationStarted:
 
         # Find the "started" notification call
         started_calls = [
-            call for call in mock_notification_service.publish_notification.call_args_list
-            if call[1]['notification'].event_type == NotificationEventType.CONTENT_GENERATION_STARTED
+            call
+            for call in mock_notification_service.publish_notification.call_args_list
+            if call[1]["notification"].event_type
+            == NotificationEventType.CONTENT_GENERATION_STARTED
         ]
 
         assert len(started_calls) >= 1
         started_call = started_calls[0]
 
         # Verify notification payload
-        assert started_call[1]['user_id'] == "user_123"
-        notification = started_call[1]['notification']
-        assert notification.event_type == NotificationEventType.CONTENT_GENERATION_STARTED
+        assert started_call[1]["user_id"] == "user_123"
+        notification = started_call[1]["notification"]
+        assert (
+            notification.event_type == NotificationEventType.CONTENT_GENERATION_STARTED
+        )
         assert notification.content_request_id == "123e4567-e89b-12d3-a456-426614174000"
         assert "Explain photosynthesis" in notification.message
         assert notification.progress_percentage == 10
@@ -131,7 +138,10 @@ class TestNotificationStarted:
             side_effect=Exception("Redis unavailable")
         )
         mock_content_service.generate_content_from_query = AsyncMock(
-            return_value={"status": "completed", "video_url": "http://example.com/video.mp4"}
+            return_value={
+                "status": "completed",
+                "video_url": "http://example.com/video.mp4",
+            }
         )
         mock_request_service.get_request_by_id = MagicMock(return_value=None)
 
@@ -160,7 +170,10 @@ class TestNotificationProgress:
     ):
         """Test that progress notification is published during generation."""
         mock_content_service.generate_content_from_query = AsyncMock(
-            return_value={"status": "completed", "video_url": "http://example.com/video.mp4"}
+            return_value={
+                "status": "completed",
+                "video_url": "http://example.com/video.mp4",
+            }
         )
         mock_notification_service.publish_notification = AsyncMock(return_value=True)
         mock_request_service.get_request_by_id = MagicMock(return_value=None)
@@ -171,17 +184,24 @@ class TestNotificationProgress:
 
         # Find the "progress" notification call
         progress_calls = [
-            call for call in mock_notification_service.publish_notification.call_args_list
-            if call[1]['notification'].event_type == NotificationEventType.CONTENT_GENERATION_PROGRESS
+            call
+            for call in mock_notification_service.publish_notification.call_args_list
+            if call[1]["notification"].event_type
+            == NotificationEventType.CONTENT_GENERATION_PROGRESS
         ]
 
         assert len(progress_calls) >= 1
         progress_call = progress_calls[0]
 
-        notification = progress_call[1]['notification']
-        assert notification.event_type == NotificationEventType.CONTENT_GENERATION_PROGRESS
+        notification = progress_call[1]["notification"]
+        assert (
+            notification.event_type == NotificationEventType.CONTENT_GENERATION_PROGRESS
+        )
         assert notification.progress_percentage == 90
-        assert "Finalizing" in notification.message or "finalizing" in notification.message.lower()
+        assert (
+            "Finalizing" in notification.message
+            or "finalizing" in notification.message.lower()
+        )
 
 
 class TestNotificationCompleted:
@@ -220,20 +240,28 @@ class TestNotificationCompleted:
 
         # Find the "completed" notification call
         completed_calls = [
-            call for call in mock_notification_service.publish_notification.call_args_list
-            if call[1]['notification'].event_type == NotificationEventType.CONTENT_GENERATION_COMPLETED
+            call
+            for call in mock_notification_service.publish_notification.call_args_list
+            if call[1]["notification"].event_type
+            == NotificationEventType.CONTENT_GENERATION_COMPLETED
         ]
 
         assert len(completed_calls) == 1
         completed_call = completed_calls[0]
 
         # Verify notification payload
-        notification = completed_call[1]['notification']
-        assert notification.event_type == NotificationEventType.CONTENT_GENERATION_COMPLETED
+        notification = completed_call[1]["notification"]
+        assert (
+            notification.event_type
+            == NotificationEventType.CONTENT_GENERATION_COMPLETED
+        )
         assert notification.progress_percentage == 100
-        assert "ready" in notification.title.lower() or "ready" in notification.message.lower()
-        assert notification.metadata['video_url'] == video_url
-        assert notification.metadata['thumbnail_url'] == thumbnail_url
+        assert (
+            "ready" in notification.title.lower()
+            or "ready" in notification.message.lower()
+        )
+        assert notification.metadata["video_url"] == video_url
+        assert notification.metadata["thumbnail_url"] == thumbnail_url
 
 
 class TestNotificationFailed:
@@ -267,20 +295,27 @@ class TestNotificationFailed:
 
         # Find the "failed" notification call
         failed_calls = [
-            call for call in mock_notification_service.publish_notification.call_args_list
-            if call[1]['notification'].event_type == NotificationEventType.CONTENT_GENERATION_FAILED
+            call
+            for call in mock_notification_service.publish_notification.call_args_list
+            if call[1]["notification"].event_type
+            == NotificationEventType.CONTENT_GENERATION_FAILED
         ]
 
         assert len(failed_calls) == 1
         failed_call = failed_calls[0]
 
         # Verify notification payload
-        notification = failed_call[1]['notification']
-        assert notification.event_type == NotificationEventType.CONTENT_GENERATION_FAILED
-        assert "failed" in notification.title.lower() or "error" in notification.title.lower()
+        notification = failed_call[1]["notification"]
+        assert (
+            notification.event_type == NotificationEventType.CONTENT_GENERATION_FAILED
+        )
+        assert (
+            "failed" in notification.title.lower()
+            or "error" in notification.title.lower()
+        )
         assert notification.progress_percentage == 0
-        assert notification.metadata['error_message'] == error_message
-        assert notification.metadata['error_type'] == "Exception"
+        assert notification.metadata["error_message"] == error_message
+        assert notification.metadata["error_type"] == "Exception"
 
     @pytest.mark.asyncio
     @patch("app.workers.push_worker.notification_service")
@@ -348,7 +383,7 @@ class TestNotificationFullFlow:
 
         # Verify all three notification types were published
         all_calls = mock_notification_service.publish_notification.call_args_list
-        event_types = [call[1]['notification'].event_type for call in all_calls]
+        event_types = [call[1]["notification"].event_type for call in all_calls]
 
         assert NotificationEventType.CONTENT_GENERATION_STARTED in event_types
         assert NotificationEventType.CONTENT_GENERATION_PROGRESS in event_types

@@ -51,13 +51,19 @@ class MetricsClient:
         """
         self.project_id = project_id or os.getenv("GCP_PROJECT", "vividly-dev-rich")
         self.project_name = f"projects/{self.project_id}"
-        self.enabled = os.getenv("METRICS_ENABLED", "true").lower() in ["true", "1", "yes"]
+        self.enabled = os.getenv("METRICS_ENABLED", "true").lower() in [
+            "true",
+            "1",
+            "yes",
+        ]
 
         # Initialize GCP Cloud Monitoring client
         try:
             if self.enabled:
                 self.client = monitoring_v3.MetricServiceClient()
-                logger.info(f"Metrics client initialized for project: {self.project_id}")
+                logger.info(
+                    f"Metrics client initialized for project: {self.project_id}"
+                )
             else:
                 self.client = None
                 logger.info("Metrics client disabled (METRICS_ENABLED=false)")
@@ -71,7 +77,7 @@ class MetricsClient:
         metric_type: str,
         value: float,
         labels: Optional[Dict[str, str]] = None,
-        value_type: str = "INT64"
+        value_type: str = "INT64",
     ) -> None:
         """
         Write a time series data point to GCP Cloud Monitoring.
@@ -98,7 +104,11 @@ class MetricsClient:
             # Set resource (monitored_resource for GCP)
             series.resource.type = "generic_task"
             series.resource.labels["project_id"] = self.project_id
-            series.resource.labels["location"] = settings.GCP_REGION if hasattr(settings, "GCP_REGION") else "us-central1"
+            series.resource.labels["location"] = (
+                settings.GCP_REGION
+                if hasattr(settings, "GCP_REGION")
+                else "us-central1"
+            )
             series.resource.labels["namespace"] = settings.APP_NAME
             series.resource.labels["job"] = "vividly-api"
             series.resource.labels["task_id"] = os.getenv("K_REVISION", "local")
@@ -106,7 +116,7 @@ class MetricsClient:
             # Create data point
             now = time.time()
             seconds = int(now)
-            nanos = int((now - seconds) * 10 ** 9)
+            nanos = int((now - seconds) * 10**9)
             interval = monitoring_v3.TimeInterval(
                 {"end_time": {"seconds": seconds, "nanos": nanos}}
             )
@@ -140,7 +150,7 @@ class MetricsClient:
             metric_type="custom.googleapis.com/vividly/rate_limit_hits_total",
             value=1,
             labels={"endpoint": endpoint, "ip_address": ip_address},
-            value_type="INT64"
+            value_type="INT64",
         )
 
     def increment_rate_limit_exceeded(self, endpoint: str, ip_address: str) -> None:
@@ -157,10 +167,12 @@ class MetricsClient:
             metric_type="custom.googleapis.com/vividly/rate_limit_exceeded_total",
             value=1,
             labels={"endpoint": endpoint, "ip_address": ip_address},
-            value_type="INT64"
+            value_type="INT64",
         )
 
-    def increment_brute_force_lockouts(self, ip_address: str, email: Optional[str] = None) -> None:
+    def increment_brute_force_lockouts(
+        self, ip_address: str, email: Optional[str] = None
+    ) -> None:
         """
         Increment count of account lockouts triggered by brute force protection.
 
@@ -178,10 +190,12 @@ class MetricsClient:
             metric_type="custom.googleapis.com/vividly/brute_force_lockouts_total",
             value=1,
             labels=labels,
-            value_type="INT64"
+            value_type="INT64",
         )
 
-    def record_rate_limit_middleware_latency(self, endpoint: str, latency_ms: float) -> None:
+    def record_rate_limit_middleware_latency(
+        self, endpoint: str, latency_ms: float
+    ) -> None:
         """
         Record rate limiting middleware processing time.
 
@@ -195,14 +209,16 @@ class MetricsClient:
             metric_type="custom.googleapis.com/vividly/rate_limit_middleware_latency_ms",
             value=latency_ms,
             labels={"endpoint": endpoint},
-            value_type="DOUBLE"
+            value_type="DOUBLE",
         )
 
     # ========================================================================
     # AUTHENTICATION METRICS
     # ========================================================================
 
-    def increment_auth_login_attempts(self, status: str, user_role: Optional[str] = None) -> None:
+    def increment_auth_login_attempts(
+        self, status: str, user_role: Optional[str] = None
+    ) -> None:
         """
         Increment login attempt counter.
 
@@ -218,7 +234,7 @@ class MetricsClient:
             metric_type="custom.googleapis.com/vividly/auth_login_attempts_total",
             value=1,
             labels=labels,
-            value_type="INT64"
+            value_type="INT64",
         )
 
     def increment_auth_login_failures(self, reason: str) -> None:
@@ -232,7 +248,7 @@ class MetricsClient:
             metric_type="custom.googleapis.com/vividly/auth_login_failures_total",
             value=1,
             labels={"reason": reason},
-            value_type="INT64"
+            value_type="INT64",
         )
 
     def increment_auth_token_refresh(self, status: str) -> None:
@@ -246,7 +262,7 @@ class MetricsClient:
             metric_type="custom.googleapis.com/vividly/auth_token_refresh_total",
             value=1,
             labels={"status": status},
-            value_type="INT64"
+            value_type="INT64",
         )
 
     def record_auth_session_duration(self, duration_seconds: float) -> None:
@@ -260,10 +276,12 @@ class MetricsClient:
             metric_type="custom.googleapis.com/vividly/auth_session_duration_seconds",
             value=duration_seconds,
             labels={},
-            value_type="DOUBLE"
+            value_type="DOUBLE",
         )
 
-    def set_auth_active_sessions(self, count: int, user_role: Optional[str] = None) -> None:
+    def set_auth_active_sessions(
+        self, count: int, user_role: Optional[str] = None
+    ) -> None:
         """
         Set current active session count (gauge metric).
 
@@ -279,14 +297,16 @@ class MetricsClient:
             metric_type="custom.googleapis.com/vividly/auth_active_sessions",
             value=count,
             labels=labels,
-            value_type="INT64"
+            value_type="INT64",
         )
 
     # ========================================================================
     # SYSTEM HEALTH METRICS
     # ========================================================================
 
-    def increment_http_request(self, method: str, endpoint: str, status_code: int) -> None:
+    def increment_http_request(
+        self, method: str, endpoint: str, status_code: int
+    ) -> None:
         """
         Increment HTTP request counter.
 
@@ -301,12 +321,14 @@ class MetricsClient:
             labels={
                 "method": method,
                 "endpoint": endpoint,
-                "status_code": str(status_code)
+                "status_code": str(status_code),
             },
-            value_type="INT64"
+            value_type="INT64",
         )
 
-    def record_request_duration(self, method: str, endpoint: str, duration_seconds: float) -> None:
+    def record_request_duration(
+        self, method: str, endpoint: str, duration_seconds: float
+    ) -> None:
         """
         Record HTTP request processing time.
 
@@ -319,7 +341,7 @@ class MetricsClient:
             metric_type="custom.googleapis.com/vividly/http_request_duration_seconds",
             value=duration_seconds,
             labels={"method": method, "endpoint": endpoint},
-            value_type="DOUBLE"
+            value_type="DOUBLE",
         )
 
     # ========================================================================
@@ -337,10 +359,12 @@ class MetricsClient:
             metric_type="custom.googleapis.com/vividly/content_generation_requests_total",
             value=1,
             labels={"status": status},
-            value_type="INT64"
+            value_type="INT64",
         )
 
-    def record_content_generation_duration(self, stage: str, duration_seconds: float) -> None:
+    def record_content_generation_duration(
+        self, stage: str, duration_seconds: float
+    ) -> None:
         """
         Record content generation stage duration.
 
@@ -352,7 +376,7 @@ class MetricsClient:
             metric_type="custom.googleapis.com/vividly/content_generation_duration_seconds",
             value=duration_seconds,
             labels={"stage": stage},
-            value_type="DOUBLE"
+            value_type="DOUBLE",
         )
 
 
@@ -393,6 +417,8 @@ def increment_http_request(method: str, endpoint: str, status_code: int) -> None
     get_metrics_client().increment_http_request(method, endpoint, status_code)
 
 
-def record_request_duration(method: str, endpoint: str, duration_seconds: float) -> None:
+def record_request_duration(
+    method: str, endpoint: str, duration_seconds: float
+) -> None:
     """Convenience function to record request duration."""
     get_metrics_client().record_request_duration(method, endpoint, duration_seconds)

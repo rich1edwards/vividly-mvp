@@ -24,11 +24,7 @@ async def health_check() -> Dict[str, Any]:
     Returns:
         Status and basic system information
     """
-    return {
-        "status": "healthy",
-        "service": "vividly-api",
-        "version": "1.0.0"
-    }
+    return {"status": "healthy", "service": "vividly-api", "version": "1.0.0"}
 
 
 @router.get("/health/database")
@@ -46,14 +42,14 @@ async def database_health(db: Session = Depends(get_db)) -> Dict[str, Any]:
         return {
             "status": "healthy",
             "database": "connected",
-            "message": "Database connection is active"
+            "message": "Database connection is active",
         }
     except Exception as e:
         logger.error(f"Database health check failed: {e}")
         return {
             "status": "unhealthy",
             "database": "disconnected",
-            "error": str(e)[:200]
+            "error": str(e)[:200],
         }
 
 
@@ -90,7 +86,9 @@ async def prompt_system_health() -> Dict[str, Any]:
         warnings.append("High database error rate - system operating on fallback")
     elif fallback_rate > 90 and total_requests > 10:
         status = "degraded"
-        warnings.append("Primarily using file-based fallback - database may not be migrated")
+        warnings.append(
+            "Primarily using file-based fallback - database may not be migrated"
+        )
 
     return {
         "status": status,
@@ -110,8 +108,10 @@ async def prompt_system_health() -> Dict[str, Any]:
         "interpretation": {
             "database_available": database_success_rate > 0,
             "fallback_working": fallback_rate > 0 or total_requests == 0,
-            "primary_source": TemplateSource.DATABASE.value if database_success_rate > fallback_rate else TemplateSource.FILE_DEFAULT.value
-        }
+            "primary_source": TemplateSource.DATABASE.value
+            if database_success_rate > fallback_rate
+            else TemplateSource.FILE_DEFAULT.value,
+        },
     }
 
 
@@ -134,10 +134,7 @@ async def detailed_health_check(db: Session = Depends(get_db)) -> Dict[str, Any]
 
     return {
         "status": overall_status,
-        "checks": {
-            "database": db_health,
-            "prompt_system": prompt_health
-        },
+        "checks": {"database": db_health, "prompt_system": prompt_health},
         "service": "vividly-api",
-        "version": "1.0.0"
+        "version": "1.0.0",
     }

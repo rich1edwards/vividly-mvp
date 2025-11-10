@@ -165,9 +165,7 @@ class NotificationService:
         if redis_client:
             self.redis = redis_client
         else:
-            redis_url = redis_url or os.getenv(
-                "REDIS_URL", "redis://localhost:6379/0"
-            )
+            redis_url = redis_url or os.getenv("REDIS_URL", "redis://localhost:6379/0")
             self.redis = redis.from_url(redis_url, decode_responses=True)
 
         # Active connections tracking (in-memory for this instance)
@@ -379,7 +377,9 @@ class NotificationService:
 
                         # Yield to SSE stream
                         yield {
-                            "event": notification_data.get("event_type", "notification"),
+                            "event": notification_data.get(
+                                "event_type", "notification"
+                            ),
                             "data": notification_data,
                         }
 
@@ -506,9 +506,7 @@ class NotificationService:
             # Set expiration on connection metadata (auto-cleanup)
             await self.redis.expire(connection_key, self.connection_timeout)
 
-            logger.debug(
-                f"Tracked connection: user={user_id}, conn={connection_id}"
-            )
+            logger.debug(f"Tracked connection: user={user_id}, conn={connection_id}")
 
             return True
 
@@ -543,9 +541,7 @@ class NotificationService:
             await self.redis.delete(connection_key)
             await self.redis.delete(heartbeat_key)
 
-            logger.debug(
-                f"Untracked connection: user={user_id}, conn={connection_id}"
-            )
+            logger.debug(f"Untracked connection: user={user_id}, conn={connection_id}")
 
             return True
 

@@ -258,6 +258,7 @@ async def rate_limit_middleware(request: Request, call_next):
 
     # Extract IP for metrics
     from app.middleware.auth import get_client_ip
+
     ip_address = get_client_ip(request)
 
     # Apply per-minute limit
@@ -266,8 +267,7 @@ async def rate_limit_middleware(request: Request, call_next):
     try:
         # Record rate limit hit metric
         metrics.increment_rate_limit_hits(
-            endpoint=request.url.path,
-            ip_address=ip_address
+            endpoint=request.url.path, ip_address=ip_address
         )
 
         await limiter.check_request(
@@ -282,15 +282,13 @@ async def rate_limit_middleware(request: Request, call_next):
     except HTTPException as e:
         # Record rate limit exceeded metric
         metrics.increment_rate_limit_exceeded(
-            endpoint=request.url.path,
-            ip_address=ip_address
+            endpoint=request.url.path, ip_address=ip_address
         )
 
         # Record middleware latency even for rate limited requests
         latency_ms = (time.time() - start_time) * 1000
         metrics.record_rate_limit_middleware_latency(
-            endpoint=request.url.path,
-            latency_ms=latency_ms
+            endpoint=request.url.path, latency_ms=latency_ms
         )
 
         # Return rate limit error
@@ -301,8 +299,7 @@ async def rate_limit_middleware(request: Request, call_next):
     # Record middleware latency
     latency_ms = (time.time() - start_time) * 1000
     metrics.record_rate_limit_middleware_latency(
-        endpoint=request.url.path,
-        latency_ms=latency_ms
+        endpoint=request.url.path, latency_ms=latency_ms
     )
 
     # Process request

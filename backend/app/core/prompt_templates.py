@@ -34,13 +34,16 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 # Monitoring: Template source tracking for observability
 class TemplateSource(str, Enum):
     """Track where templates are loaded from for monitoring"""
+
     DATABASE = "database"
     ENVIRONMENT = "environment"
     FILE_DEFAULT = "file_default"
     ERROR = "error"
+
 
 # Monitoring: Metrics tracking
 _template_metrics = {
@@ -51,9 +54,11 @@ _template_metrics = {
     "total_requests": 0,
 }
 
+
 def get_metrics() -> Dict[str, int]:
     """Return current metrics for monitoring dashboard"""
     return _template_metrics.copy()
+
 
 def reset_metrics() -> None:
     """Reset metrics (for testing or daily rollover)"""
@@ -65,6 +70,7 @@ def reset_metrics() -> None:
         "file_fallback_usage": 0,
         "total_requests": 0,
     }
+
 
 # Load custom templates from environment if provided
 CUSTOM_TEMPLATES_JSON = os.getenv("AI_PROMPT_TEMPLATES_JSON")
@@ -131,7 +137,7 @@ Response: {{"confidence": 0.99, "topic_id": null, "topic_name": null, "clarifica
 Now analyze this student query:
 Query: "{student_query}"
 
-Respond with JSON only:"""
+Respond with JSON only:""",
     }
 }
 
@@ -169,13 +175,19 @@ def get_template(template_key: str = "nlu_extraction_gemini_25") -> Dict[str, An
         db = next(get_db())
         try:
             # Direct database query (synchronous) - no async needed
-            db_template = db.query(PromptTemplateModel).filter(
-                and_(
-                    PromptTemplateModel.name == template_key,
-                    PromptTemplateModel.is_active == True,
-                    PromptTemplateModel.ab_test_group.is_(None),  # Not part of A/B test
+            db_template = (
+                db.query(PromptTemplateModel)
+                .filter(
+                    and_(
+                        PromptTemplateModel.name == template_key,
+                        PromptTemplateModel.is_active == True,
+                        PromptTemplateModel.ab_test_group.is_(
+                            None
+                        ),  # Not part of A/B test
+                    )
                 )
-            ).first()
+                .first()
+            )
 
             if db_template:
                 elapsed_ms = (time.time() - start_time) * 1000
@@ -191,18 +203,22 @@ def get_template(template_key: str = "nlu_extraction_gemini_25") -> Dict[str, An
                         "source": source.value,
                         "latency_ms": elapsed_ms,
                         "database_available": True,
-                    }
+                    },
                 )
 
                 # Convert SQLAlchemy model to compatible dict format
                 return {
                     "name": db_template.name,
                     "description": db_template.description or "",
-                    "model_name": db_template.model_config.get("model_name", "gemini-2.5-flash"),
+                    "model_name": db_template.model_config.get(
+                        "model_name", "gemini-2.5-flash"
+                    ),
                     "temperature": db_template.model_config.get("temperature", 0.2),
                     "top_p": db_template.model_config.get("top_p", 0.8),
                     "top_k": db_template.model_config.get("top_k", 40),
-                    "max_output_tokens": db_template.model_config.get("max_output_tokens", 512),
+                    "max_output_tokens": db_template.model_config.get(
+                        "max_output_tokens", 512
+                    ),
                     "template": db_template.template_text,
                 }
         finally:
@@ -220,7 +236,7 @@ def get_template(template_key: str = "nlu_extraction_gemini_25") -> Dict[str, An
                 "error_type": type(e).__name__,
                 "error_message": str(e)[:200],  # Truncate for logging
                 "database_available": False,
-            }
+            },
         )
 
     # PHASE 2: Try loading custom templates from environment
@@ -238,7 +254,7 @@ def get_template(template_key: str = "nlu_extraction_gemini_25") -> Dict[str, An
                         "template_key": template_key,
                         "source": source.value,
                         "latency_ms": elapsed_ms,
-                    }
+                    },
                 )
                 return custom_templates[template_key]
         except json.JSONDecodeError as e:
@@ -257,7 +273,7 @@ def get_template(template_key: str = "nlu_extraction_gemini_25") -> Dict[str, An
                 "source": source.value,
                 "latency_ms": elapsed_ms,
                 "error": "template_not_found",
-            }
+            },
         )
         raise KeyError(f"Template '{template_key}' not found in DEFAULT_TEMPLATES")
 
@@ -270,7 +286,7 @@ def get_template(template_key: str = "nlu_extraction_gemini_25") -> Dict[str, An
             "template_key": template_key,
             "source": source.value,
             "latency_ms": elapsed_ms,
-        }
+        },
     )
     return DEFAULT_TEMPLATES[template_key]
 
@@ -295,7 +311,9 @@ def render_template(template_key: str, variables: Dict[str, Any]) -> str:
     # Simple string formatting (use Jinja2 in Track 2 for more advanced features)
     try:
         rendered = template_str.format(**variables)
-        logger.debug(f"Rendered template '{template_key}' with {len(variables)} variables")
+        logger.debug(
+            f"Rendered template '{template_key}' with {len(variables)} variables"
+        )
         return rendered
     except KeyError as e:
         logger.error(f"Missing variable in template '{template_key}': {e}")
@@ -332,10 +350,7 @@ def list_templates() -> Dict[str, str]:
     Returns:
         Dict mapping template_key to template name
     """
-    return {
-        key: config["name"]
-        for key, config in DEFAULT_TEMPLATES.items()
-    }
+    return {key: config["name"] for key, config in DEFAULT_TEMPLATES.items()}
 
 
 def log_prompt_execution(
@@ -393,12 +408,16 @@ def log_prompt_execution(
         db = next(get_db())
         try:
             # Find the template in the database
-            db_template = db.query(PromptTemplateModel).filter(
-                and_(
-                    PromptTemplateModel.name == template_key,
-                    PromptTemplateModel.is_active == True,
+            db_template = (
+                db.query(PromptTemplateModel)
+                .filter(
+                    and_(
+                        PromptTemplateModel.name == template_key,
+                        PromptTemplateModel.is_active == True,
+                    )
                 )
-            ).first()
+                .first()
+            )
 
             # If template not in database, log to Cloud Logging but don't create execution record
             if not db_template:
@@ -414,7 +433,7 @@ def log_prompt_execution(
                         "error_message": error_message,
                         "metadata": metadata,
                         "database_template_found": False,
-                    }
+                    },
                 )
                 return None
 
@@ -428,9 +447,13 @@ def log_prompt_execution(
                 response_time_ms=response_time_ms,
                 input_token_count=input_token_count,
                 output_token_count=output_token_count,
-                total_token_count=(input_token_count or 0) + (output_token_count or 0) if input_token_count or output_token_count else None,
+                total_token_count=(input_token_count or 0) + (output_token_count or 0)
+                if input_token_count or output_token_count
+                else None,
                 cost_usd=cost_usd,
-                error_message=error_message[:1000] if error_message else None,  # Truncate to DB limit
+                error_message=error_message[:1000]
+                if error_message
+                else None,  # Truncate to DB limit
                 metadata=metadata or {},
             )
 
@@ -455,7 +478,7 @@ def log_prompt_execution(
                     "cost_usd": cost_usd,
                     "logging_latency_ms": elapsed_ms,
                     "database_available": True,
-                }
+                },
             )
 
             return str(execution_id)
@@ -477,7 +500,7 @@ def log_prompt_execution(
                 "error_message": str(e)[:200],  # Truncate for logging
                 "logging_latency_ms": elapsed_ms,
                 "database_available": False,
-            }
+            },
         )
 
         # Still log to Cloud Logging for observability
@@ -492,16 +515,14 @@ def log_prompt_execution(
                 "cost_usd": cost_usd,
                 "error_message": error_message,
                 "metadata": metadata,
-            }
+            },
         )
 
         return None
 
 
 def calculate_gemini_cost(
-    input_tokens: int,
-    output_tokens: int,
-    model: str = "gemini-2.5-flash"
+    input_tokens: int, output_tokens: int, model: str = "gemini-2.5-flash"
 ) -> float:
     """
     Calculate cost in USD for Gemini API usage.

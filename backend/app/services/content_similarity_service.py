@@ -72,7 +72,9 @@ class ContentSimilarityService:
         if content_a.get("interest") and content_b.interest:
             # Normalize interest strings for comparison
             interest_a = content_a["interest"].lower().strip()
-            interest_b_normalized = content_b.interest.lower().strip() if content_b.interest else ""
+            interest_b_normalized = (
+                content_b.interest.lower().strip() if content_b.interest else ""
+            )
 
             if interest_a == interest_b_normalized:
                 score += self.SUBJECT_MATCH_SCORE
@@ -92,6 +94,7 @@ class ContentSimilarityService:
         # Recency bonus: +5 points for recent content (last 7 days)
         if content_b.created_at:
             from datetime import datetime, timedelta
+
             days_since = (datetime.utcnow() - content_b.created_at).days
             if days_since <= 7:
                 score += self.RECENCY_BONUS_SCORE
@@ -110,13 +113,72 @@ class ContentSimilarityService:
         """
         # Simple keyword extraction: split by spaces, remove common words
         stop_words = {
-            "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for",
-            "of", "with", "by", "from", "as", "is", "was", "are", "were", "be",
-            "been", "being", "have", "has", "had", "do", "does", "did", "will",
-            "would", "could", "should", "may", "might", "can", "about", "what",
-            "how", "why", "when", "where", "who", "which", "this", "that", "these",
-            "those", "i", "you", "he", "she", "it", "we", "they", "me", "him",
-            "her", "us", "them", "my", "your", "his", "its", "our", "their"
+            "the",
+            "a",
+            "an",
+            "and",
+            "or",
+            "but",
+            "in",
+            "on",
+            "at",
+            "to",
+            "for",
+            "of",
+            "with",
+            "by",
+            "from",
+            "as",
+            "is",
+            "was",
+            "are",
+            "were",
+            "be",
+            "been",
+            "being",
+            "have",
+            "has",
+            "had",
+            "do",
+            "does",
+            "did",
+            "will",
+            "would",
+            "could",
+            "should",
+            "may",
+            "might",
+            "can",
+            "about",
+            "what",
+            "how",
+            "why",
+            "when",
+            "where",
+            "who",
+            "which",
+            "this",
+            "that",
+            "these",
+            "those",
+            "i",
+            "you",
+            "he",
+            "she",
+            "it",
+            "we",
+            "they",
+            "me",
+            "him",
+            "her",
+            "us",
+            "them",
+            "my",
+            "your",
+            "his",
+            "its",
+            "our",
+            "their",
         }
 
         # Normalize and filter
@@ -158,7 +220,7 @@ class ContentSimilarityService:
             # Only search completed content (not pending/generating/failed)
             query = db.query(ContentMetadata).filter(
                 ContentMetadata.status == GenerationStatus.COMPLETED.value,
-                ContentMetadata.archived == False
+                ContentMetadata.archived == False,
             )
 
             # Optimization: If topic_id provided, pre-filter by topic
@@ -169,7 +231,9 @@ class ContentSimilarityService:
             # Execute query to get candidates
             candidates = query.all()
 
-            logger.info(f"Found {len(candidates)} candidate videos for similarity check")
+            logger.info(
+                f"Found {len(candidates)} candidate videos for similarity check"
+            )
 
             # Calculate similarity scores for each candidate
             scored_results = []
@@ -198,12 +262,14 @@ class ContentSimilarityService:
                         is_own_content = True
                         similarity_score += 5  # Small boost for own content
 
-                    scored_results.append({
-                        "content": content,
-                        "similarity_score": similarity_score,
-                        "similarity_level": similarity_level,
-                        "is_own_content": is_own_content,
-                    })
+                    scored_results.append(
+                        {
+                            "content": content,
+                            "similarity_score": similarity_score,
+                            "similarity_level": similarity_level,
+                            "is_own_content": is_own_content,
+                        }
+                    )
 
             # Sort by similarity score (highest first) and limit results
             scored_results.sort(key=lambda x: x["similarity_score"], reverse=True)
@@ -238,14 +304,20 @@ class ContentSimilarityService:
             "title": content.title,
             "description": content.description,
             "topic_id": content.topic_id,
-            "topic_name": content.topic_rel.name if content.topic_rel else content.topic_id,
+            "topic_name": content.topic_rel.name
+            if content.topic_rel
+            else content.topic_id,
             "interest": content.interest,
             "video_url": content.video_url,
             "thumbnail_url": content.thumbnail_url,
             "duration_seconds": content.duration_seconds,
-            "created_at": content.created_at.isoformat() if content.created_at else None,
+            "created_at": content.created_at.isoformat()
+            if content.created_at
+            else None,
             "views": content.views,
-            "average_rating": float(content.average_rating) if content.average_rating else None,
+            "average_rating": float(content.average_rating)
+            if content.average_rating
+            else None,
             "similarity_score": result["similarity_score"],
             "similarity_level": result["similarity_level"],
             "is_own_content": result["is_own_content"],

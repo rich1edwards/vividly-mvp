@@ -92,9 +92,7 @@ class TestStructuredFormatter:
     def test_format_with_request_context(self):
         """Test that request context is included in logs."""
         set_request_context(
-            request_id="req_123",
-            user_id="user_456",
-            correlation_id="corr_789"
+            request_id="req_123", user_id="user_456", correlation_id="corr_789"
         )
 
         record = self.logger.makeRecord(
@@ -120,6 +118,7 @@ class TestStructuredFormatter:
             raise ValueError("Test error")
         except ValueError:
             import sys
+
             # Capture exc_info inside the except block
             exc_info = sys.exc_info()
             record = self.logger.makeRecord(
@@ -294,9 +293,7 @@ class TestRequestContext:
     def test_set_request_context_sets_all_fields(self):
         """Test setting all context fields."""
         set_request_context(
-            request_id="req_123",
-            user_id="user_456",
-            correlation_id="corr_789"
+            request_id="req_123", user_id="user_456", correlation_id="corr_789"
         )
 
         assert request_id_var.get() == "req_123"
@@ -314,9 +311,7 @@ class TestRequestContext:
     def test_clear_request_context_clears_all_fields(self):
         """Test clearing all context fields."""
         set_request_context(
-            request_id="req_123",
-            user_id="user_456",
-            correlation_id="corr_789"
+            request_id="req_123", user_id="user_456", correlation_id="corr_789"
         )
 
         clear_request_context()
@@ -348,11 +343,7 @@ class TestLogWithContext:
     def test_log_with_context_adds_extra_fields(self):
         """Test that log_with_context adds extra fields."""
         log_with_context(
-            self.logger,
-            "INFO",
-            "Test message",
-            user_id="user_123",
-            action="login"
+            self.logger, "INFO", "Test message", user_id="user_123", action="login"
         )
 
         self.stream.seek(0)
@@ -398,6 +389,7 @@ class TestLogExecutionDecorator:
 
     def test_decorator_logs_function_execution(self):
         """Test that decorator logs function start and completion."""
+
         @log_execution(self.logger, level="INFO")
         def test_function():
             return "result"
@@ -422,6 +414,7 @@ class TestLogExecutionDecorator:
 
     def test_decorator_logs_function_errors(self):
         """Test that decorator logs function errors."""
+
         @log_execution(self.logger, level="INFO")
         def test_function():
             raise ValueError("Test error")
@@ -445,6 +438,7 @@ class TestLogExecutionDecorator:
     @pytest.mark.asyncio
     async def test_decorator_works_with_async_functions(self):
         """Test that decorator works with async functions."""
+
         @log_execution(self.logger, level="INFO")
         async def async_function():
             return "async_result"
@@ -487,8 +481,7 @@ class TestIntegration:
         """Test end-to-end logging with request context."""
         # Set request context
         set_request_context(
-            request_id="req_integration_test",
-            user_id="user_integration_test"
+            request_id="req_integration_test", user_id="user_integration_test"
         )
 
         # Log a message

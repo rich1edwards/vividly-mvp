@@ -7,7 +7,10 @@ and SQLite (testing), following Andrew Ng's "Build it right" methodology.
 import uuid
 import json
 from sqlalchemy import TypeDecorator, CHAR, String, Text
-from sqlalchemy.dialects.postgresql import UUID as PostgreSQL_UUID, JSONB as PostgreSQL_JSONB
+from sqlalchemy.dialects.postgresql import (
+    UUID as PostgreSQL_UUID,
+    JSONB as PostgreSQL_JSONB,
+)
 
 
 class GUID(TypeDecorator):
@@ -25,12 +28,13 @@ class GUID(TypeDecorator):
     - Test everything: Enables comprehensive testing with SQLite
     - Think about the future: Easy to extend for other databases
     """
+
     impl = CHAR
     cache_ok = True
 
     def load_dialect_impl(self, dialect):
         """Load the appropriate type for the dialect."""
-        if dialect.name == 'postgresql':
+        if dialect.name == "postgresql":
             return dialect.type_descriptor(PostgreSQL_UUID(as_uuid=True))
         else:
             # SQLite and others: use CHAR(36)
@@ -40,7 +44,7 @@ class GUID(TypeDecorator):
         """Convert Python UUID to database representation."""
         if value is None:
             return value
-        elif dialect.name == 'postgresql':
+        elif dialect.name == "postgresql":
             # PostgreSQL handles UUID objects natively
             return value if isinstance(value, uuid.UUID) else uuid.UUID(value)
         else:
@@ -76,12 +80,13 @@ class JSON(TypeDecorator):
     - Test everything: Enables comprehensive testing with SQLite
     - Think about the future: Easy to extend for other databases
     """
+
     impl = Text
     cache_ok = True
 
     def load_dialect_impl(self, dialect):
         """Load the appropriate type for the dialect."""
-        if dialect.name == 'postgresql':
+        if dialect.name == "postgresql":
             return dialect.type_descriptor(PostgreSQL_JSONB())
         else:
             # SQLite and others: use Text
@@ -91,7 +96,7 @@ class JSON(TypeDecorator):
         """Convert Python dict/list to database representation."""
         if value is None:
             return value
-        elif dialect.name == 'postgresql':
+        elif dialect.name == "postgresql":
             # PostgreSQL handles JSON objects natively
             return value
         else:
@@ -102,7 +107,7 @@ class JSON(TypeDecorator):
         """Convert database representation to Python dict/list."""
         if value is None:
             return value
-        elif dialect.name == 'postgresql':
+        elif dialect.name == "postgresql":
             # PostgreSQL returns dict/list directly
             return value
         else:

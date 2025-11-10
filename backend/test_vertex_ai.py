@@ -5,6 +5,7 @@ Test script to verify Vertex AI API access with Gemini.
 import os
 import sys
 
+
 def test_vertex_ai_access():
     """Test Vertex AI API access with a simple Gemini call."""
     project_id = "vividly-dev-rich"
@@ -48,6 +49,7 @@ def test_vertex_ai_access():
 
         # Print full traceback for debugging
         import traceback
+
         traceback.print_exc()
 
         # Check for common permission issues
@@ -59,6 +61,7 @@ def test_vertex_ai_access():
             print("Check your GCP quota limits for Vertex AI.")
 
         return False
+
 
 if __name__ == "__main__":
     success = test_vertex_ai_access()

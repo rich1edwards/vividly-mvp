@@ -123,9 +123,7 @@ class ClarificationService:
             "Can you provide more details about what you're trying to understand?",
         ]
 
-        logger.info(
-            f"Clarification needed for query: '{query}' - Reason: {reasoning}"
-        )
+        logger.info(f"Clarification needed for query: '{query}' - Reason: {reasoning}")
 
         return {
             "needs_clarification": True,

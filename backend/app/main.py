@@ -53,6 +53,7 @@ app.add_middleware(LoggingContextMiddleware)
 
 # Security middleware (order matters - first in, last out)
 import os
+
 # Check for TESTING environment variable (case-insensitive)
 TESTING = os.getenv("TESTING", "").lower() in ["true", "1", "yes"]
 

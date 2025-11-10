@@ -29,17 +29,17 @@ class TestAsyncContentGeneration:
         }
 
         # Mock Pub/Sub publish to avoid real GCP calls in tests
-        with patch("app.services.pubsub_service.PubSubService.publish_content_request") as mock_publish:
+        with patch(
+            "app.services.pubsub_service.PubSubService.publish_content_request"
+        ) as mock_publish:
             mock_publish.return_value = {
                 "success": True,
                 "message_id": "test_message_123",
-                "topic": "projects/test/topics/content-requests-test"
+                "topic": "projects/test/topics/content-requests-test",
             }
 
             response = client.post(
-                "/api/v1/content/generate",
-                json=request_data,
-                headers=student_headers
+                "/api/v1/content/generate", json=request_data, headers=student_headers
             )
 
         # Should return 202 Accepted immediately
@@ -72,22 +72,24 @@ class TestAsyncContentGeneration:
             "grade_level": 10,
         }
 
-        with patch("app.services.pubsub_service.PubSubService.publish_content_request") as mock_publish:
+        with patch(
+            "app.services.pubsub_service.PubSubService.publish_content_request"
+        ) as mock_publish:
             mock_publish.return_value = {"success": True, "message_id": "test_123"}
 
             response = client.post(
-                "/api/v1/content/generate",
-                json=request_data,
-                headers=student_headers
+                "/api/v1/content/generate", json=request_data, headers=student_headers
             )
 
         assert response.status_code == status.HTTP_202_ACCEPTED
         request_id = response.json()["request_id"]
 
         # Verify ContentRequest was created in database
-        content_request = db_session.query(ContentRequest).filter(
-            ContentRequest.id == request_id
-        ).first()
+        content_request = (
+            db_session.query(ContentRequest)
+            .filter(ContentRequest.id == request_id)
+            .first()
+        )
 
         assert content_request is not None
         assert content_request.student_id == uuid.UUID(sample_student.user_id)
@@ -123,8 +125,7 @@ class TestAsyncContentGeneration:
 
         # Poll status endpoint
         response = client.get(
-            f"/api/v1/content/request/{request_id}/status",
-            headers=student_headers
+            f"/api/v1/content/request/{request_id}/status", headers=student_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -162,8 +163,7 @@ class TestAsyncContentGeneration:
         db_session.commit()
 
         response = client.get(
-            f"/api/v1/content/request/{request_id}/status",
-            headers=student_headers
+            f"/api/v1/content/request/{request_id}/status", headers=student_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -204,8 +204,7 @@ class TestAsyncContentGeneration:
         db_session.commit()
 
         response = client.get(
-            f"/api/v1/content/request/{request_id}/status",
-            headers=student_headers
+            f"/api/v1/content/request/{request_id}/status", headers=student_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -249,8 +248,7 @@ class TestAsyncContentGeneration:
         db_session.commit()
 
         response = client.get(
-            f"/api/v1/content/request/{request_id}/status",
-            headers=student_headers
+            f"/api/v1/content/request/{request_id}/status", headers=student_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -288,25 +286,21 @@ class TestAsyncContentGeneration:
 
         # Try to access with student credentials
         response = client.get(
-            f"/api/v1/content/request/{request_id}/status",
-            headers=student_headers
+            f"/api/v1/content/request/{request_id}/status", headers=student_headers
         )
 
         # Should be forbidden
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     @pytest.mark.asyncio
-    async def test_status_polling_not_found(
-        self, client, student_headers
-    ):
+    async def test_status_polling_not_found(self, client, student_headers):
         """Test that polling non-existent request returns 404."""
         import uuid
 
         fake_request_id = uuid.uuid4()
 
         response = client.get(
-            f"/api/v1/content/request/{fake_request_id}/status",
-            headers=student_headers
+            f"/api/v1/content/request/{fake_request_id}/status", headers=student_headers
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -519,6 +513,7 @@ class TestPubSubService:
 
             # Verify message data
             import json
+
             message_data = json.loads(call_args[0][1].decode("utf-8"))
             assert message_data["request_id"] == request_id
             assert message_data["student_query"] == "Explain Newton's law"
@@ -581,13 +576,13 @@ class TestEndToEndAsyncFlow:
         }
 
         # Step 1: POST /generate
-        with patch("app.services.pubsub_service.PubSubService.publish_content_request") as mock_publish:
+        with patch(
+            "app.services.pubsub_service.PubSubService.publish_content_request"
+        ) as mock_publish:
             mock_publish.return_value = {"success": True, "message_id": "test_msg_123"}
 
             response = client.post(
-                "/api/v1/content/generate",
-                json=request_data,
-                headers=student_headers
+                "/api/v1/content/generate", json=request_data, headers=student_headers
             )
 
         assert response.status_code == status.HTTP_202_ACCEPTED
@@ -612,8 +607,7 @@ class TestEndToEndAsyncFlow:
 
         # Poll status - should be validating
         response = client.get(
-            f"/api/v1/content/request/{request_id}/status",
-            headers=student_headers
+            f"/api/v1/content/request/{request_id}/status", headers=student_headers
         )
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["status"] == "validating"
@@ -630,8 +624,7 @@ class TestEndToEndAsyncFlow:
 
         # Poll status - should be generating
         response = client.get(
-            f"/api/v1/content/request/{request_id}/status",
-            headers=student_headers
+            f"/api/v1/content/request/{request_id}/status", headers=student_headers
         )
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["status"] == "generating"
@@ -666,8 +659,7 @@ class TestEndToEndAsyncFlow:
 
         # Step 4: Final poll - should be completed
         response = client.get(
-            f"/api/v1/content/request/{request_id}/status",
-            headers=student_headers
+            f"/api/v1/content/request/{request_id}/status", headers=student_headers
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -684,8 +676,13 @@ class TestEndToEndAsyncFlow:
 
         # Verify duration
         from datetime import datetime
-        created_at = datetime.fromisoformat(final_data["created_at"].replace("Z", "+00:00"))
-        completed_at = datetime.fromisoformat(final_data["completed_at"].replace("Z", "+00:00"))
+
+        created_at = datetime.fromisoformat(
+            final_data["created_at"].replace("Z", "+00:00")
+        )
+        completed_at = datetime.fromisoformat(
+            final_data["completed_at"].replace("Z", "+00:00")
+        )
         duration = (completed_at - created_at).total_seconds()
 
         # In real scenario this would be 3-15 minutes, but in test it's instant

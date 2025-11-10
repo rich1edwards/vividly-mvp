@@ -270,10 +270,7 @@ async def list_templates(
 
     # Apply pagination and fetch
     templates = (
-        query.order_by(desc(PromptTemplate.created_at))
-        .offset(skip)
-        .limit(limit)
-        .all()
+        query.order_by(desc(PromptTemplate.created_at)).offset(skip).limit(limit).all()
     )
 
     return {
@@ -491,9 +488,7 @@ async def create_guardrail(
     """
     # Check if guardrail name already exists
     existing = (
-        db.query(PromptGuardrail)
-        .filter(PromptGuardrail.name == request.name)
-        .first()
+        db.query(PromptGuardrail).filter(PromptGuardrail.name == request.name).first()
     )
 
     if existing:
@@ -566,10 +561,7 @@ async def list_guardrails(
 
     # Apply pagination and fetch
     guardrails = (
-        query.order_by(desc(PromptGuardrail.created_at))
-        .offset(skip)
-        .limit(limit)
-        .all()
+        query.order_by(desc(PromptGuardrail.created_at)).offset(skip).limit(limit).all()
     )
 
     return {
@@ -593,9 +585,7 @@ async def get_guardrail(
     Requires SUPER_ADMIN role.
     """
     guardrail = (
-        db.query(PromptGuardrail)
-        .filter(PromptGuardrail.id == guardrail_id)
-        .first()
+        db.query(PromptGuardrail).filter(PromptGuardrail.id == guardrail_id).first()
     )
 
     if not guardrail:
@@ -621,9 +611,7 @@ async def update_guardrail(
     Requires SUPER_ADMIN role.
     """
     guardrail = (
-        db.query(PromptGuardrail)
-        .filter(PromptGuardrail.id == guardrail_id)
-        .first()
+        db.query(PromptGuardrail).filter(PromptGuardrail.id == guardrail_id).first()
     )
 
     if not guardrail:
@@ -672,9 +660,7 @@ async def activate_guardrail(
     Requires SUPER_ADMIN role.
     """
     guardrail = (
-        db.query(PromptGuardrail)
-        .filter(PromptGuardrail.id == guardrail_id)
-        .first()
+        db.query(PromptGuardrail).filter(PromptGuardrail.id == guardrail_id).first()
     )
 
     if not guardrail:
@@ -707,9 +693,7 @@ async def deactivate_guardrail(
     Requires SUPER_ADMIN role.
     """
     guardrail = (
-        db.query(PromptGuardrail)
-        .filter(PromptGuardrail.id == guardrail_id)
-        .first()
+        db.query(PromptGuardrail).filter(PromptGuardrail.id == guardrail_id).first()
     )
 
     if not guardrail:
@@ -955,9 +939,7 @@ async def get_template_performance(
             "avg_response_time_ms": round(avg_response_time, 2)
             if avg_response_time
             else None,
-            "avg_token_count": round(avg_token_count, 0)
-            if avg_token_count
-            else None,
+            "avg_token_count": round(avg_token_count, 0) if avg_token_count else None,
             "avg_cost_usd": round(avg_cost, 6) if avg_cost else None,
             "guardrail_violation_count": violation_count,
             "guardrail_violation_rate": (
@@ -996,9 +978,7 @@ async def create_ab_test(
     """
     # Check if experiment name already exists
     existing = (
-        db.query(ABTestExperiment)
-        .filter(ABTestExperiment.name == request.name)
-        .first()
+        db.query(ABTestExperiment).filter(ABTestExperiment.name == request.name).first()
     )
 
     if existing:
@@ -1021,7 +1001,9 @@ async def create_ab_test(
 
     # Verify variant templates exist
     for variant_id in request.variant_template_ids:
-        variant = db.query(PromptTemplate).filter(PromptTemplate.id == variant_id).first()
+        variant = (
+            db.query(PromptTemplate).filter(PromptTemplate.id == variant_id).first()
+        )
         if not variant:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -1118,14 +1100,13 @@ async def get_ab_test(
     Requires SUPER_ADMIN role.
     """
     experiment = (
-        db.query(ABTestExperiment)
-        .filter(ABTestExperiment.id == experiment_id)
-        .first()
+        db.query(ABTestExperiment).filter(ABTestExperiment.id == experiment_id).first()
     )
 
     if not experiment:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="A/B test experiment not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="A/B test experiment not found",
         )
 
     return {"status": "success", "experiment": experiment.to_dict()}
@@ -1145,14 +1126,13 @@ async def start_ab_test(
     Requires SUPER_ADMIN role.
     """
     experiment = (
-        db.query(ABTestExperiment)
-        .filter(ABTestExperiment.id == experiment_id)
-        .first()
+        db.query(ABTestExperiment).filter(ABTestExperiment.id == experiment_id).first()
     )
 
     if not experiment:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="A/B test experiment not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="A/B test experiment not found",
         )
 
     if experiment.status == "active":
@@ -1188,14 +1168,13 @@ async def stop_ab_test(
     Requires SUPER_ADMIN role.
     """
     experiment = (
-        db.query(ABTestExperiment)
-        .filter(ABTestExperiment.id == experiment_id)
-        .first()
+        db.query(ABTestExperiment).filter(ABTestExperiment.id == experiment_id).first()
     )
 
     if not experiment:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="A/B test experiment not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="A/B test experiment not found",
         )
 
     if experiment.status != "active":

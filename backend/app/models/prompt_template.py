@@ -4,8 +4,16 @@ Following Andrew Ng's principle: "Build it right, think about the future"
 Created: 2025-11-06
 """
 from sqlalchemy import (
-    Column, String, Integer, Boolean, Float, Text, TIMESTAMP,
-    ForeignKey, CheckConstraint, UniqueConstraint
+    Column,
+    String,
+    Integer,
+    Boolean,
+    Float,
+    Text,
+    TIMESTAMP,
+    ForeignKey,
+    CheckConstraint,
+    UniqueConstraint,
 )
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -36,7 +44,9 @@ class PromptTemplate(Base):
     # Template identity
     name = Column(String(255), nullable=False, index=True)
     description = Column(Text)
-    category = Column(String(100), index=True)  # 'nlu', 'clarification', 'script_generation'
+    category = Column(
+        String(100), index=True
+    )  # 'nlu', 'clarification', 'script_generation'
 
     # Template content
     template_text = Column(Text, nullable=False)
@@ -44,7 +54,9 @@ class PromptTemplate(Base):
 
     # Versioning
     version = Column(Integer, nullable=False, default=1)
-    parent_version_id = Column(GUID, ForeignKey('prompt_templates.id', ondelete='SET NULL'), nullable=True)
+    parent_version_id = Column(
+        GUID, ForeignKey("prompt_templates.id", ondelete="SET NULL"), nullable=True
+    )
     is_active = Column(Boolean, default=False, index=True)
 
     # A/B Testing
@@ -70,13 +82,22 @@ class PromptTemplate(Base):
     deactivated_by = Column(String(255))
 
     # Relationships
-    executions = relationship("PromptExecution", back_populates="template", cascade="all, delete-orphan")
-    child_versions = relationship("PromptTemplate", backref="parent_version", remote_side=[id])
+    executions = relationship(
+        "PromptExecution", back_populates="template", cascade="all, delete-orphan"
+    )
+    child_versions = relationship(
+        "PromptTemplate", backref="parent_version", remote_side=[id]
+    )
 
     # Constraints
     __table_args__ = (
-        CheckConstraint('traffic_percentage >= 0 AND traffic_percentage <= 100', name='check_traffic_percentage'),
-        UniqueConstraint('name', 'is_active', 'ab_test_group', name='unique_active_template'),
+        CheckConstraint(
+            "traffic_percentage >= 0 AND traffic_percentage <= 100",
+            name="check_traffic_percentage",
+        ),
+        UniqueConstraint(
+            "name", "is_active", "ab_test_group", name="unique_active_template"
+        ),
     )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -89,14 +110,18 @@ class PromptTemplate(Base):
             "template_text": self.template_text,
             "variables": self.variables,
             "version": self.version,
-            "parent_version_id": str(self.parent_version_id) if self.parent_version_id else None,
+            "parent_version_id": str(self.parent_version_id)
+            if self.parent_version_id
+            else None,
             "is_active": self.is_active,
             "ab_test_group": self.ab_test_group,
             "traffic_percentage": self.traffic_percentage,
             "total_executions": self.total_executions,
             "success_count": self.success_count,
             "failure_count": self.failure_count,
-            "success_rate": round((self.success_count / self.total_executions * 100), 2) if self.total_executions > 0 else 0,
+            "success_rate": round((self.success_count / self.total_executions * 100), 2)
+            if self.total_executions > 0
+            else 0,
             "avg_response_time_ms": self.avg_response_time_ms,
             "avg_token_count": self.avg_token_count,
             "avg_cost_usd": float(self.avg_cost_usd) if self.avg_cost_usd else None,
@@ -130,7 +155,12 @@ class PromptExecution(Base):
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
 
     # Template reference
-    template_id = Column(GUID, ForeignKey('prompt_templates.id', ondelete='CASCADE'), nullable=False, index=True)
+    template_id = Column(
+        GUID,
+        ForeignKey("prompt_templates.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     template_name = Column(String(255), nullable=False, index=True)
     template_version = Column(Integer, nullable=False)
     ab_test_group = Column(String(50))
@@ -151,7 +181,9 @@ class PromptExecution(Base):
     cost_usd = Column(Float)
 
     # Status
-    status = Column(String(50), nullable=False, index=True)  # 'success', 'failure', 'partial'
+    status = Column(
+        String(50), nullable=False, index=True
+    )  # 'success', 'failure', 'partial'
     error_message = Column(Text)
     error_type = Column(String(100))
 
@@ -247,7 +279,9 @@ class PromptGuardrail(Base):
             "applies_to_categories": self.applies_to_categories,
             "total_checks": self.total_checks,
             "violation_count": self.violation_count,
-            "violation_rate": round((self.violation_count / self.total_checks * 100), 2) if self.total_checks > 0 else 0,
+            "violation_rate": round((self.violation_count / self.total_checks * 100), 2)
+            if self.total_checks > 0
+            else 0,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -275,28 +309,40 @@ class ABTestExperiment(Base):
     template_name = Column(String(255), nullable=False, index=True)
 
     # Experiment status
-    status = Column(String(50), nullable=False, index=True)  # 'draft', 'active', 'paused', 'completed', 'cancelled'
+    status = Column(
+        String(50), nullable=False, index=True
+    )  # 'draft', 'active', 'paused', 'completed', 'cancelled'
 
     # Experiment configuration
-    control_template_id = Column(GUID, ForeignKey('prompt_templates.id', ondelete='RESTRICT'), nullable=False)
+    control_template_id = Column(
+        GUID, ForeignKey("prompt_templates.id", ondelete="RESTRICT"), nullable=False
+    )
     # Using JSON type for GUID array to support both PostgreSQL and SQLite
     variant_template_ids = Column(JSON, nullable=False)
 
     # Traffic allocation
-    traffic_allocation = Column(JSON, nullable=False)  # {"control": 50, "variant_a": 25, "variant_b": 25}
+    traffic_allocation = Column(
+        JSON, nullable=False
+    )  # {"control": 50, "variant_a": 25, "variant_b": 25}
 
     # Success metrics
-    primary_metric = Column(String(100), nullable=False)  # 'success_rate', 'avg_response_time_ms', etc.
+    primary_metric = Column(
+        String(100), nullable=False
+    )  # 'success_rate', 'avg_response_time_ms', etc.
     target_improvement_percentage = Column(Float)
     minimum_sample_size = Column(Integer, default=1000)
 
     # Statistical tracking
     total_executions = Column(Integer, default=0)
     control_executions = Column(Integer, default=0)
-    variant_executions = Column(JSON, default={})  # {"variant_a": 500, "variant_b": 500}
+    variant_executions = Column(
+        JSON, default={}
+    )  # {"variant_a": 500, "variant_b": 500}
 
     control_metric_value = Column(Float)
-    variant_metric_values = Column(JSON, default={})  # {"variant_a": 0.85, "variant_b": 0.90}
+    variant_metric_values = Column(
+        JSON, default={}
+    )  # {"variant_a": 0.85, "variant_b": 0.90}
 
     statistical_significance = Column(Float)  # p-value
     confidence_level = Column(Float, default=0.95)
@@ -319,7 +365,9 @@ class ABTestExperiment(Base):
     updated_at = Column(TIMESTAMP, default=func.now(), onupdate=func.now())
 
     # Relationships
-    control_template = relationship("PromptTemplate", foreign_keys=[control_template_id])
+    control_template = relationship(
+        "PromptTemplate", foreign_keys=[control_template_id]
+    )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert model to dictionary for API responses."""
@@ -341,9 +389,17 @@ class ABTestExperiment(Base):
             "statistical_significance": self.statistical_significance,
             "confidence_level": self.confidence_level,
             "winner_variant": self.winner_variant,
-            "sample_status": "sufficient" if self.total_executions >= self.minimum_sample_size else "collecting",
-            "scheduled_start_date": self.scheduled_start_date.isoformat() if self.scheduled_start_date else None,
-            "actual_start_date": self.actual_start_date.isoformat() if self.actual_start_date else None,
-            "scheduled_end_date": self.scheduled_end_date.isoformat() if self.scheduled_end_date else None,
+            "sample_status": "sufficient"
+            if self.total_executions >= self.minimum_sample_size
+            else "collecting",
+            "scheduled_start_date": self.scheduled_start_date.isoformat()
+            if self.scheduled_start_date
+            else None,
+            "actual_start_date": self.actual_start_date.isoformat()
+            if self.actual_start_date
+            else None,
+            "scheduled_end_date": self.scheduled_end_date.isoformat()
+            if self.scheduled_end_date
+            else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }

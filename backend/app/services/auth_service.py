@@ -296,7 +296,11 @@ def refresh_access_token(
     - Test everything: Comprehensive error handling for all failure modes
     - Think about the future: Token rotation prevents token reuse attacks
     """
-    from app.core.security import decode_token, create_access_token, create_refresh_token
+    from app.core.security import (
+        decode_token,
+        create_access_token,
+        create_refresh_token,
+    )
 
     try:
         # Decode and validate refresh token
@@ -396,7 +400,8 @@ def refresh_access_token(
             session_id=new_session_id,
             user_id=user.user_id,
             refresh_token_hash=get_password_hash(new_refresh_token),
-            ip_address=ip_address or session.ip_address,  # Keep original if not provided
+            ip_address=ip_address
+            or session.ip_address,  # Keep original if not provided
             user_agent=user_agent or session.user_agent,
             expires_at=datetime.utcnow() + timedelta(days=30),
         )

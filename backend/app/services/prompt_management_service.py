@@ -63,7 +63,9 @@ class PromptManagementService:
             lstrip_blocks=True,
         )
 
-        logger.info(f"PromptManagementService initialized for environment: {environment}")
+        logger.info(
+            f"PromptManagementService initialized for environment: {environment}"
+        )
 
     async def get_active_prompt(
         self,
@@ -88,12 +90,16 @@ class PromptManagementService:
         try:
             # Check for active A/B test
             if enable_ab_testing:
-                experiment = self.db.query(ABTestExperiment).filter(
-                    and_(
-                        ABTestExperiment.template_name == name,
-                        ABTestExperiment.status == "active",
+                experiment = (
+                    self.db.query(ABTestExperiment)
+                    .filter(
+                        and_(
+                            ABTestExperiment.template_name == name,
+                            ABTestExperiment.status == "active",
+                        )
                     )
-                ).first()
+                    .first()
+                )
 
                 if experiment:
                     variant = self._select_ab_variant(experiment, user_id)
@@ -105,16 +111,22 @@ class PromptManagementService:
                         return variant
 
             # No A/B test or variant selection failed - return default active template
-            template = self.db.query(PromptTemplate).filter(
-                and_(
-                    PromptTemplate.name == name,
-                    PromptTemplate.is_active == True,
-                    PromptTemplate.ab_test_group.is_(None),  # Not part of A/B test
+            template = (
+                self.db.query(PromptTemplate)
+                .filter(
+                    and_(
+                        PromptTemplate.name == name,
+                        PromptTemplate.is_active == True,
+                        PromptTemplate.ab_test_group.is_(None),  # Not part of A/B test
+                    )
                 )
-            ).first()
+                .first()
+            )
 
             if template:
-                logger.info(f"Active template loaded for '{name}': version {template.version}")
+                logger.info(
+                    f"Active template loaded for '{name}': version {template.version}"
+                )
             else:
                 logger.warning(f"No active template found for '{name}'")
 
@@ -144,9 +156,11 @@ class PromptManagementService:
         """
         if not user_id:
             # No user_id - return control
-            return self.db.query(PromptTemplate).filter(
-                PromptTemplate.id == experiment.control_template_id
-            ).first()
+            return (
+                self.db.query(PromptTemplate)
+                .filter(PromptTemplate.id == experiment.control_template_id)
+                .first()
+            )
 
         # Hash user_id to get consistent assignment
         hash_value = int(hashlib.md5(user_id.encode()).hexdigest(), 16)
@@ -164,13 +178,17 @@ class PromptManagementService:
                     template_id = experiment.control_template_id
                 else:
                     # Find variant template by group name
-                    template = self.db.query(PromptTemplate).filter(
-                        and_(
-                            PromptTemplate.name == experiment.template_name,
-                            PromptTemplate.ab_test_group == variant_group,
-                            PromptTemplate.is_active == True,
+                    template = (
+                        self.db.query(PromptTemplate)
+                        .filter(
+                            and_(
+                                PromptTemplate.name == experiment.template_name,
+                                PromptTemplate.ab_test_group == variant_group,
+                                PromptTemplate.is_active == True,
+                            )
                         )
-                    ).first()
+                        .first()
+                    )
                     if template:
                         return template
                     else:
@@ -180,14 +198,18 @@ class PromptManagementService:
                         )
                         template_id = experiment.control_template_id
 
-                return self.db.query(PromptTemplate).filter(
-                    PromptTemplate.id == template_id
-                ).first()
+                return (
+                    self.db.query(PromptTemplate)
+                    .filter(PromptTemplate.id == template_id)
+                    .first()
+                )
 
         # Shouldn't reach here, but return control as fallback
-        return self.db.query(PromptTemplate).filter(
-            PromptTemplate.id == experiment.control_template_id
-        ).first()
+        return (
+            self.db.query(PromptTemplate)
+            .filter(PromptTemplate.id == experiment.control_template_id)
+            .first()
+        )
 
     async def render_prompt(
         self,
@@ -474,9 +496,11 @@ class PromptManagementService:
         """
         try:
             # Load active guardrails applicable to this template/category
-            guardrails = self.db.query(PromptGuardrail).filter(
-                PromptGuardrail.is_active == True
-            ).all()
+            guardrails = (
+                self.db.query(PromptGuardrail)
+                .filter(PromptGuardrail.is_active == True)
+                .all()
+            )
 
             # Filter to applicable guardrails
             applicable_guardrails = []
@@ -486,11 +510,9 @@ class PromptManagementService:
                 applies_to_categories = guardrail.applies_to_categories or []
 
                 if (
-                    len(applies_to_templates) == 0 and len(applies_to_categories) == 0
-                ) or (
-                    template_name in applies_to_templates
-                ) or (
-                    category and category in applies_to_categories
+                    (len(applies_to_templates) == 0 and len(applies_to_categories) == 0)
+                    or (template_name in applies_to_templates)
+                    or (category and category in applies_to_categories)
                 ):
                     applicable_guardrails.append(guardrail)
 
@@ -520,18 +542,23 @@ class PromptManagementService:
 
                 if violation:
                     guardrail.violation_count += 1
-                    violations.append({
-                        "guardrail_name": guardrail.name,
-                        "guardrail_type": guardrail.guardrail_type,
-                        "severity": guardrail.severity,
-                        "action": guardrail.action,
-                        "details": violation["details"],
-                    })
+                    violations.append(
+                        {
+                            "guardrail_name": guardrail.name,
+                            "guardrail_type": guardrail.guardrail_type,
+                            "severity": guardrail.severity,
+                            "action": guardrail.action,
+                            "details": violation["details"],
+                        }
+                    )
 
                     # Update highest severity action
                     if guardrail.action == "block":
                         highest_severity_action = "block"
-                    elif guardrail.action == "warn" and highest_severity_action == "allow":
+                    elif (
+                        guardrail.action == "warn"
+                        and highest_severity_action == "allow"
+                    ):
                         highest_severity_action = "warn"
 
             # Commit guardrail stats updates
@@ -587,7 +614,9 @@ class PromptManagementService:
         """
         # For now, just log that we would check
         # In production: call Perspective API, Azure Content Moderator, etc.
-        logger.debug(f"Toxic content check for guardrail '{guardrail.name}' (not implemented)")
+        logger.debug(
+            f"Toxic content check for guardrail '{guardrail.name}' (not implemented)"
+        )
         return None
 
     def _check_prompt_injection(
@@ -694,12 +723,16 @@ class PromptManagementService:
             Dictionary with performance metrics
         """
         try:
-            template = self.db.query(PromptTemplate).filter(
-                and_(
-                    PromptTemplate.name == name,
-                    PromptTemplate.is_active == True,
+            template = (
+                self.db.query(PromptTemplate)
+                .filter(
+                    and_(
+                        PromptTemplate.name == name,
+                        PromptTemplate.is_active == True,
+                    )
                 )
-            ).first()
+                .first()
+            )
 
             if not template:
                 return {"error": f"Template '{name}' not found"}
@@ -709,12 +742,16 @@ class PromptManagementService:
             if hours < 24:
                 since = datetime.utcnow().timestamp() - (hours * 3600)
 
-            executions = self.db.query(PromptExecution).filter(
-                and_(
-                    PromptExecution.template_name == name,
-                    PromptExecution.executed_at >= since,
+            executions = (
+                self.db.query(PromptExecution)
+                .filter(
+                    and_(
+                        PromptExecution.template_name == name,
+                        PromptExecution.executed_at >= since,
+                    )
                 )
-            ).all()
+                .all()
+            )
 
             total = len(executions)
             success = sum(1 for e in executions if e.status == "success")

@@ -39,13 +39,17 @@ class PubSubService:
         # Validate environment variables FIRST (fail-fast)
         self.project_id = project_id or os.getenv("GCP_PROJECT_ID")
         if not self.project_id:
-            error_msg = "GCP_PROJECT_ID environment variable is required for Pub/Sub service"
+            error_msg = (
+                "GCP_PROJECT_ID environment variable is required for Pub/Sub service"
+            )
             logger.error(error_msg)
             raise EnvironmentError(error_msg)
 
         self.environment = os.getenv("ENVIRONMENT")
         if not self.environment:
-            error_msg = "ENVIRONMENT environment variable is required for Pub/Sub service"
+            error_msg = (
+                "ENVIRONMENT environment variable is required for Pub/Sub service"
+            )
             logger.error(error_msg)
             raise EnvironmentError(error_msg)
 
@@ -155,7 +159,7 @@ class PubSubService:
             logger.error(
                 f"Failed to publish content request: "
                 f"request_id={request_id}, error={e}",
-                exc_info=True
+                exc_info=True,
             )
             raise Exception(f"Failed to publish to Pub/Sub: {str(e)}")
 
@@ -200,10 +204,7 @@ class PubSubService:
         """
         try:
             if not self.publisher:
-                return {
-                    "healthy": False,
-                    "error": "Publisher not initialized"
-                }
+                return {"healthy": False, "error": "Publisher not initialized"}
 
             # Try to get topic (this verifies credentials and network)
             self.publisher.get_topic(request={"topic": self.topic_path})

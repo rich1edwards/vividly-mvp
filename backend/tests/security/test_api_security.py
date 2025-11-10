@@ -38,7 +38,9 @@ class TestMassAssignment:
         error_detail = response.json().get("detail", [])
         # Check that error mentions role validation
         error_msg = str(error_detail).lower()
-        assert "role" in error_msg or "admin" in error_msg, "Error should mention role issue"
+        assert (
+            "role" in error_msg or "admin" in error_msg
+        ), "Error should mention role issue"
 
     def test_cannot_modify_readonly_fields(self):
         """Test that readonly fields like user_id, created_at cannot be modified."""

@@ -149,11 +149,15 @@ async def get_current_user(
     # If token has session_id, validate that specific session
     # This allows proper logout by revoking specific sessions
     if session_id:
-        session = db.query(SessionModel).filter(
-            SessionModel.session_id == session_id,
-            SessionModel.user_id == user_id,
-            SessionModel.revoked == False
-        ).first()
+        session = (
+            db.query(SessionModel)
+            .filter(
+                SessionModel.session_id == session_id,
+                SessionModel.user_id == user_id,
+                SessionModel.revoked == False,
+            )
+            .first()
+        )
 
         if session is None:
             raise HTTPException(

@@ -237,7 +237,9 @@ class TestTokenRefreshFailures:
         assert response.status_code == 401
         assert "user" in response.json()["detail"].lower()
 
-    def test_suspended_user_returns_403(self, client, test_user, test_session, db_session):
+    def test_suspended_user_returns_403(
+        self, client, test_user, test_session, db_session
+    ):
         """Test that suspended user cannot refresh token."""
         # Suspend the user
         test_user.status = UserStatus.SUSPENDED
@@ -274,7 +276,9 @@ class TestTokenRefreshFailures:
 class TestTokenRefreshSecurity:
     """Test security aspects of token refresh."""
 
-    def test_wrong_token_for_session_fails(self, client, test_user, test_session, db_session):
+    def test_wrong_token_for_session_fails(
+        self, client, test_user, test_session, db_session
+    ):
         """Test that providing wrong token for a session fails."""
         # Create a different refresh token (not matching session's hash)
         different_token = create_refresh_token(
@@ -316,7 +320,9 @@ class TestTokenRefreshSecurity:
         assert new_session is not None
         assert new_session.ip_address is not None
 
-    def test_user_agent_preserved_in_new_session(self, client, test_session, db_session):
+    def test_user_agent_preserved_in_new_session(
+        self, client, test_session, db_session
+    ):
         """Test that user agent is preserved for audit trail."""
         response = client.post(
             "/api/v1/auth/refresh",
@@ -353,9 +359,7 @@ class TestTokenRefreshEdgeCases:
 
         assert response.status_code in [422, 401]  # Either validation or auth error
 
-    def test_concurrent_refresh_requests_handled_safely(
-        self, client, test_session
-    ):
+    def test_concurrent_refresh_requests_handled_safely(self, client, test_session):
         """Test that concurrent refresh requests don't cause issues."""
         # Note: This test simulates concurrent requests
         # In production, only the first should succeed

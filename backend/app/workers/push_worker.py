@@ -44,8 +44,7 @@ from app.services.notification_service import (
 from app.core.config import settings
 
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -53,10 +52,7 @@ app = FastAPI(title="Vividly Content Worker (Push)", version="1.0.0")
 
 # Database setup
 engine = create_engine(
-    settings.DATABASE_URL,
-    pool_pre_ping=True,
-    pool_size=5,
-    max_overflow=10
+    settings.DATABASE_URL, pool_pre_ping=True, pool_size=5, max_overflow=10
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -102,7 +98,7 @@ async def push_handler(request: Request):
             logger.error("Invalid push message: missing 'message' field")
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content={"error": "Invalid push message format"}
+                content={"error": "Invalid push message format"},
             )
 
         message = envelope["message"]
@@ -113,7 +109,7 @@ async def push_handler(request: Request):
             logger.error(f"Message {message_id}: missing 'data' field")
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content={"error": "Missing message data"}
+                content={"error": "Missing message data"},
             )
 
         message_data_raw = base64.b64decode(message["data"]).decode("utf-8")
@@ -138,13 +134,13 @@ async def push_handler(request: Request):
                 logger.info(f"Message {message_id} processed successfully")
                 return JSONResponse(
                     status_code=status.HTTP_200_OK,
-                    content={"status": "processed", "request_id": request_id}
+                    content={"status": "processed", "request_id": request_id},
                 )
             else:
                 logger.warning(f"Message {message_id} processing failed, will retry")
                 return JSONResponse(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    content={"error": "Processing failed", "request_id": request_id}
+                    content={"error": "Processing failed", "request_id": request_id},
                 )
         finally:
             db.close()
@@ -153,16 +149,14 @@ async def push_handler(request: Request):
         logger.error(f"Invalid JSON in push message: {e}")
         # Return 400 - don't retry malformed JSON
         return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "Invalid JSON"}
+            status_code=status.HTTP_400_BAD_REQUEST, content={"error": "Invalid JSON"}
         )
 
     except Exception as e:
         logger.error(f"Push handler error: {e}", exc_info=True)
         # Return 500 - trigger retry
         return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"error": str(e)}
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"error": str(e)}
         )
 
 
@@ -217,7 +211,9 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
             return False
 
         # IDEMPOTENCY CHECK: Check if request is already completed or failed
-        existing_request = request_service.get_request_by_id(db=db, request_id=request_id)
+        existing_request = request_service.get_request_by_id(
+            db=db, request_id=request_id
+        )
         if existing_request:
             if existing_request.status == "completed":
                 logger.info(
@@ -235,9 +231,7 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
                 f"Request exists with status '{existing_request.status}', continuing processing"
             )
         else:
-            logger.warning(
-                f"Request not found in database: request_id={request_id}"
-            )
+            logger.warning(f"Request not found in database: request_id={request_id}")
 
         # Update status: validating
         request_service.update_status(
@@ -245,7 +239,7 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
             request_id=request_id,
             status="validating",
             progress_percentage=5,
-            current_stage="Validating request parameters"
+            current_stage="Validating request parameters",
         )
 
         # Extract request parameters
@@ -271,7 +265,7 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
             request_id=request_id,
             status="generating_script",
             progress_percentage=10,
-            current_stage="Starting content generation pipeline"
+            current_stage="Starting content generation pipeline",
         )
 
         # Phase 1.4: Publish "generation started" notification
@@ -288,8 +282,8 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
                         "query": student_query,
                         "grade_level": grade_level,
                         "interest": interest,
-                    }
-                )
+                    },
+                ),
             )
         except Exception as e:
             logger.warning(f"Failed to publish start notification: {e}")
@@ -310,7 +304,7 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
             request_id=request_id,
             status="generating_video",
             progress_percentage=90,
-            current_stage="Finalizing video and uploading to storage"
+            current_stage="Finalizing video and uploading to storage",
         )
 
         # Phase 1.4: Publish progress notification
@@ -326,8 +320,8 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
                     metadata={
                         "stage": "finalizing_video",
                         "query": student_query,
-                    }
-                )
+                    },
+                ),
             )
         except Exception as e:
             logger.warning(f"Failed to publish progress notification: {e}")
@@ -345,7 +339,7 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
                 request_id=request_id,
                 video_url=video_url,
                 script_text=script_text,
-                thumbnail_url=thumbnail_url
+                thumbnail_url=thumbnail_url,
             )
 
             # Mark as completed
@@ -354,7 +348,7 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
                 request_id=request_id,
                 status="completed",
                 progress_percentage=100,
-                current_stage="Complete"
+                current_stage="Complete",
             )
 
             # Phase 1.4: Publish "generation completed" notification
@@ -371,8 +365,8 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
                             "video_url": video_url,
                             "thumbnail_url": thumbnail_url,
                             "query": student_query,
-                        }
-                    )
+                        },
+                    ),
                 )
             except Exception as e:
                 logger.warning(f"Failed to publish completion notification: {e}")
@@ -396,7 +390,7 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
                 request_id=request_id,
                 video_url=video_url,
                 script_text=script_text,
-                thumbnail_url=thumbnail_url
+                thumbnail_url=thumbnail_url,
             )
 
             request_service.update_status(
@@ -404,7 +398,7 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
                 request_id=request_id,
                 status="completed",
                 progress_percentage=100,
-                current_stage="Complete (cache hit)"
+                current_stage="Complete (cache hit)",
             )
 
             duration = time.time() - start_time
@@ -427,26 +421,30 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
             # Store clarification in database using "pending" status with metadata
             # (avoids enum constraint - "clarification_needed" not in database enum)
             import datetime
+
             request_service.update_status(
                 db=db,
                 request_id=request_id,
                 status="pending",
                 progress_percentage=0,
-                current_stage="Awaiting user clarification"
+                current_stage="Awaiting user clarification",
             )
 
             # Store clarification questions in request_metadata
-            existing_request = request_service.get_request_by_id(db=db, request_id=request_id)
+            existing_request = request_service.get_request_by_id(
+                db=db, request_id=request_id
+            )
             if existing_request:
                 metadata = existing_request.request_metadata or {}
                 metadata["clarification"] = {
                     "questions": clarifying_questions,
                     "reasoning": reasoning,
-                    "requested_at": datetime.datetime.utcnow().isoformat()
+                    "requested_at": datetime.datetime.utcnow().isoformat(),
                 }
                 # Update metadata directly
                 from sqlalchemy import update
                 from app.models.request_tracking import ContentRequest
+
                 db.execute(
                     update(ContentRequest)
                     .where(ContentRequest.id == request_id)
@@ -471,7 +469,7 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
                 request_id=request_id,
                 error_message=error_msg,
                 error_stage="content_generation",
-                error_details={"result": result}
+                error_details={"result": result},
             )
 
             return False
@@ -484,15 +482,12 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
                 db=db,
                 request_id=request_id,
                 error_message=f"Invalid JSON: {str(e)}",
-                error_stage="message_parsing"
+                error_stage="message_parsing",
             )
         return False
 
     except Exception as e:
-        logger.error(
-            f"Request {request_id} failed: {str(e)}",
-            exc_info=True
-        )
+        logger.error(f"Request {request_id} failed: {str(e)}", exc_info=True)
 
         # Update request with error details
         if request_id:
@@ -503,8 +498,8 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
                 error_stage="content_generation",
                 error_details={
                     "exception_type": type(e).__name__,
-                    "correlation_id": correlation_id
-                }
+                    "correlation_id": correlation_id,
+                },
             )
 
             # Phase 1.4: Publish "generation failed" notification
@@ -520,12 +515,16 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
                         metadata={
                             "error_message": str(e),
                             "error_type": type(e).__name__,
-                            "query": student_query if 'student_query' in locals() else "Unknown",
-                        }
-                    )
+                            "query": student_query
+                            if "student_query" in locals()
+                            else "Unknown",
+                        },
+                    ),
                 )
             except Exception as notify_error:
-                logger.warning(f"Failed to publish failure notification: {notify_error}")
+                logger.warning(
+                    f"Failed to publish failure notification: {notify_error}"
+                )
 
         # Return False to trigger retry (Pub/Sub will retry up to max_delivery_attempts)
         return False
@@ -533,13 +532,11 @@ async def process_message(message_data: Dict[str, Any], db: Session) -> bool:
 
 if __name__ == "__main__":
     import uvicorn
+
     port = int(os.getenv("PORT", 8080))
 
     logger.info(f"Starting push worker service on port {port}")
 
     uvicorn.run(
-        "app.workers.push_worker:app",
-        host="0.0.0.0",
-        port=port,
-        log_level="info"
+        "app.workers.push_worker:app", host="0.0.0.0", port=port, log_level="info"
     )

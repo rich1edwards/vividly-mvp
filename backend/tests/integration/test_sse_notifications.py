@@ -86,6 +86,7 @@ def notification_service_override(mock_redis_client):
 @pytest.fixture
 def override_notification_service_dependency(notification_service_override):
     """Override the notification service dependency for testing."""
+
     async def get_test_notification_service():
         return notification_service_override
 
@@ -109,7 +110,9 @@ class TestSSEStreamEndpoint:
         response = client.get("/api/v1/notifications/stream")
 
         # Assert
-        assert response.status_code == 403  # FastAPI returns 403 for missing credentials
+        assert (
+            response.status_code == 403
+        )  # FastAPI returns 403 for missing credentials
 
     def test_stream_rejects_invalid_token(self, client):
         """Test that SSE stream endpoint rejects invalid JWT tokens."""
@@ -132,6 +135,7 @@ class TestSSEStreamEndpoint:
         notification_service_override,
     ):
         """Test that SSE stream endpoint accepts valid authentication."""
+
         # Arrange - Mock subscribe_to_notifications to yield a test event then stop
         async def mock_subscribe(user_id, connection_id, user_agent, ip_address):
             # Yield one test event
@@ -147,10 +151,14 @@ class TestSSEStreamEndpoint:
         notification_service_override.subscribe_to_notifications = mock_subscribe
 
         # Act - Use stream=True to get SSE response
-        with client.stream("GET", "/api/v1/notifications/stream", headers=student_headers) as response:
+        with client.stream(
+            "GET", "/api/v1/notifications/stream", headers=student_headers
+        ) as response:
             # Assert
             assert response.status_code == 200
-            assert response.headers["content-type"] == "text/event-stream; charset=utf-8"
+            assert (
+                response.headers["content-type"] == "text/event-stream; charset=utf-8"
+            )
             assert response.headers["cache-control"] == "no-cache"
             assert response.headers["x-accel-buffering"] == "no"
 
@@ -200,7 +208,9 @@ class TestSSEStreamEndpoint:
         }
 
         # Act
-        with client.stream("GET", "/api/v1/notifications/stream", headers=custom_headers) as response:
+        with client.stream(
+            "GET", "/api/v1/notifications/stream", headers=custom_headers
+        ) as response:
             assert response.status_code == 200
             # Read one chunk to trigger subscription
             next(response.iter_text())
@@ -208,7 +218,9 @@ class TestSSEStreamEndpoint:
         # Assert metadata was captured
         assert captured_metadata["user_id"] == str(sample_student.user_id)
         assert captured_metadata["user_agent"] == "TestClient/1.0"
-        assert captured_metadata["ip_address"] == "203.0.113.42"  # First IP from X-Forwarded-For
+        assert (
+            captured_metadata["ip_address"] == "203.0.113.42"
+        )  # First IP from X-Forwarded-For
         assert captured_metadata["connection_id"].startswith("conn_")
 
     def test_stream_redis_unavailable_returns_503(
@@ -264,7 +276,9 @@ class TestSSEStreamEndpoint:
         notification_service_override.subscribe_to_notifications = mock_subscribe
 
         # Act
-        with client.stream("GET", "/api/v1/notifications/stream", headers=student_headers) as response:
+        with client.stream(
+            "GET", "/api/v1/notifications/stream", headers=student_headers
+        ) as response:
             assert response.status_code == 200
 
             # Read SSE events
@@ -587,6 +601,7 @@ class TestErrorScenarios:
         notification_service_override,
     ):
         """Test that stream endpoint handles asyncio.CancelledError gracefully."""
+
         # Arrange
         async def mock_subscribe_with_cancellation(
             user_id, connection_id, user_agent, ip_address
@@ -617,6 +632,7 @@ class TestErrorScenarios:
         notification_service_override,
     ):
         """Test that stream endpoint handles service exceptions gracefully."""
+
         # Arrange
         async def mock_subscribe_with_error(
             user_id, connection_id, user_agent, ip_address
@@ -756,5 +772,7 @@ class TestNotificationServiceIntegration:
 
         assert received_events[0]["data"]["event_type"] == "content_generation_started"
         assert received_events[1]["data"]["progress_percentage"] == 50
-        assert received_events[2]["data"]["event_type"] == "content_generation_completed"
+        assert (
+            received_events[2]["data"]["event_type"] == "content_generation_completed"
+        )
         assert "video_url" in received_events[2]["data"]

@@ -35,8 +35,7 @@ from app.core.config import settings
 from app.workers.metrics import get_metrics
 
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -71,10 +70,11 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
             # Readiness probe: can the worker process messages?
             try:
                 # Check if worker is initialized and not shutting down
-                if (self.worker_instance and
-                    not self.worker_instance.shutdown_requested and
-                    self.worker_instance.subscriber):
-
+                if (
+                    self.worker_instance
+                    and not self.worker_instance.shutdown_requested
+                    and self.worker_instance.subscriber
+                ):
                     # Try to verify database connectivity
                     db = self.worker_instance.SessionLocal()
                     try:
@@ -158,14 +158,14 @@ class ContentWorker:
         engine = create_engine(
             settings.DATABASE_URL,
             # Connection pool settings
-            pool_size=5,              # Maintain 5 persistent connections
-            max_overflow=10,          # Allow up to 10 additional connections under load
-            pool_timeout=30,          # Wait up to 30 seconds for connection from pool
-            pool_recycle=3600,        # Recycle connections after 1 hour (prevents stale connections)
-            pool_pre_ping=True,       # Verify connection health before using
+            pool_size=5,  # Maintain 5 persistent connections
+            max_overflow=10,  # Allow up to 10 additional connections under load
+            pool_timeout=30,  # Wait up to 30 seconds for connection from pool
+            pool_recycle=3600,  # Recycle connections after 1 hour (prevents stale connections)
+            pool_pre_ping=True,  # Verify connection health before using
             # Additional settings for production reliability
-            echo=False,               # Disable SQL echo (use logging instead)
-            pool_use_lifo=True,       # LIFO ordering reduces connection count
+            echo=False,  # Disable SQL echo (use logging instead)
+            pool_use_lifo=True,  # LIFO ordering reduces connection count
         )
         self.SessionLocal = sessionmaker(bind=engine)
 
@@ -180,10 +180,11 @@ class ContentWorker:
 
         # Use explicit subscription name if provided, otherwise construct from environment
         self.subscription_name = os.getenv(
-            "PUBSUB_SUBSCRIPTION",
-            f"content-worker-sub-{self.environment}"
+            "PUBSUB_SUBSCRIPTION", f"content-worker-sub-{self.environment}"
         )
-        self.subscription_path = f"projects/{self.project_id}/subscriptions/{self.subscription_name}"
+        self.subscription_path = (
+            f"projects/{self.project_id}/subscriptions/{self.subscription_name}"
+        )
 
         # Topic configuration (for publishing responses if needed)
         self.topic_name = os.getenv("PUBSUB_TOPIC", "content-generation-requests")
@@ -261,9 +262,7 @@ class ContentWorker:
         )
 
     async def process_message(
-        self,
-        message: pubsub_v1.types.PubsubMessage,
-        db: Session
+        self, message: pubsub_v1.types.PubsubMessage, db: Session
     ) -> bool:
         """
         Process a single Pub/Sub message.
@@ -302,7 +301,7 @@ class ContentWorker:
             # If a message has been delivered multiple times, it's likely a poisoned message
             # The DLQ configuration (max_delivery_attempts=5) will automatically move it to DLQ
             # But we log this explicitly for monitoring and alerting
-            delivery_attempt = getattr(message, 'delivery_attempt', None)
+            delivery_attempt = getattr(message, "delivery_attempt", None)
             if delivery_attempt and delivery_attempt > 3:
                 logger.warning(
                     f"Message on delivery attempt {delivery_attempt}: "
@@ -317,7 +316,12 @@ class ContentWorker:
             )
 
             # Validate required fields
-            required_fields = ["request_id", "student_id", "student_query", "grade_level"]
+            required_fields = [
+                "request_id",
+                "student_id",
+                "student_query",
+                "grade_level",
+            ]
             missing_fields = [f for f in required_fields if not message_data.get(f)]
             if missing_fields:
                 logger.error(
@@ -346,7 +350,9 @@ class ContentWorker:
 
             # IDEMPOTENCY CHECK: Check if request is already completed or failed
             # This prevents duplicate processing if Pub/Sub delivers message twice
-            existing_request = self.request_service.get_request_by_id(db=db, request_id=request_id)
+            existing_request = self.request_service.get_request_by_id(
+                db=db, request_id=request_id
+            )
             if existing_request:
                 if existing_request.status == "completed":
                     logger.info(
@@ -379,7 +385,7 @@ class ContentWorker:
                 request_id=request_id,
                 status="validating",
                 progress_percentage=5,
-                current_stage="Validating request parameters"
+                current_stage="Validating request parameters",
             )
 
             # Extract request parameters
@@ -398,7 +404,7 @@ class ContentWorker:
                 request_id=request_id,
                 status="generating",
                 progress_percentage=10,
-                current_stage="Starting content generation pipeline"
+                current_stage="Starting content generation pipeline",
             )
 
             # Generate content through the AI pipeline
@@ -419,7 +425,7 @@ class ContentWorker:
                 request_id=request_id,
                 status="generating",
                 progress_percentage=90,
-                current_stage="Finalizing video and uploading to storage"
+                current_stage="Finalizing video and uploading to storage",
             )
 
             # Handle different result statuses
@@ -435,7 +441,7 @@ class ContentWorker:
                     request_id=request_id,
                     video_url=video_url,
                     script_text=script_text,
-                    thumbnail_url=thumbnail_url
+                    thumbnail_url=thumbnail_url,
                 )
 
                 # Mark as completed
@@ -444,7 +450,7 @@ class ContentWorker:
                     request_id=request_id,
                     status="completed",
                     progress_percentage=100,
-                    current_stage="Complete"
+                    current_stage="Complete",
                 )
 
                 logger.info(
@@ -458,7 +464,7 @@ class ContentWorker:
                     success=True,
                     duration_seconds=duration,
                     retry_count=0,
-                    request_id=request_id
+                    request_id=request_id,
                 )
 
                 return True
@@ -474,7 +480,7 @@ class ContentWorker:
                     request_id=request_id,
                     video_url=video_url,
                     script_text=script_text,
-                    thumbnail_url=thumbnail_url
+                    thumbnail_url=thumbnail_url,
                 )
 
                 self.request_service.update_status(
@@ -482,12 +488,10 @@ class ContentWorker:
                     request_id=request_id,
                     status="completed",
                     progress_percentage=100,
-                    current_stage="Complete (cache hit)"
+                    current_stage="Complete (cache hit)",
                 )
 
-                logger.info(
-                    f"Request completed from cache: request_id={request_id}"
-                )
+                logger.info(f"Request completed from cache: request_id={request_id}")
 
                 # Record cache hit metrics (treated as success, but faster)
                 duration = time.time() - start_time
@@ -495,7 +499,7 @@ class ContentWorker:
                     success=True,
                     duration_seconds=duration,
                     retry_count=0,
-                    request_id=request_id
+                    request_id=request_id,
                 )
 
                 return True
@@ -516,7 +520,7 @@ class ContentWorker:
                     db=db,
                     request_id=request_id,
                     clarifying_questions=clarifying_questions,
-                    reasoning=reasoning
+                    reasoning=reasoning,
                 )
 
                 # Record as success (message processed correctly, just needs user input)
@@ -525,7 +529,7 @@ class ContentWorker:
                     success=True,  # Not a failure - valid workflow state
                     duration_seconds=duration,
                     retry_count=0,
-                    request_id=request_id
+                    request_id=request_id,
                 )
 
                 return True  # Acknowledge message
@@ -540,7 +544,7 @@ class ContentWorker:
                     request_id=request_id,
                     error_message=error_msg,
                     error_stage="content_generation",
-                    error_details={"result": result}
+                    error_details={"result": result},
                 )
 
                 # Record failure metrics
@@ -549,7 +553,7 @@ class ContentWorker:
                     success=False,
                     duration_seconds=duration,
                     retry_count=0,
-                    request_id=request_id
+                    request_id=request_id,
                 )
 
                 return False
@@ -562,15 +566,12 @@ class ContentWorker:
                     db=db,
                     request_id=request_id,
                     error_message=f"Invalid JSON: {str(e)}",
-                    error_stage="message_parsing"
+                    error_stage="message_parsing",
                 )
             return False
 
         except Exception as e:
-            logger.error(
-                f"Request {request_id} failed: {str(e)}",
-                exc_info=True
-            )
+            logger.error(f"Request {request_id} failed: {str(e)}", exc_info=True)
 
             # Update request with error details
             if request_id:
@@ -581,8 +582,8 @@ class ContentWorker:
                     error_stage="content_generation",
                     error_details={
                         "exception_type": type(e).__name__,
-                        "correlation_id": correlation_id
-                    }
+                        "correlation_id": correlation_id,
+                    },
                 )
 
             # Return False to trigger retry (Pub/Sub will retry up to max_delivery_attempts)
@@ -622,7 +623,9 @@ class ContentWorker:
 
                 # Increment retry count in database before nack
                 if request_id:
-                    self.request_service.increment_retry_count(db=db, request_id=request_id)
+                    self.request_service.increment_retry_count(
+                        db=db, request_id=request_id
+                    )
 
                 # Nack message (will be retried per retry policy)
                 message.nack()
@@ -639,7 +642,9 @@ class ContentWorker:
                 message_data = json.loads(message.data.decode("utf-8"))
                 request_id = message_data.get("request_id")
                 if request_id and db:
-                    self.request_service.increment_retry_count(db=db, request_id=request_id)
+                    self.request_service.increment_retry_count(
+                        db=db, request_id=request_id
+                    )
             except Exception:
                 pass
 
@@ -654,13 +659,12 @@ class ContentWorker:
         """Start HTTP health check server in background thread."""
         try:
             self.health_server = HTTPServer(
-                ("0.0.0.0", self.health_check_port),
-                HealthCheckHandler
+                ("0.0.0.0", self.health_check_port), HealthCheckHandler
             )
             self.health_thread = threading.Thread(
                 target=self.health_server.serve_forever,
                 daemon=True,
-                name="health-check-server"
+                name="health-check-server",
             )
             self.health_thread.start()
             logger.info(f"Health check server started on port {self.health_check_port}")
@@ -687,13 +691,17 @@ class ContentWorker:
 
         For long-running service mode, see run_service() method instead.
         """
-        logger.info(f"Starting worker (Cloud Run Job mode): subscription={self.subscription_path}")
+        logger.info(
+            f"Starting worker (Cloud Run Job mode): subscription={self.subscription_path}"
+        )
 
         # Start health check server in background
         self.start_health_check_server()
 
         # Job execution parameters
-        max_runtime_seconds = int(os.getenv("WORKER_MAX_RUNTIME", "300"))  # 5 minutes default
+        max_runtime_seconds = int(
+            os.getenv("WORKER_MAX_RUNTIME", "300")
+        )  # 5 minutes default
         pull_timeout_seconds = 30  # Timeout for each pull request
         max_messages_per_pull = 10  # Process up to 10 messages per batch
         empty_queue_timeout = 60  # Exit if queue empty for 60 seconds
@@ -754,7 +762,9 @@ class ContentWorker:
                     time.sleep(10)  # Brief pause before next pull
                     continue
 
-                logger.info(f"Received {len(received_messages)} messages, processing...")
+                logger.info(
+                    f"Received {len(received_messages)} messages, processing..."
+                )
                 last_message_time = time.time()  # Reset empty queue timer
 
                 # Process each message
@@ -800,7 +810,7 @@ class ContentWorker:
                     except Exception as e:
                         logger.error(
                             f"Error processing message {received_message.ack_id}: {e}",
-                            exc_info=True
+                            exc_info=True,
                         )
                         # Nack on error to trigger retry
                         try:

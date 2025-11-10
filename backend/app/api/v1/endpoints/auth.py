@@ -25,7 +25,9 @@ from app.models.user import User
 router = APIRouter()
 
 
-@router.post("/register", response_model=TokenWithUser, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register", response_model=TokenWithUser, status_code=status.HTTP_201_CREATED
+)
 def register(
     user_data: UserRegister,
     db: Session = Depends(get_db),

@@ -18,6 +18,7 @@ from enum import Enum
 
 class GenerationStatus(Enum):
     """Status of content generation request"""
+
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"  # Some modalities succeeded, others failed
@@ -25,6 +26,7 @@ class GenerationStatus(Enum):
 
 class Modality(Enum):
     """Supported content modalities"""
+
     TEXT = "text"
     AUDIO = "audio"
     VIDEO = "video"
@@ -39,6 +41,7 @@ class GenerationRequest:
     This is what the module NEEDS to generate content.
     Keep this minimal - only essential information.
     """
+
     # Required fields
     student_query: str
     student_id: str
@@ -64,7 +67,8 @@ class GenerationRequest:
         # Normalize modalities
         valid_modalities = {"text", "audio", "video", "images"}
         self.requested_modalities = [
-            m.lower() for m in self.requested_modalities
+            m.lower()
+            for m in self.requested_modalities
             if m.lower() in valid_modalities
         ]
 
@@ -80,6 +84,7 @@ class GenerationResult:
     This is what the module RETURNS after generation.
     Contains everything needed to use the generated content.
     """
+
     # Status
     status: GenerationStatus
     generation_id: str
@@ -165,7 +170,9 @@ class ContentGenerationInterface:
         """
         raise NotImplementedError("Subclass must implement generate()")
 
-    async def get_generation_status(self, generation_id: str) -> Optional[Dict[str, Any]]:
+    async def get_generation_status(
+        self, generation_id: str
+    ) -> Optional[Dict[str, Any]]:
         """
         Get status of a previously started generation.
 

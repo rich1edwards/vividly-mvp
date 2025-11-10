@@ -63,7 +63,11 @@ class ContentGenerationResponse(BaseModel):
     message: str = Field(
         ...,
         description="Human-readable status message",
-        examples=["Content generation started", "Clarification needed", "Content generation completed"],
+        examples=[
+            "Content generation started",
+            "Clarification needed",
+            "Content generation completed",
+        ],
     )
     content_url: Optional[str] = Field(
         None, description="URL to access generated content (if completed)"
@@ -75,6 +79,9 @@ class ContentGenerationResponse(BaseModel):
         None,
         description="List of clarifying questions if status is clarification_needed",
         examples=[
-            ["What specific aspect of science interests you?", "What grade level are you studying?"]
+            [
+                "What specific aspect of science interests you?",
+                "What grade level are you studying?",
+            ]
         ],
     )

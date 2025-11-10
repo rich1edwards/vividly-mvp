@@ -49,7 +49,9 @@ class WorkerMetrics:
         # Initialize monitoring client
         try:
             self.client = monitoring_v3.MetricServiceClient()
-            logger.info(f"Cloud Monitoring metrics initialized: project={project_id}, env={environment}")
+            logger.info(
+                f"Cloud Monitoring metrics initialized: project={project_id}, env={environment}"
+            )
         except Exception as e:
             logger.error(f"Failed to initialize Cloud Monitoring client: {e}")
             self.client = None
@@ -62,7 +64,7 @@ class WorkerMetrics:
         success: bool,
         duration_seconds: float,
         retry_count: int = 0,
-        request_id: Optional[str] = None
+        request_id: Optional[str] = None,
     ):
         """
         Record metrics for a processed message.
@@ -86,7 +88,7 @@ class WorkerMetrics:
                     "environment": self.environment,
                     "status": "success" if success else "failure",
                 },
-                value_type="INT64"
+                value_type="INT64",
             )
 
             # Write duration distribution
@@ -98,7 +100,7 @@ class WorkerMetrics:
                     labels={
                         "environment": self.environment,
                     },
-                    value_type="DOUBLE"
+                    value_type="DOUBLE",
                 )
 
             # Write retry count distribution
@@ -110,7 +112,7 @@ class WorkerMetrics:
                     labels={
                         "environment": self.environment,
                     },
-                    value_type="INT64"
+                    value_type="INT64",
                 )
 
         except Exception as e:
@@ -122,7 +124,7 @@ class WorkerMetrics:
         metric_type: str,
         value: float,
         labels: Dict[str, str],
-        value_type: str = "INT64"
+        value_type: str = "INT64",
     ):
         """
         Write a single time series data point.
@@ -149,7 +151,7 @@ class WorkerMetrics:
             # Create data point
             now = time.time()
             seconds = int(now)
-            nanos = int((now - seconds) * 10 ** 9)
+            nanos = int((now - seconds) * 10**9)
             interval = monitoring_v3.TimeInterval(
                 {"end_time": {"seconds": seconds, "nanos": nanos}}
             )
@@ -164,10 +166,7 @@ class WorkerMetrics:
             series.points = [point]
 
             # Write time series
-            self.client.create_time_series(
-                name=self.project_name,
-                time_series=[series]
-            )
+            self.client.create_time_series(name=self.project_name, time_series=[series])
 
         except Exception as e:
             # Log but don't fail worker

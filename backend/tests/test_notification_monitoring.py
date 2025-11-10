@@ -130,8 +130,10 @@ async def test_notification_health_check_degraded(
     ):
         # Mock high latency
         with patch.object(mock_redis, "ping", new_callable=AsyncMock) as mock_ping:
+
             async def slow_ping():
                 import asyncio
+
                 await asyncio.sleep(0.06)  # 60ms latency
                 return True
 
@@ -247,7 +249,9 @@ async def test_get_active_connections_as_admin(
         "ip_address": "192.168.1.1",
     }
 
-    await mock_redis.hset("notifications:connection:conn_abc123", mapping=connection_data)
+    await mock_redis.hset(
+        "notifications:connection:conn_abc123", mapping=connection_data
+    )
 
     with patch(
         "app.api.v1.endpoints.notification_monitoring.get_notification_service",
@@ -294,12 +298,15 @@ async def test_get_active_connections_with_stale_connections(
         "connection_id": "conn_stale",
         "user_id": "user_stale",
         "connected_at": (datetime.utcnow() - timedelta(minutes=10)).isoformat() + "Z",
-        "last_heartbeat_at": (datetime.utcnow() - timedelta(minutes=5)).isoformat() + "Z",
+        "last_heartbeat_at": (datetime.utcnow() - timedelta(minutes=5)).isoformat()
+        + "Z",
         "user_agent": "Mozilla/5.0",
         "ip_address": "192.168.1.1",
     }
 
-    await mock_redis.hset("notifications:connection:conn_stale", mapping=stale_connection_data)
+    await mock_redis.hset(
+        "notifications:connection:conn_stale", mapping=stale_connection_data
+    )
 
     with patch(
         "app.api.v1.endpoints.notification_monitoring.get_notification_service",
@@ -315,7 +322,9 @@ async def test_get_active_connections_with_stale_connections(
         assert data["stale_connections_count"] > 0
 
         # With include_stale
-        response = client.get("/api/v1/monitoring/notifications/connections?include_stale=true")
+        response = client.get(
+            "/api/v1/monitoring/notifications/connections?include_stale=true"
+        )
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
 
@@ -394,9 +403,7 @@ async def test_get_alert_status_no_alerts(
 
 
 @pytest.mark.asyncio
-async def test_get_alert_status_with_high_error_rate(
-    client, admin_user, mock_redis
-):
+async def test_get_alert_status_with_high_error_rate(client, admin_user, mock_redis):
     """Test /alerts endpoint detects high error rates."""
     # Create service with high error rate
     service = NotificationService(redis_client=mock_redis)
@@ -422,7 +429,9 @@ async def test_get_alert_status_with_high_error_rate(
         data = response.json()
 
         assert data["alerts_count"] > 0
-        assert any("publish error rate" in alert.lower() for alert in data["alerts_active"])
+        assert any(
+            "publish error rate" in alert.lower() for alert in data["alerts_active"]
+        )
 
 
 @pytest.mark.asyncio
@@ -471,7 +480,9 @@ async def test_monitoring_workflow_full_stack(
         assert metrics["notifications_published_total"] > 0
 
         # 3. Check active connections
-        connections_response = client.get("/api/v1/monitoring/notifications/connections")
+        connections_response = client.get(
+            "/api/v1/monitoring/notifications/connections"
+        )
         assert connections_response.status_code == status.HTTP_200_OK
         connections = connections_response.json()
         assert "total_connections" in connections

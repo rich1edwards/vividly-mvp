@@ -268,9 +268,7 @@ class TestSecurityHeaders:
         assert "default-src 'self'" in response.headers["Content-Security-Policy"]
 
         assert "Referrer-Policy" in response.headers
-        assert (
-            response.headers["Referrer-Policy"] == "strict-origin-when-cross-origin"
-        )
+        assert response.headers["Referrer-Policy"] == "strict-origin-when-cross-origin"
 
     def test_security_headers_on_auth_endpoints(self, client):
         """Test that security headers are present on authentication endpoints."""
@@ -347,8 +345,7 @@ class TestRateLimitIntegration:
                 # Response should have helpful error message
                 error_msg = data.get("detail", data.get("error", ""))
                 assert (
-                    "rate limit" in error_msg.lower()
-                    or "too many" in error_msg.lower()
+                    "rate limit" in error_msg.lower() or "too many" in error_msg.lower()
                 )
                 break
 
@@ -389,7 +386,9 @@ class TestRateLimitWindowReset:
 # Performance marker for pytest
 def pytest_configure(config):
     """Configure custom pytest markers."""
-    config.addinivalue_line("markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')")
+    config.addinivalue_line(
+        "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
+    )
 
 
 # Test configuration
@@ -430,7 +429,13 @@ class RateLimitLoadTester:
         Returns:
             Dict with test results
         """
-        results = {"total": 0, "success": 0, "rate_limited": 0, "error": 0, "status_codes": {}}
+        results = {
+            "total": 0,
+            "success": 0,
+            "rate_limited": 0,
+            "error": 0,
+            "status_codes": {},
+        }
 
         start_time = time.time()
         end_time = start_time + duration_seconds

@@ -14,6 +14,7 @@ import os
 import psycopg2
 from urllib.parse import urlparse
 
+
 def run_migration(migration_file: str):
     """
     Execute a SQL migration file against the database.
@@ -22,7 +23,7 @@ def run_migration(migration_file: str):
         migration_file: Path to the .sql file to execute
     """
     # Get DATABASE_URL from environment (injected by Cloud Build via Secret Manager)
-    database_url = os.environ.get('DATABASE_URL')
+    database_url = os.environ.get("DATABASE_URL")
     if not database_url:
         print("ERROR: DATABASE_URL environment variable not set")
         sys.exit(1)
@@ -44,10 +45,12 @@ def run_migration(migration_file: str):
         sys.exit(1)
 
     # Read the migration SQL
-    with open(migration_file, 'r') as f:
+    with open(migration_file, "r") as f:
         migration_sql = f.read()
 
-    print(f"[Migration] Loaded SQL file ({len(migration_sql)} bytes, {migration_sql.count(chr(10))} lines)")
+    print(
+        f"[Migration] Loaded SQL file ({len(migration_sql)} bytes, {migration_sql.count(chr(10))} lines)"
+    )
     print()
 
     try:
@@ -57,7 +60,7 @@ def run_migration(migration_file: str):
             port=parsed.port or 5432,
             database=parsed.path[1:],
             user=parsed.username,
-            password=parsed.password
+            password=parsed.password,
         )
 
         print("[Migration] Connected successfully")
@@ -73,13 +76,15 @@ def run_migration(migration_file: str):
 
             # Verify the tables were created
             print("[Verification] Checking migration results...")
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT table_name
                 FROM information_schema.tables
                 WHERE table_schema = 'public'
                 AND table_name IN ('prompt_templates', 'prompt_executions', 'prompt_guardrails', 'ab_test_experiments')
                 ORDER BY table_name;
-            """)
+            """
+            )
 
             tables = cursor.fetchall()
             if tables:
@@ -103,6 +108,7 @@ def run_migration(migration_file: str):
         print(f"ERROR: Unexpected error:")
         print(f"  {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

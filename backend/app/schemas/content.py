@@ -121,7 +121,9 @@ class SimilarContentRequest(BaseModel):
     topic_id: Optional[str] = None
     interest: Optional[str] = None
     student_query: Optional[str] = None
-    limit: int = Field(default=5, ge=1, le=10, description="Maximum similar items to return")
+    limit: int = Field(
+        default=5, ge=1, le=10, description="Maximum similar items to return"
+    )
 
 
 class SimilarContentItem(BaseModel):
@@ -155,5 +157,5 @@ class SimilarContentResponse(BaseModel):
     total_found: int
     has_high_similarity: bool = Field(
         ...,
-        description="True if any content has similarity_score >= 60 (likely duplicate)"
+        description="True if any content has similarity_score >= 60 (likely duplicate)",
     )

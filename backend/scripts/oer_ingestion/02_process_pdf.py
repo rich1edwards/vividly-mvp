@@ -167,7 +167,9 @@ class PDFProcessor:
 
             # Pattern 1: INTRODUCTION + CHAPTER X + Title
             if line1 == "INTRODUCTION":
-                chapter_match = re.match(r"^CHAPTER\s+(\d{1,2})\s*$", line2, re.IGNORECASE)
+                chapter_match = re.match(
+                    r"^CHAPTER\s+(\d{1,2})\s*$", line2, re.IGNORECASE
+                )
                 if chapter_match and line3 and len(line3) > 3:
                     chapter_num = int(chapter_match.group(1))
                     return (chapter_num, line3)
@@ -234,17 +236,20 @@ class PDFProcessor:
         text_lower = text.lower()
 
         # Learning objectives
-        if any(keyword in text_lower for keyword in [
-            "learning objective",
-            "by the end of this",
-            "you will be able to",
-        ]):
+        if any(
+            keyword in text_lower
+            for keyword in [
+                "learning objective",
+                "by the end of this",
+                "you will be able to",
+            ]
+        ):
             return ("learning_objective", {})
 
         # Examples
         if text.startswith("Example") or "EXAMPLE" in text[:20]:
             # Extract example title if present
-            lines = text.split('\n', 1)
+            lines = text.split("\n", 1)
             title = lines[0] if lines else "Example"
             return ("example", {"title": title})
 
@@ -367,14 +372,18 @@ def main():
         print("")
         print("Successful:")
         for result in successful:
-            print(f"  ✓ {result['book_id']}: {result['chapters']} chapters, "
-                  f"{result['content_blocks']} blocks ({result['size_mb']:.2f} MB)")
+            print(
+                f"  ✓ {result['book_id']}: {result['chapters']} chapters, "
+                f"{result['content_blocks']} blocks ({result['size_mb']:.2f} MB)"
+            )
 
     if failed:
         print("")
         print("Failed:")
         for result in failed:
-            print(f"  ✗ {result.get('book_id', 'unknown')}: {result.get('error', 'Unknown error')}")
+            print(
+                f"  ✗ {result.get('book_id', 'unknown')}: {result.get('error', 'Unknown error')}"
+            )
 
     print("")
     print("Next step: python 03_chunk_content.py")

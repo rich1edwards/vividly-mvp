@@ -129,8 +129,8 @@ class ContentTrackingService:
                     meta_data={
                         "current_position_seconds": current_time_seconds,
                         "playback_speed": playback_speed,
-                        "paused": paused
-                    }
+                        "paused": paused,
+                    },
                 )
                 db.add(progress)
             else:
@@ -139,7 +139,9 @@ class ContentTrackingService:
                 if progress.meta_data is None:
                     progress.meta_data = {}
                 if isinstance(progress.meta_data, dict):
-                    progress.meta_data["current_position_seconds"] = current_time_seconds
+                    progress.meta_data[
+                        "current_position_seconds"
+                    ] = current_time_seconds
                     progress.meta_data["playback_speed"] = playback_speed
                     progress.meta_data["paused"] = paused
 
@@ -230,20 +232,24 @@ class ContentTrackingService:
                     student_id=student_id,
                     topic_id=content.topic_id,
                     status=ProgressStatus.COMPLETED,
-                    progress_percentage=int(completion_percentage),  # Model uses progress_percentage
+                    progress_percentage=int(
+                        completion_percentage
+                    ),  # Model uses progress_percentage
                     total_watch_time_seconds=watch_duration_seconds,
                     completed_at=datetime.utcnow(),
                     started_at=datetime.utcnow(),
                     meta_data={
                         "skipped_segments": skipped_segments,
-                        "completion_percentage": completion_percentage  # Store float value in meta_data
-                    }
+                        "completion_percentage": completion_percentage,  # Store float value in meta_data
+                    },
                 )
                 db.add(progress)
             else:
                 # Update to completed
                 progress.status = ProgressStatus.COMPLETED
-                progress.progress_percentage = int(completion_percentage)  # Model uses progress_percentage
+                progress.progress_percentage = int(
+                    completion_percentage
+                )  # Model uses progress_percentage
                 progress.total_watch_time_seconds = watch_duration_seconds
                 progress.completed_at = datetime.utcnow()
                 # Store additional metadata

@@ -244,20 +244,24 @@ class TestNotificationSubscription:
         # Mock getting messages
         test_message = {
             "type": "message",
-            "data": json.dumps({
-                "event_type": "content_generation.progress",
-                "title": "Generating",
-                "message": "Progress update",
-                "progress_percentage": 50,
-                "timestamp": datetime.utcnow().isoformat(),
-            })
+            "data": json.dumps(
+                {
+                    "event_type": "content_generation.progress",
+                    "title": "Generating",
+                    "message": "Progress update",
+                    "progress_percentage": 50,
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
+            ),
         }
 
-        mock_pubsub.get_message = AsyncMock(side_effect=[
-            test_message,
-            None,  # Timeout
-            asyncio.CancelledError(),  # Simulate disconnection
-        ])
+        mock_pubsub.get_message = AsyncMock(
+            side_effect=[
+                test_message,
+                None,  # Timeout
+                asyncio.CancelledError(),  # Simulate disconnection
+            ]
+        )
 
         notification_service.redis.pubsub = Mock(return_value=mock_pubsub)
         notification_service.redis.sadd = AsyncMock()
@@ -275,7 +279,9 @@ class TestNotificationSubscription:
                 connection_id=connection_id,
             ):
                 messages_received.append(message)
-                if len(messages_received) >= 2:  # Get connection confirmation + 1 message
+                if (
+                    len(messages_received) >= 2
+                ):  # Get connection confirmation + 1 message
                     break
         except asyncio.CancelledError:
             pass
@@ -309,10 +315,12 @@ class TestNotificationSubscription:
         mock_pubsub.close = AsyncMock()
 
         # Return None (timeout) to trigger heartbeat logic, then cancel
-        mock_pubsub.get_message = AsyncMock(side_effect=[
-            None,  # Timeout (will trigger heartbeat check)
-            asyncio.CancelledError(),  # Stop
-        ])
+        mock_pubsub.get_message = AsyncMock(
+            side_effect=[
+                None,  # Timeout (will trigger heartbeat check)
+                asyncio.CancelledError(),  # Stop
+            ]
+        )
 
         notification_service.redis.pubsub = Mock(return_value=mock_pubsub)
         notification_service.redis.sadd = AsyncMock()
@@ -339,7 +347,9 @@ class TestNotificationSubscription:
         assert messages_received[0]["event"] == "connection.established"
 
         # Verify heartbeat updates were called (initial tracking + potential heartbeat)
-        assert notification_service.redis.setex.call_count >= 1  # At minimum, initial heartbeat
+        assert (
+            notification_service.redis.setex.call_count >= 1
+        )  # At minimum, initial heartbeat
 
 
 # =============================================================================
@@ -414,7 +424,9 @@ class TestConnectionTracking:
 
         # Verify Redis cleanup
         notification_service.redis.srem.assert_called_once()
-        assert notification_service.redis.delete.call_count == 2  # connection + heartbeat
+        assert (
+            notification_service.redis.delete.call_count == 2
+        )  # connection + heartbeat
 
     @pytest.mark.asyncio
     async def test_get_active_connections(self, notification_service):
@@ -707,7 +719,9 @@ class TestErrorHandling:
     """Test error handling and edge cases."""
 
     @pytest.mark.asyncio
-    async def test_publish_with_redis_timeout(self, notification_service, sample_notification):
+    async def test_publish_with_redis_timeout(
+        self, notification_service, sample_notification
+    ):
         """Test handling Redis timeout during publish."""
         # Arrange
         notification_service.redis.publish = AsyncMock(

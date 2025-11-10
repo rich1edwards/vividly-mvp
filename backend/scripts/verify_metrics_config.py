@@ -37,70 +37,70 @@ class MetricsConfigVerifier:
         "rate_limit_hits_total": {
             "type": "counter",
             "labels": ["endpoint", "ip_address"],
-            "description": "Total rate limit checks performed"
+            "description": "Total rate limit checks performed",
         },
         "rate_limit_exceeded_total": {
             "type": "counter",
             "labels": ["endpoint", "ip_address"],
-            "description": "Total rate limit exceeded events"
+            "description": "Total rate limit exceeded events",
         },
         "brute_force_lockouts_total": {
             "type": "counter",
             "labels": ["ip_address"],
-            "description": "Total brute force lockout events"
+            "description": "Total brute force lockout events",
         },
         "rate_limit_middleware_latency_ms": {
             "type": "gauge",
             "labels": ["endpoint"],
-            "description": "Rate limiting middleware processing time"
+            "description": "Rate limiting middleware processing time",
         },
         # Authentication Metrics
         "auth_login_attempts_total": {
             "type": "counter",
             "labels": ["status"],
-            "description": "Total login attempts"
+            "description": "Total login attempts",
         },
         "auth_login_failures_total": {
             "type": "counter",
             "labels": ["reason"],
-            "description": "Total failed login attempts"
+            "description": "Total failed login attempts",
         },
         "auth_token_refresh_total": {
             "type": "counter",
             "labels": ["status"],
-            "description": "Total token refresh attempts"
+            "description": "Total token refresh attempts",
         },
         "auth_session_duration_seconds": {
             "type": "gauge",
             "labels": [],
-            "description": "Authentication session duration"
+            "description": "Authentication session duration",
         },
         "auth_active_sessions": {
             "type": "gauge",
             "labels": [],
-            "description": "Current active sessions"
+            "description": "Current active sessions",
         },
         # System Health Metrics (Sprint 3)
         "http_request_total": {
             "type": "counter",
             "labels": ["method", "endpoint", "status_code"],
-            "description": "Total HTTP requests"
+            "description": "Total HTTP requests",
         },
         "http_request_duration_seconds": {
             "type": "gauge",
             "labels": ["method", "endpoint"],
-            "description": "HTTP request processing time"
+            "description": "HTTP request processing time",
         },
         # Content Generation Metrics
         "content_generation_requests_total": {
             "type": "counter",
             "labels": ["status"],
-            "description": "Total content generation requests"
+            "description": "Total content generation requests",
         },
         "content_generation_duration_seconds": {
             "type": "gauge",
             "labels": ["stage"],
-            "description": "Content generation stage duration"
+            "description": "Content generation stage duration",
         },
     }
 
@@ -117,11 +117,14 @@ class MetricsConfigVerifier:
 
         try:
             import google.cloud.monitoring_v3
+
             self.successes.append("✓ google-cloud-monitoring package installed")
             return True
         except ImportError as e:
             self.errors.append(f"✗ Missing dependency: google-cloud-monitoring")
-            self.errors.append(f"  Install with: pip install google-cloud-monitoring==2.15.1")
+            self.errors.append(
+                f"  Install with: pip install google-cloud-monitoring==2.15.1"
+            )
             return False
 
     def verify_metrics_client(self) -> bool:
@@ -158,9 +161,13 @@ class MetricsConfigVerifier:
 
             for method_name in required_methods:
                 if hasattr(MetricsClient, method_name):
-                    self.successes.append(f"✓ MetricsClient.{method_name}() method found")
+                    self.successes.append(
+                        f"✓ MetricsClient.{method_name}() method found"
+                    )
                 else:
-                    self.errors.append(f"✗ Missing method: MetricsClient.{method_name}()")
+                    self.errors.append(
+                        f"✗ Missing method: MetricsClient.{method_name}()"
+                    )
 
             return len(self.errors) == 0
 
@@ -182,24 +189,38 @@ class MetricsConfigVerifier:
             from app.middleware.logging_middleware import LoggingContextMiddleware
 
             # Read the middleware source to verify metrics calls
-            middleware_file = backend_path / "app" / "middleware" / "logging_middleware.py"
+            middleware_file = (
+                backend_path / "app" / "middleware" / "logging_middleware.py"
+            )
             if middleware_file.exists():
                 content = middleware_file.read_text()
 
                 if "get_metrics_client" in content:
-                    self.successes.append("✓ LoggingContextMiddleware imports metrics client")
+                    self.successes.append(
+                        "✓ LoggingContextMiddleware imports metrics client"
+                    )
                 else:
-                    self.warnings.append("⚠ LoggingContextMiddleware may not use metrics client")
+                    self.warnings.append(
+                        "⚠ LoggingContextMiddleware may not use metrics client"
+                    )
 
                 if "increment_http_request" in content:
-                    self.successes.append("✓ LoggingContextMiddleware tracks HTTP requests")
+                    self.successes.append(
+                        "✓ LoggingContextMiddleware tracks HTTP requests"
+                    )
                 else:
-                    self.warnings.append("⚠ LoggingContextMiddleware may not track HTTP requests")
+                    self.warnings.append(
+                        "⚠ LoggingContextMiddleware may not track HTTP requests"
+                    )
 
                 if "record_request_duration" in content:
-                    self.successes.append("✓ LoggingContextMiddleware tracks request duration")
+                    self.successes.append(
+                        "✓ LoggingContextMiddleware tracks request duration"
+                    )
                 else:
-                    self.warnings.append("⚠ LoggingContextMiddleware may not track request duration")
+                    self.warnings.append(
+                        "⚠ LoggingContextMiddleware may not track request duration"
+                    )
 
         except Exception as e:
             self.warnings.append(f"⚠ Could not verify LoggingContextMiddleware: {e}")
@@ -211,19 +232,31 @@ class MetricsConfigVerifier:
                 content = rate_limit_file.read_text()
 
                 if "get_metrics_client" in content:
-                    self.successes.append("✓ Rate limiting middleware imports metrics client")
+                    self.successes.append(
+                        "✓ Rate limiting middleware imports metrics client"
+                    )
                 else:
-                    self.warnings.append("⚠ Rate limiting middleware may not use metrics client")
+                    self.warnings.append(
+                        "⚠ Rate limiting middleware may not use metrics client"
+                    )
 
                 if "increment_rate_limit_hits" in content:
-                    self.successes.append("✓ Rate limiting middleware tracks rate limit hits")
+                    self.successes.append(
+                        "✓ Rate limiting middleware tracks rate limit hits"
+                    )
                 else:
-                    self.warnings.append("⚠ Rate limiting middleware may not track rate limit hits")
+                    self.warnings.append(
+                        "⚠ Rate limiting middleware may not track rate limit hits"
+                    )
 
                 if "increment_rate_limit_exceeded" in content:
-                    self.successes.append("✓ Rate limiting middleware tracks rate limit exceeded")
+                    self.successes.append(
+                        "✓ Rate limiting middleware tracks rate limit exceeded"
+                    )
                 else:
-                    self.warnings.append("⚠ Rate limiting middleware may not track rate limit exceeded")
+                    self.warnings.append(
+                        "⚠ Rate limiting middleware may not track rate limit exceeded"
+                    )
 
         except Exception as e:
             self.warnings.append(f"⚠ Could not verify rate limiting middleware: {e}")
@@ -239,9 +272,13 @@ class MetricsConfigVerifier:
         # Check if METRICS_ENABLED is set (should default to true)
         metrics_enabled = os.getenv("METRICS_ENABLED", "true")
         if metrics_enabled.lower() in ["true", "1", "yes"]:
-            self.successes.append(f"✓ METRICS_ENABLED={metrics_enabled} (metrics will be collected)")
+            self.successes.append(
+                f"✓ METRICS_ENABLED={metrics_enabled} (metrics will be collected)"
+            )
         else:
-            self.warnings.append(f"⚠ METRICS_ENABLED={metrics_enabled} (metrics disabled)")
+            self.warnings.append(
+                f"⚠ METRICS_ENABLED={metrics_enabled} (metrics disabled)"
+            )
 
         # Check GCP_PROJECT
         gcp_project = os.getenv("GCP_PROJECT")
@@ -265,7 +302,9 @@ class MetricsConfigVerifier:
             # Check test file has content
             content = test_file.read_text()
             if len(content) > 100:  # Basic sanity check
-                self.successes.append(f"✓ Metrics test file has {len(content)} characters")
+                self.successes.append(
+                    f"✓ Metrics test file has {len(content)} characters"
+                )
             else:
                 self.warnings.append("⚠ Metrics test file seems empty")
 
@@ -352,6 +391,7 @@ def main():
     except Exception as e:
         print(f"\n✗ CRITICAL ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

@@ -25,9 +25,10 @@ app.add_middleware(LoggingContextMiddleware)
 async def test_endpoint():
     """Test endpoint that generates logs."""
     logger.info("Processing test request")
-    logger.debug("Debug information from endpoint", extra={
-        "extra_fields": {"custom_field": "custom_value"}
-    })
+    logger.debug(
+        "Debug information from endpoint",
+        extra={"extra_fields": {"custom_field": "custom_value"}},
+    )
     return {"message": "success", "timestamp": time.time()}
 
 
@@ -43,9 +44,9 @@ async def make_test_requests():
     base_url = "http://127.0.0.1:8000"
 
     async with httpx.AsyncClient() as client:
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("MAKING TEST REQUESTS")
-        print("="*60 + "\n")
+        print("=" * 60 + "\n")
 
         # Test 1: Normal request
         print("TEST 1: Normal request without custom headers")
@@ -60,8 +61,7 @@ async def make_test_requests():
         print("TEST 2: Request with X-Correlation-ID header")
         correlation_id = "test-correlation-123"
         response = await client.get(
-            f"{base_url}/test",
-            headers={"X-Correlation-ID": correlation_id}
+            f"{base_url}/test", headers={"X-Correlation-ID": correlation_id}
         )
         print(f"Response status: {response.status_code}")
         print(f"X-Request-ID header: {response.headers.get('X-Request-ID')}")
@@ -77,9 +77,9 @@ async def make_test_requests():
             pass
         print("Error logged (check logs above)\n")
 
-        print("="*60)
+        print("=" * 60)
         print("DEMO COMPLETE")
-        print("="*60)
+        print("=" * 60)
         print("\nCheck the logs above to see:")
         print("1. Request IDs automatically generated")
         print("2. Correlation IDs propagated from headers")
@@ -92,10 +92,10 @@ if __name__ == "__main__":
     import uvicorn
     import threading
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("LOGGING MIDDLEWARE DEMONSTRATION")
     print("Sprint 3 Phase 1: Structured Logging Foundation")
-    print("="*60)
+    print("=" * 60)
     print("\nStarting demo server on http://127.0.0.1:8000")
     print("Watch the structured logs below:\n")
 

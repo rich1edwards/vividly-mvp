@@ -205,7 +205,9 @@ class TestSessionManagement:
             "/api/v1/auth/logout", headers={"Authorization": f"Bearer {token}"}
         )
 
-        assert logout_response.status_code == 204  # 204 No Content is correct for logout
+        assert (
+            logout_response.status_code == 204
+        )  # 204 No Content is correct for logout
 
         # Try to use token after logout
         me_response = client.get(
@@ -369,8 +371,7 @@ class TestCORSSecurity:
         """Test that CORS headers are properly configured."""
         # CORS middleware only adds headers when Origin header is present
         response = client.options(
-            "/api/v1/auth/login",
-            headers={"Origin": "http://localhost:3000"}
+            "/api/v1/auth/login", headers={"Origin": "http://localhost:3000"}
         )
 
         # Should have CORS headers
@@ -381,8 +382,7 @@ class TestCORSSecurity:
     def test_cors_credentials_properly_configured(self):
         """Test that credentials are properly handled in CORS."""
         response = client.options(
-            "/api/v1/auth/login",
-            headers={"Origin": "http://localhost:3000"}
+            "/api/v1/auth/login", headers={"Origin": "http://localhost:3000"}
         )
 
         # Should allow credentials if needed
@@ -403,7 +403,10 @@ class TestCSRFProtection:
         )
 
         # Should return 401 (not authenticated) or 403 (authenticated but not authorized)
-        assert response.status_code in [401, 403], "State-changing requests should require auth"
+        assert response.status_code in [
+            401,
+            403,
+        ], "State-changing requests should require auth"
 
     def test_csrf_token_validation(self):
         """Test CSRF token validation if implemented."""

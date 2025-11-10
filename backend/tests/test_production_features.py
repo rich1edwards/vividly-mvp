@@ -19,7 +19,9 @@ from app.services.content_request_service import ContentRequestService
 from app.services.pubsub_service import PubSubService
 from app.models.request_tracking import ContentRequest
 from app.core.database import SessionLocal, engine
-from app.models import Base  # Import Base from models/__init__.py which includes all models
+from app.models import (
+    Base,
+)  # Import Base from models/__init__.py which includes all models
 
 
 class TestRetryCountTracking:
@@ -34,15 +36,14 @@ class TestRetryCountTracking:
             topic="Python Basics",
             learning_objective="Learn Python",
             grade_level="9th Grade",
-            correlation_id="test-correlation-001"
+            correlation_id="test-correlation-001",
         )
 
         assert request.retry_count == 0
 
         # Increment retry count
         result = ContentRequestService.increment_retry_count(
-            db=test_db,
-            request_id=request.id
+            db=test_db, request_id=request.id
         )
 
         assert result is True
@@ -60,14 +61,13 @@ class TestRetryCountTracking:
             topic="Math Algebra",
             learning_objective=None,
             grade_level="10th Grade",
-            correlation_id="test-correlation-002"
+            correlation_id="test-correlation-002",
         )
 
         # Increment 5 times (simulating max retries)
         for i in range(5):
             result = ContentRequestService.increment_retry_count(
-                db=test_db,
-                request_id=request.id
+                db=test_db, request_id=request.id
             )
             assert result is True
 
@@ -77,8 +77,7 @@ class TestRetryCountTracking:
     def test_increment_retry_count_nonexistent_request(self, test_db: Session):
         """Test incrementing retry count for non-existent request"""
         result = ContentRequestService.increment_retry_count(
-            db=test_db,
-            request_id="00000000-0000-0000-0000-000000000000"
+            db=test_db, request_id="00000000-0000-0000-0000-000000000000"
         )
 
         # Should return False for non-existent request
@@ -98,7 +97,7 @@ class TestContentRequestService:
             topic="Chemistry Basics",
             learning_objective="Understand atoms",
             grade_level="11th Grade",
-            correlation_id=correlation_id
+            correlation_id=correlation_id,
         )
 
         assert request.correlation_id == correlation_id
@@ -113,7 +112,7 @@ class TestContentRequestService:
             student_id="student-xyz",
             topic="Biology Cells",
             learning_objective=None,
-            grade_level="9th Grade"
+            grade_level="9th Grade",
         )
 
         assert request.correlation_id is not None
@@ -128,13 +127,12 @@ class TestContentRequestService:
             student_id="student-get-test",
             topic="Physics Motion",
             learning_objective=None,
-            grade_level="12th Grade"
+            grade_level="12th Grade",
         )
 
         # Retrieve request
         retrieved = ContentRequestService.get_request_by_id(
-            db=test_db,
-            request_id=created.id
+            db=test_db, request_id=created.id
         )
 
         assert retrieved is not None
@@ -148,19 +146,23 @@ class TestDatabaseIndexes:
     def test_check_for_compound_indexes(self, test_db: Session):
         """Document expected indexes (may not exist until migration runs)"""
         expected_indexes = [
-            'idx_content_requests_correlation_status',
-            'idx_content_requests_student_status_created',
-            'idx_content_requests_status_created',
-            'idx_content_requests_org_status_created',
-            'idx_content_requests_failed_debugging'
+            "idx_content_requests_correlation_status",
+            "idx_content_requests_student_status_created",
+            "idx_content_requests_status_created",
+            "idx_content_requests_org_status_created",
+            "idx_content_requests_failed_debugging",
         ]
 
         # Query for indexes
-        result = test_db.execute(text("""
+        result = test_db.execute(
+            text(
+                """
             SELECT indexname
             FROM pg_indexes
             WHERE tablename = 'content_requests'
-        """))
+        """
+            )
+        )
 
         existing_indexes = {row[0] for row in result.fetchall()}
 
@@ -181,24 +183,29 @@ class TestPubSubEnvironmentValidation:
 
     def test_pubsub_service_requires_project_id(self):
         """Test that PubSubService validates GOOGLE_CLOUD_PROJECT"""
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict("os.environ", {}, clear=True):
             with pytest.raises((ValueError, KeyError)):
                 service = PubSubService()
 
     def test_pubsub_service_with_valid_env(self):
         """Test PubSubService initialization with valid environment"""
-        with patch.dict('os.environ', {
-            'GOOGLE_CLOUD_PROJECT': 'test-project-123',
-            'PUBSUB_TOPIC': 'test-topic',
-            'PUBSUB_SUBSCRIPTION': 'test-subscription'
-        }):
+        with patch.dict(
+            "os.environ",
+            {
+                "GOOGLE_CLOUD_PROJECT": "test-project-123",
+                "PUBSUB_TOPIC": "test-topic",
+                "PUBSUB_SUBSCRIPTION": "test-subscription",
+            },
+        ):
             try:
                 service = PubSubService()
                 # If it initializes without error, validation passed
                 assert True
             except Exception as e:
                 # May fail due to missing credentials, but should not be ValueError
-                assert not isinstance(e, ValueError), "Should not raise ValueError for valid env vars"
+                assert not isinstance(
+                    e, ValueError
+                ), "Should not raise ValueError for valid env vars"
 
 
 class TestRequestStatusTracking:
@@ -211,13 +218,12 @@ class TestRequestStatusTracking:
             student_id="student-status-test",
             topic="History WW2",
             learning_objective=None,
-            grade_level="11th Grade"
+            grade_level="11th Grade",
         )
 
         # Mark as generating
         result = ContentRequestService.mark_generating(
-            db=test_db,
-            request_id=request.id
+            db=test_db, request_id=request.id
         )
 
         assert result is True
@@ -232,16 +238,14 @@ class TestRequestStatusTracking:
             student_id="student-complete-test",
             topic="Art Renaissance",
             learning_objective=None,
-            grade_level="10th Grade"
+            grade_level="10th Grade",
         )
 
         video_url = "https://storage.googleapis.com/test/video.mp4"
 
         # Mark as completed
         result = ContentRequestService.mark_completed(
-            db=test_db,
-            request_id=request.id,
-            video_url=video_url
+            db=test_db, request_id=request.id, video_url=video_url
         )
 
         assert result is True
@@ -257,7 +261,7 @@ class TestRequestStatusTracking:
             student_id="student-fail-test",
             topic="Music Theory",
             learning_objective=None,
-            grade_level="9th Grade"
+            grade_level="9th Grade",
         )
 
         error_message = "Test error: API rate limit exceeded"
@@ -268,7 +272,7 @@ class TestRequestStatusTracking:
             db=test_db,
             request_id=request.id,
             error_message=error_message,
-            error_stage=error_stage
+            error_stage=error_stage,
         )
 
         assert result is True
@@ -280,6 +284,7 @@ class TestRequestStatusTracking:
 
 
 # Fixtures
+
 
 @pytest.fixture(scope="function")
 def test_db():

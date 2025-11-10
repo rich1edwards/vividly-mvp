@@ -104,10 +104,7 @@ class ContentRequestService:
             raise
 
     @staticmethod
-    def get_request_by_id(
-        db: Session,
-        request_id: str
-    ) -> Optional[ContentRequest]:
+    def get_request_by_id(db: Session, request_id: str) -> Optional[ContentRequest]:
         """
         Get content request by ID.
 
@@ -119,9 +116,9 @@ class ContentRequestService:
             ContentRequest or None if not found
         """
         try:
-            request = db.query(ContentRequest).filter(
-                ContentRequest.id == request_id
-            ).first()
+            request = (
+                db.query(ContentRequest).filter(ContentRequest.id == request_id).first()
+            )
 
             return request
 
@@ -131,8 +128,7 @@ class ContentRequestService:
 
     @staticmethod
     def get_request_by_correlation_id(
-        db: Session,
-        correlation_id: str
+        db: Session, correlation_id: str
     ) -> Optional[ContentRequest]:
         """
         Get content request by correlation ID.
@@ -145,9 +141,11 @@ class ContentRequestService:
             ContentRequest or None if not found
         """
         try:
-            request = db.query(ContentRequest).filter(
-                ContentRequest.correlation_id == correlation_id
-            ).first()
+            request = (
+                db.query(ContentRequest)
+                .filter(ContentRequest.correlation_id == correlation_id)
+                .first()
+            )
 
             return request
 
@@ -177,9 +175,9 @@ class ContentRequestService:
             True if updated successfully
         """
         try:
-            request = db.query(ContentRequest).filter(
-                ContentRequest.id == request_id
-            ).first()
+            request = (
+                db.query(ContentRequest).filter(ContentRequest.id == request_id).first()
+            )
 
             if not request:
                 logger.warning(f"Request not found: {request_id}")
@@ -238,9 +236,9 @@ class ContentRequestService:
             True if updated successfully
         """
         try:
-            request = db.query(ContentRequest).filter(
-                ContentRequest.id == request_id
-            ).first()
+            request = (
+                db.query(ContentRequest).filter(ContentRequest.id == request_id).first()
+            )
 
             if not request:
                 return False
@@ -288,9 +286,9 @@ class ContentRequestService:
             True if updated successfully
         """
         try:
-            request = db.query(ContentRequest).filter(
-                ContentRequest.id == request_id
-            ).first()
+            request = (
+                db.query(ContentRequest).filter(ContentRequest.id == request_id).first()
+            )
 
             if not request:
                 return False
@@ -306,7 +304,7 @@ class ContentRequestService:
             request.request_metadata["clarification"] = {
                 "questions": clarifying_questions,
                 "reasoning": reasoning,
-                "requested_at": datetime.utcnow().isoformat()
+                "requested_at": datetime.utcnow().isoformat(),
             }
 
             db.commit()
@@ -345,9 +343,9 @@ class ContentRequestService:
             True if updated successfully
         """
         try:
-            request = db.query(ContentRequest).filter(
-                ContentRequest.id == request_id
-            ).first()
+            request = (
+                db.query(ContentRequest).filter(ContentRequest.id == request_id).first()
+            )
 
             if not request:
                 return False
@@ -361,9 +359,7 @@ class ContentRequestService:
 
             db.commit()
 
-            logger.info(
-                f"Set request results: id={request_id}, video_url={video_url}"
-            )
+            logger.info(f"Set request results: id={request_id}, video_url={video_url}")
 
             return True
 
@@ -373,10 +369,7 @@ class ContentRequestService:
             return False
 
     @staticmethod
-    def increment_retry_count(
-        db: Session,
-        request_id: str
-    ) -> bool:
+    def increment_retry_count(db: Session, request_id: str) -> bool:
         """
         Increment the retry count for a request.
 
@@ -392,9 +385,9 @@ class ContentRequestService:
             True if incremented successfully, False otherwise
         """
         try:
-            request = db.query(ContentRequest).filter(
-                ContentRequest.id == request_id
-            ).first()
+            request = (
+                db.query(ContentRequest).filter(ContentRequest.id == request_id).first()
+            )
 
             if not request:
                 logger.warning(f"Request not found for retry increment: {request_id}")
@@ -418,10 +411,7 @@ class ContentRequestService:
             return False
 
     @staticmethod
-    def get_request_status(
-        db: Session,
-        request_id: str
-    ) -> Optional[Dict[str, Any]]:
+    def get_request_status(db: Session, request_id: str) -> Optional[Dict[str, Any]]:
         """
         Get request status for API response.
 
@@ -433,9 +423,9 @@ class ContentRequestService:
             Dict with status information or None if not found
         """
         try:
-            request = db.query(ContentRequest).filter(
-                ContentRequest.id == request_id
-            ).first()
+            request = (
+                db.query(ContentRequest).filter(ContentRequest.id == request_id).first()
+            )
 
             if not request:
                 return None
@@ -447,27 +437,39 @@ class ContentRequestService:
                 "status": request.status,
                 "progress_percentage": request.progress_percentage,
                 "current_stage": request.current_stage,
-                "created_at": request.created_at.isoformat() if request.created_at else None,
-                "started_at": request.started_at.isoformat() if request.started_at else None,
-                "completed_at": request.completed_at.isoformat() if request.completed_at else None,
+                "created_at": request.created_at.isoformat()
+                if request.created_at
+                else None,
+                "started_at": request.started_at.isoformat()
+                if request.started_at
+                else None,
+                "completed_at": request.completed_at.isoformat()
+                if request.completed_at
+                else None,
             }
 
             # Add results if completed
             if request.status == "completed":
-                status_data.update({
-                    "video_url": request.video_url,
-                    "script_text": request.script_text,
-                    "thumbnail_url": request.thumbnail_url,
-                })
+                status_data.update(
+                    {
+                        "video_url": request.video_url,
+                        "script_text": request.script_text,
+                        "thumbnail_url": request.thumbnail_url,
+                    }
+                )
 
             # Add error info if failed
             if request.status == "failed":
-                status_data.update({
-                    "error_message": request.error_message,
-                    "error_stage": request.error_stage,
-                    "error_details": request.error_details,
-                    "failed_at": request.failed_at.isoformat() if request.failed_at else None,
-                })
+                status_data.update(
+                    {
+                        "error_message": request.error_message,
+                        "error_stage": request.error_stage,
+                        "error_details": request.error_details,
+                        "failed_at": request.failed_at.isoformat()
+                        if request.failed_at
+                        else None,
+                    }
+                )
 
             return status_data
 

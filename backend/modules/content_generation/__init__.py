@@ -32,6 +32,7 @@ from .interface import (
     Modality,
 )
 
+
 # Factory function (to be implemented during migration)
 def create_content_service(dependencies: dict) -> ContentGenerationInterface:
     """

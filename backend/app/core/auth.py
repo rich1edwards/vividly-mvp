@@ -102,9 +102,7 @@ def require_role(required_role: UserRole):
         UserRole.SUPER_ADMIN: 3,
     }
 
-    async def check_role(
-        current_user: User = Depends(get_current_active_user)
-    ) -> User:
+    async def check_role(current_user: User = Depends(get_current_active_user)) -> User:
         """
         Check if current user has required role or higher.
 
@@ -124,7 +122,7 @@ def require_role(required_role: UserRole):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Insufficient permissions. Required role: {required_role.value}, "
-                       f"current role: {current_user.role.value}",
+                f"current role: {current_user.role.value}",
             )
 
         return current_user
@@ -159,8 +157,9 @@ def require_organization_access(organization_id: str):
             ...
         ```
     """
+
     async def check_organization(
-        current_user: User = Depends(get_current_active_user)
+        current_user: User = Depends(get_current_active_user),
     ) -> User:
         """
         Check if current user has access to organization.

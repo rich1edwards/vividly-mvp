@@ -61,7 +61,7 @@ async def test_rag_retrieval():
             topic_id="topic_phys_mech_newton_3",
             interest="basketball",
             grade_level=10,
-            limit=3
+            limit=3,
         )
 
         if not content:
@@ -82,17 +82,19 @@ async def test_rag_retrieval():
             print(f"  Chunk ID: {chunk.get('chunk_id', 'N/A')}")
 
             # Show first 150 chars of text
-            text = chunk.get('text', '')
+            text = chunk.get("text", "")
             if text:
                 preview = text[:150] + "..." if len(text) > 150 else text
                 print(f"  Text preview: {preview}")
 
             # Check if this looks like real content
             # Mock content has specific IDs like "oer_newton3_001"
-            chunk_id = chunk.get('chunk_id', '')
-            if chunk_id.startswith('oer_newton'):
+            chunk_id = chunk.get("chunk_id", "")
+            if chunk_id.startswith("oer_newton"):
                 print("  ⚠ WARNING: This looks like mock content!")
-                print("    Real content should have chunk IDs like 'physics_2e_chunk_001'")
+                print(
+                    "    Real content should have chunk IDs like 'physics_2e_chunk_001'"
+                )
 
         print()
         print("=" * 70)
@@ -111,6 +113,7 @@ async def test_rag_retrieval():
     except Exception as e:
         print(f"✗ Failed to retrieve content: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 

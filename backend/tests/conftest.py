@@ -10,7 +10,9 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
 
 # Set test environment variables BEFORE importing app
-os.environ["TESTING"] = "true"  # Disable rate limiting and brute force protection in tests
+os.environ[
+    "TESTING"
+] = "true"  # Disable rate limiting and brute force protection in tests
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 os.environ["SECRET_KEY"] = "test_secret_key_for_testing_12345"
 os.environ["ALGORITHM"] = "HS256"

@@ -276,7 +276,9 @@ class TestLoggingContextMiddlewareIntegration:
 
         # Create a mock headers object with proper get method
         headers_dict = {"X-Correlation-ID": "test-corr-123"}
-        mock_request.headers.get = lambda key, default=None: headers_dict.get(key, default)
+        mock_request.headers.get = lambda key, default=None: headers_dict.get(
+            key, default
+        )
 
         mock_request.client.host = "127.0.0.1"
         mock_request.state = MagicMock()
@@ -384,7 +386,7 @@ class TestMiddlewareMetricsIntegration:
         clear_request_context()
 
     @pytest.mark.asyncio
-    @patch('app.middleware.logging_middleware.metrics')
+    @patch("app.middleware.logging_middleware.metrics")
     async def test_middleware_records_http_request_metrics(self, mock_metrics):
         """Test that middleware records HTTP request count metrics."""
         from fastapi import Request
@@ -415,7 +417,7 @@ class TestMiddlewareMetricsIntegration:
         assert call_args[1]["status_code"] == 200
 
     @pytest.mark.asyncio
-    @patch('app.middleware.logging_middleware.metrics')
+    @patch("app.middleware.logging_middleware.metrics")
     async def test_middleware_records_request_duration_metrics(self, mock_metrics):
         """Test that middleware records request duration metrics."""
         from fastapi import Request
@@ -448,7 +450,7 @@ class TestMiddlewareMetricsIntegration:
         assert call_args[1]["duration_seconds"] < 1  # Should be very fast in tests
 
     @pytest.mark.asyncio
-    @patch('app.middleware.logging_middleware.metrics')
+    @patch("app.middleware.logging_middleware.metrics")
     async def test_middleware_records_metrics_on_error(self, mock_metrics):
         """Test that middleware records metrics even when request fails."""
         from fastapi import Request
@@ -483,7 +485,7 @@ class TestMiddlewareMetricsIntegration:
         assert duration_call_args[1]["duration_seconds"] > 0
 
     @pytest.mark.asyncio
-    @patch('app.middleware.logging_middleware.metrics')
+    @patch("app.middleware.logging_middleware.metrics")
     async def test_middleware_records_different_status_codes(self, mock_metrics):
         """Test that middleware correctly tracks different HTTP status codes."""
         from fastapi import Request
@@ -517,7 +519,7 @@ class TestMiddlewareMetricsIntegration:
         assert mock_metrics.increment_http_request.call_count == len(test_cases)
 
     @pytest.mark.asyncio
-    @patch('app.middleware.logging_middleware.metrics')
+    @patch("app.middleware.logging_middleware.metrics")
     async def test_middleware_metrics_minimal_overhead(self, mock_metrics):
         """Test that metrics recording adds minimal overhead to request processing."""
         from fastapi import Request
@@ -545,7 +547,9 @@ class TestMiddlewareMetricsIntegration:
 
         # Average time per request should be very low (< 10ms)
         avg_time = total_time / 10
-        assert avg_time < 0.01, f"Metrics overhead too high: {avg_time:.4f}s per request"
+        assert (
+            avg_time < 0.01
+        ), f"Metrics overhead too high: {avg_time:.4f}s per request"
 
         # Verify metrics were recorded for all requests
         assert mock_metrics.increment_http_request.call_count == 10

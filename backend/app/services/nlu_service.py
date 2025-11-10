@@ -64,7 +64,9 @@ class NLUService:
             vertexai.init(project=self.project_id, location=self.location)
             self.model = GenerativeModel(self.model_name)
             self.vertex_available = True
-            logger.info(f"Vertex AI initialized: {self.project_id}/{self.location} with {self.model_name}")
+            logger.info(
+                f"Vertex AI initialized: {self.project_id}/{self.location} with {self.model_name}"
+            )
         except Exception as e:
             logger.warning(f"Vertex AI not available: {e}. Running in mock mode.")
             self.model = None
@@ -188,7 +190,7 @@ class NLUService:
                 "topics_json": topics_json,
                 "recent_topics": recent_str,
                 "subject_context": subject_str,
-            }
+            },
         )
 
         return prompt
@@ -239,7 +241,9 @@ class NLUService:
 
                 if usage_metadata:
                     input_tokens = getattr(usage_metadata, "prompt_token_count", None)
-                    output_tokens = getattr(usage_metadata, "candidates_token_count", None)
+                    output_tokens = getattr(
+                        usage_metadata, "candidates_token_count", None
+                    )
 
                     # Calculate cost if we have token counts
                     if input_tokens and output_tokens:
@@ -403,14 +407,26 @@ class NLUService:
                 "name": "Scientific Method",
                 "subject": "General Science",
                 "grade_levels": [9, 10, 11, 12],
-                "keywords": ["hypothesis", "experiment", "observation", "conclusion", "scientific process"],
+                "keywords": [
+                    "hypothesis",
+                    "experiment",
+                    "observation",
+                    "conclusion",
+                    "scientific process",
+                ],
             },
             {
                 "topic_id": "topic_bio_photosynthesis",
                 "name": "Photosynthesis",
                 "subject": "Biology",
                 "grade_levels": [9, 10, 11, 12],
-                "keywords": ["chlorophyll", "light reaction", "dark reaction", "glucose", "plants green"],
+                "keywords": [
+                    "chlorophyll",
+                    "light reaction",
+                    "dark reaction",
+                    "glucose",
+                    "plants green",
+                ],
             },
         ]
 

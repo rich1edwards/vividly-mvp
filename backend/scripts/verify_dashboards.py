@@ -72,27 +72,37 @@ class DashboardVerifier:
 
     def verify_dashboard_json_exists(self) -> bool:
         """Check if dashboard JSON configuration file exists"""
-        dashboard_path = self.base_path / "infrastructure" / "monitoring" / "dashboards" / "vividly-metrics-overview.json"
+        dashboard_path = (
+            self.base_path
+            / "infrastructure"
+            / "monitoring"
+            / "dashboards"
+            / "vividly-metrics-overview.json"
+        )
 
         if not dashboard_path.exists():
             return self.check(
-                "Dashboard JSON file exists",
-                False,
-                f"File not found: {dashboard_path}"
+                "Dashboard JSON file exists", False, f"File not found: {dashboard_path}"
             )
 
         self.dashboard_path = dashboard_path
-        return self.check("Dashboard JSON file exists", True, f"Found: {dashboard_path}")
+        return self.check(
+            "Dashboard JSON file exists", True, f"Found: {dashboard_path}"
+        )
 
     def verify_dashboard_json_valid(self) -> bool:
         """Check if dashboard JSON is valid"""
         try:
-            with open(self.dashboard_path, 'r') as f:
+            with open(self.dashboard_path, "r") as f:
                 self.dashboard_config = json.load(f)
 
-            return self.check("Dashboard JSON is valid", True, "JSON parsed successfully")
+            return self.check(
+                "Dashboard JSON is valid", True, "JSON parsed successfully"
+            )
         except json.JSONDecodeError as e:
-            return self.check("Dashboard JSON is valid", False, f"JSON parsing error: {e}")
+            return self.check(
+                "Dashboard JSON is valid", False, f"JSON parsing error: {e}"
+            )
 
     def verify_dashboard_structure(self) -> bool:
         """Check if dashboard has required structure"""
@@ -103,7 +113,7 @@ class DashboardVerifier:
                 return self.check(
                     f"Dashboard has '{key}' field",
                     False,
-                    f"Missing required field: {key}"
+                    f"Missing required field: {key}",
                 )
             self.check(f"Dashboard has '{key}' field", True)
 
@@ -112,14 +122,12 @@ class DashboardVerifier:
             return self.check(
                 "Dashboard has 'mosaicLayout.tiles' field",
                 False,
-                "Missing tiles array in mosaicLayout"
+                "Missing tiles array in mosaicLayout",
             )
 
         tile_count = len(self.dashboard_config["mosaicLayout"]["tiles"])
         return self.check(
-            "Dashboard has tiles",
-            tile_count > 0,
-            f"Found {tile_count} widget tiles"
+            "Dashboard has tiles", tile_count > 0, f"Found {tile_count} widget tiles"
         )
 
     def verify_dashboard_metrics(self) -> bool:
@@ -139,7 +147,9 @@ class DashboardVerifier:
 
                     # Extract metric name from filter
                     if 'metric.type="custom.googleapis.com/' in filter_str:
-                        metric_name = filter_str.split('custom.googleapis.com/')[1].split('"')[0]
+                        metric_name = filter_str.split("custom.googleapis.com/")[
+                            1
+                        ].split('"')[0]
                         found_metrics.add(metric_name)
 
         # Verify all expected metrics are present
@@ -152,13 +162,13 @@ class DashboardVerifier:
             return self.check(
                 "All Phase 2 metrics included in dashboard",
                 False,
-                f"Missing metrics: {', '.join(missing_metrics)}"
+                f"Missing metrics: {', '.join(missing_metrics)}",
             )
 
         return self.check(
             "All Phase 2 metrics included in dashboard",
             True,
-            f"Found all {len(self.expected_metrics)} metrics"
+            f"Found all {len(self.expected_metrics)} metrics",
         )
 
     def verify_dashboard_ui_elements(self) -> bool:
@@ -193,21 +203,29 @@ class DashboardVerifier:
 
     def verify_terraform_exists(self) -> bool:
         """Check if Terraform configuration exists"""
-        terraform_path = self.base_path / "infrastructure" / "monitoring" / "terraform" / "dashboards.tf"
+        terraform_path = (
+            self.base_path
+            / "infrastructure"
+            / "monitoring"
+            / "terraform"
+            / "dashboards.tf"
+        )
 
         if not terraform_path.exists():
             return self.check(
                 "Terraform configuration exists",
                 False,
-                f"File not found: {terraform_path}"
+                f"File not found: {terraform_path}",
             )
 
         self.terraform_path = terraform_path
-        return self.check("Terraform configuration exists", True, f"Found: {terraform_path}")
+        return self.check(
+            "Terraform configuration exists", True, f"Found: {terraform_path}"
+        )
 
     def verify_terraform_structure(self) -> bool:
         """Check if Terraform configuration has required structure"""
-        with open(self.terraform_path, 'r') as f:
+        with open(self.terraform_path, "r") as f:
             terraform_content = f.read()
 
         required_elements = [
@@ -286,7 +304,10 @@ def main():
     for check in checks:
         if not check():
             # If a check fails and it's critical, stop early
-            if check.__name__ in ["verify_dashboard_json_exists", "verify_dashboard_json_valid"]:
+            if check.__name__ in [
+                "verify_dashboard_json_exists",
+                "verify_dashboard_json_valid",
+            ]:
                 verifier.print_summary()
                 sys.exit(1)
 

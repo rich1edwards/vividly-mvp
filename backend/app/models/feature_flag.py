@@ -40,9 +40,7 @@ class FeatureFlag(Base):
 
     __tablename__ = "feature_flags"
 
-    id = Column(
-        GUID, primary_key=True
-    )
+    id = Column(GUID, primary_key=True)
     key = Column(String(255), nullable=False)
     name = Column(String(255), nullable=False)
     description = Column(Text)
@@ -62,7 +60,9 @@ class FeatureFlag(Base):
     # NOTE: FK constraint temporarily removed - organizations table doesn't exist yet
     # Will restore FK when organizations table is created
     organization_id = Column(
-        GUID, nullable=True, index=True
+        GUID,
+        nullable=True,
+        index=True
         # ForeignKey("organizations.id", ondelete="CASCADE")  # Temporarily disabled
     )
 
@@ -124,9 +124,7 @@ class FeatureFlagOverride(Base):
 
     __tablename__ = "feature_flag_overrides"
 
-    id = Column(
-        GUID, primary_key=True
-    )
+    id = Column(GUID, primary_key=True)
     flag_id = Column(
         GUID,
         ForeignKey("feature_flags.id", ondelete="CASCADE"),
@@ -135,7 +133,8 @@ class FeatureFlagOverride(Base):
     # NOTE: FK constraint temporarily removed - users.id uses user_id not id
     # Will restore FK when proper user ID reference is determined
     user_id = Column(
-        GUID, nullable=False
+        GUID,
+        nullable=False
         # ForeignKey("users.id", ondelete="CASCADE")  # Temporarily disabled
     )
 
@@ -183,9 +182,7 @@ class FeatureFlagAudit(Base):
 
     __tablename__ = "feature_flag_audit"
 
-    id = Column(
-        GUID, primary_key=True
-    )
+    id = Column(GUID, primary_key=True)
     flag_id = Column(
         GUID,
         ForeignKey("feature_flags.id", ondelete="CASCADE"),

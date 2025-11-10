@@ -1,5 +1,6 @@
 # Set TESTING environment variable BEFORE ANY imports
 import os
+
 os.environ["TESTING"] = "true"
 
 """
@@ -135,7 +136,9 @@ def setup_security_test_users(security_test_session):
     )
 
     # Add all users to database
-    security_test_session.add_all([student1, student2, student3, teacher1, teacher2, admin])
+    security_test_session.add_all(
+        [student1, student2, student3, teacher1, teacher2, admin]
+    )
     security_test_session.commit()
 
     # Create classes for teachers

@@ -104,9 +104,7 @@ class SimpleVectorRetriever:
 
 
 def test_retrieval_system(
-    embeddings_dir: Path,
-    project_id: str,
-    test_queries: List[str]
+    embeddings_dir: Path, project_id: str, test_queries: List[str]
 ):
     """
     Test the retrieval system with sample queries.
@@ -131,13 +129,15 @@ def test_retrieval_system(
     # Test each query
     for i, query in enumerate(test_queries, 1):
         print("-" * 60)
-        print(f"Query {i}: \"{query}\"")
+        print(f'Query {i}: "{query}"')
         print("-" * 60)
         print("")
 
         # Generate query embedding
         query_chunks = [{"chunk_id": "query", "text": query, "metadata": {}}]
-        query_embedded = embeddings_client.generate_embeddings(query_chunks, batch_size=1)
+        query_embedded = embeddings_client.generate_embeddings(
+            query_chunks, batch_size=1
+        )
 
         if not query_embedded:
             print("✗ Error: Failed to generate query embedding")
