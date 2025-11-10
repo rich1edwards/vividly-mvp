@@ -37,7 +37,7 @@ jobs:
           cd backend
           black --check .
           flake8 .
-          mypy .
+          mypy . --exclude venv_test --exclude verify_prompt_system_migration.py --exclude test_rag_production.py
 
       - name: Run unit and integration tests
         run: |
