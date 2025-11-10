@@ -98,7 +98,7 @@ export const SystemMetricsDashboard: React.FC = () => {
   // State
   const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('24h')
   const [autoRefresh, setAutoRefresh] = useState(false)
-  const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null)
+  const [refreshInterval, setRefreshInterval] = useState<number | null>(null)
 
   // Calculate date range
   const dateRange = useMemo((): DateRange => {

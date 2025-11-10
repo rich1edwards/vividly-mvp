@@ -10,7 +10,7 @@
  * - Notification metrics
  */
 
-import { apiClient } from './client'
+import apiClient from './client'
 
 /**
  * System Metrics Types

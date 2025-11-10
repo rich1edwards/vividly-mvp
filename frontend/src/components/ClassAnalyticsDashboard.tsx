@@ -703,7 +703,7 @@ export const ClassAnalyticsDashboard: React.FC<ClassAnalyticsDashboardProps> = (
       )}
 
       {/* Print Styles */}
-      <style jsx>{`
+      <style>{`
         @media print {
           @page {
             margin: 1cm;

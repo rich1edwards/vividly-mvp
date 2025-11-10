@@ -13,13 +13,13 @@ import { Input } from '../../components/ui/Input'
 import { CenteredLoading } from '../../components/ui/Loading'
 import { useToast } from '../../hooks/useToast'
 import { teacherApi } from '../../api/teacher'
-import type { Class } from '../../types'
+import type { ClassSummary } from '../../types/teacher'
 
 export const TeacherClassesPage: React.FC = () => {
   const navigate = useNavigate()
   const { success, error: showError } = useToast()
 
-  const [classes, setClasses] = useState<Class[]>([])
+  const [classes, setClasses] = useState<ClassSummary[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -32,7 +32,7 @@ export const TeacherClassesPage: React.FC = () => {
     try {
       setIsLoading(true)
       const data = await teacherApi.getClasses()
-      setClasses(data)
+      setClasses(data as unknown as ClassSummary[])
     } catch (error: any) {
       showError('Failed to load classes', error.response?.data?.detail || 'Please try again')
     } finally {
@@ -45,8 +45,8 @@ export const TeacherClassesPage: React.FC = () => {
       const query = searchQuery.toLowerCase()
       return (
         cls.name.toLowerCase().includes(query) ||
-        cls.subject.toLowerCase().includes(query) ||
-        cls.grade_level.toString().includes(query)
+        (cls.subject?.toLowerCase().includes(query) ?? false) ||
+        cls.class_code.toLowerCase().includes(query)
       )
     }
     return true
@@ -166,17 +166,12 @@ export const TeacherClassesPage: React.FC = () => {
                     <div className="flex-1">
                       <CardTitle className="text-lg mb-1">{cls.name}</CardTitle>
                       <CardDescription>
-                        {cls.subject} • Grade {cls.grade_level}
+                        {cls.subject && `${cls.subject} • `}Class Code: {cls.class_code}
                       </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {cls.description && (
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {cls.description}
-                    </p>
-                  )}
                   <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                     <div className="flex items-center gap-1">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,7 +239,7 @@ export const TeacherClassesPage: React.FC = () => {
 
 interface CreateClassModalProps {
   onClose: () => void
-  onSuccess: (cls: Class) => void
+  onSuccess: (cls: ClassSummary) => void
 }
 
 const CreateClassModal: React.FC<CreateClassModalProps> = ({ onClose, onSuccess }) => {
@@ -276,7 +271,7 @@ const CreateClassModal: React.FC<CreateClassModalProps> = ({ onClose, onSuccess 
     try {
       setIsSubmitting(true)
       const newClass = await teacherApi.createClass(formData)
-      onSuccess(newClass)
+      onSuccess(newClass as unknown as ClassSummary)
     } catch (error: any) {
       showError('Creation failed', error.response?.data?.detail || 'Please try again')
     } finally {

@@ -8,7 +8,7 @@
  * - Dashboard statistics
  */
 
-import { apiClient } from './client'
+import apiClient from './client'
 
 /**
  * User Management Types

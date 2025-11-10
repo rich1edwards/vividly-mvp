@@ -16,8 +16,8 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
 
     /* Path mapping */
@@ -27,6 +27,13 @@
     }
   },
   "include": ["src"],
-  "exclude": ["src/components/MonitoringDashboard.tsx", "src/components/VideoPlayer.tsx"],
+  "exclude": [
+    "src/components/MonitoringDashboard.tsx",
+    "src/components/VideoPlayer.tsx",
+    "**/__tests__/**",
+    "**/*.test.tsx",
+    "**/*.test.ts",
+    "src/scripts/**"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

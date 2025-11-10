@@ -77,9 +77,9 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react'
-import { Input } from './ui/input'
+import { Input } from './ui/Input'
 import { Button } from './ui/Button'
-import { Checkbox } from './ui/checkbox'
+import { Checkbox } from './ui/Checkbox'
 import {
   Select,
   SelectContent,
@@ -412,7 +412,7 @@ export function DataTable<TData>({
           {/* Export Button */}
           {enableExport && (
             <Button
-              variant="outline"
+              variant="tertiary"
               size="sm"
               onClick={handleExport}
               disabled={data.length === 0}
@@ -552,7 +552,7 @@ export function DataTable<TData>({
             {/* Pagination Controls */}
             <div className="flex items-center gap-1">
               <Button
-                variant="outline"
+                variant="tertiary"
                 size="sm"
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
@@ -560,7 +560,7 @@ export function DataTable<TData>({
                 First
               </Button>
               <Button
-                variant="outline"
+                variant="tertiary"
                 size="sm"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
@@ -571,7 +571,7 @@ export function DataTable<TData>({
                 Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
               </span>
               <Button
-                variant="outline"
+                variant="tertiary"
                 size="sm"
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
@@ -579,7 +579,7 @@ export function DataTable<TData>({
                 Next
               </Button>
               <Button
-                variant="outline"
+                variant="tertiary"
                 size="sm"
                 onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                 disabled={!table.getCanNextPage()}
