@@ -167,12 +167,16 @@ export function useNotifications(): UseNotificationsReturn {
     const token = localStorage.getItem(ACCESS_TOKEN_KEY)
     if (!token) {
       console.warn('[useNotifications] No auth token found, skipping SSE connection')
-      store.setConnectionState(ConnectionState.DISCONNECTED)
+      // Use setTimeout to defer state update and avoid updating during render
+      setTimeout(() => store.setConnectionState(ConnectionState.DISCONNECTED), 0)
       return
     }
 
-    store.setConnectionState(ConnectionState.CONNECTING)
-    store.setError(null)
+    // Use setTimeout to defer state updates and avoid updating during render
+    setTimeout(() => {
+      store.setConnectionState(ConnectionState.CONNECTING)
+      store.setError(null)
+    }, 0)
 
     try {
       // EventSource doesn't support custom headers, so we pass token as query param
@@ -184,8 +188,10 @@ export function useNotifications(): UseNotificationsReturn {
       // Connection established
       eventSource.onopen = () => {
         console.log('[useNotifications] SSE connection established')
-        store.setConnectionState(ConnectionState.CONNECTED)
-        store.setError(null)
+        setTimeout(() => {
+          store.setConnectionState(ConnectionState.CONNECTED)
+          store.setError(null)
+        }, 0)
         retryCountRef.current = 0 // Reset retry count on successful connection
       }
 
@@ -208,8 +214,10 @@ export function useNotifications(): UseNotificationsReturn {
       // Connection error
       eventSource.onerror = (error) => {
         console.error('[useNotifications] SSE error:', error)
-        store.setConnectionState(ConnectionState.ERROR)
-        store.setError(new Error('SSE connection error'))
+        setTimeout(() => {
+          store.setConnectionState(ConnectionState.ERROR)
+          store.setError(new Error('SSE connection error'))
+        }, 0)
         eventSource.close()
         eventSourceRef.current = null
 
@@ -226,13 +234,15 @@ export function useNotifications(): UseNotificationsReturn {
           }, delay)
         } else if (retryCountRef.current >= MAX_RETRY_ATTEMPTS) {
           console.error('[useNotifications] Max retry attempts reached, giving up')
-          store.setError(new Error('Max reconnection attempts reached'))
+          setTimeout(() => store.setError(new Error('Max reconnection attempts reached')), 0)
         }
       }
     } catch (error) {
       console.error('[useNotifications] Failed to create EventSource:', error)
-      store.setConnectionState(ConnectionState.ERROR)
-      store.setError(error as Error)
+      setTimeout(() => {
+        store.setConnectionState(ConnectionState.ERROR)
+        store.setError(error as Error)
+      }, 0)
     }
   }, [store, getRetryDelay])
 
@@ -252,7 +262,7 @@ export function useNotifications(): UseNotificationsReturn {
       eventSourceRef.current = null
     }
 
-    store.setConnectionState(ConnectionState.DISCONNECTED)
+    setTimeout(() => store.setConnectionState(ConnectionState.DISCONNECTED), 0)
   }, [store])
 
   /**
