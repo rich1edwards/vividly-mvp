@@ -81,7 +81,7 @@ export const InterestSelectionModal: React.FC<InterestSelectionModalProps> = ({
   }
 
   // Group interests by category
-  const groupedInterests = interests.reduce((acc, interest) => {
+  const groupedInterests = (interests || []).reduce((acc, interest) => {
     const category = interest.category || 'other'
     if (!acc[category]) {
       acc[category] = []

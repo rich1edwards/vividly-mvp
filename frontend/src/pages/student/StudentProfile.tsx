@@ -95,7 +95,7 @@ export const StudentProfile: React.FC = () => {
   }
 
   // Group interests by category
-  const groupedInterests = allInterests.reduce((acc, interest) => {
+  const groupedInterests = (allInterests || []).reduce((acc, interest) => {
     const category = interest.category || 'other'
     if (!acc[category]) {
       acc[category] = []
