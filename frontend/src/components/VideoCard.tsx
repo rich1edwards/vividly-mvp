@@ -19,7 +19,8 @@ import type { GeneratedContent } from '../types'
 import { Badge } from './ui/badge'
 import { Skeleton } from './ui/skeleton'
 import { cn } from '@/lib/utils'
-import { Play, Eye, Clock, Calendar } from 'lucide-react'
+import { Eye, Clock, Calendar } from 'lucide-react'
+import { VideoThumbnail } from './VideoThumbnail'
 
 export interface VideoCardProps {
   video: GeneratedContent
@@ -153,8 +154,6 @@ export const VideoCard: React.FC<VideoCardProps> = ({
   loading = false
 }) => {
   const navigate = useNavigate()
-  const [isHovered, setIsHovered] = useState(false)
-  const [imageError, setImageError] = useState(false)
 
   const isGrid = layout === 'grid'
   const statusConfig = getStatusConfig(video.status)
@@ -197,8 +196,6 @@ export const VideoCard: React.FC<VideoCardProps> = ({
       )}
       onClick={video.status === 'completed' ? handleClick : undefined}
       onKeyDown={video.status === 'completed' ? handleKeyDown : undefined}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       tabIndex={video.status === 'completed' ? 0 : -1}
       role="button"
       aria-label={`${video.topic || video.query} video${video.status === 'completed' ? ', click to play' : `, status: ${statusConfig.label}`}`}
@@ -207,49 +204,25 @@ export const VideoCard: React.FC<VideoCardProps> = ({
       {/* Thumbnail Section */}
       <div
         className={cn(
-          'relative bg-muted flex items-center justify-center overflow-hidden',
-          isGrid ? 'w-full aspect-video' : 'w-48 h-32 flex-shrink-0'
+          'relative',
+          isGrid ? 'w-full' : 'w-48 flex-shrink-0'
         )}
       >
-        {/* Thumbnail Image */}
-        {video.thumbnail_url && !imageError ? (
-          <img
-            src={video.thumbnail_url}
-            alt={`Thumbnail for ${video.topic || video.query}`}
-            className="w-full h-full object-cover"
-            onError={() => setImageError(true)}
-            loading="lazy"
-          />
-        ) : (
-          <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-vividly-blue/20 to-vividly-purple/20">
-            <Play className="w-12 h-12 text-vividly-blue/40" strokeWidth={1.5} />
-          </div>
-        )}
-
-        {/* Play Button Overlay (on hover) */}
-        {video.status === 'completed' && (
-          <div
-            className={cn(
-              'absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200',
-              isHovered ? 'opacity-100' : 'opacity-0'
-            )}
-            aria-hidden="true"
-          >
-            <div className="bg-white rounded-full p-3 transform transition-transform duration-200 group-hover:scale-110">
-              <Play className="w-8 h-8 text-vividly-blue fill-vividly-blue" />
-            </div>
-          </div>
-        )}
-
-        {/* Duration Badge */}
-        {video.duration && (
-          <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-mono px-2 py-1 rounded">
-            {formatDuration(video.duration)}
-          </div>
-        )}
+        <VideoThumbnail
+          src={video.thumbnail_url}
+          videoTitle={video.topic || video.query}
+          duration={video.duration ? formatDuration(video.duration) : undefined}
+          showPlayButton={video.status === 'completed'}
+          enableHover={video.status === 'completed'}
+          priority={false}
+          size={isGrid ? 'medium' : 'small'}
+          className={cn(
+            isGrid ? 'w-full' : 'w-48 h-32'
+          )}
+        />
 
         {/* Status Badge */}
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-2 z-10">
           <Badge variant={statusConfig.variant} className="shadow-sm">
             {statusConfig.label}
           </Badge>

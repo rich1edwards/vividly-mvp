@@ -15,8 +15,9 @@ import React, { useMemo } from 'react'
 import type { GeneratedContent } from '../types'
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card'
 import { Button } from './ui/Button'
-import { PlayCircle, Plus, ChevronRight } from 'lucide-react'
+import { Plus, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { VideoThumbnail } from './VideoThumbnail'
 
 export interface RelatedVideosSidebarProps {
   currentVideo: GeneratedContent
@@ -162,28 +163,17 @@ export const RelatedVideosSidebar: React.FC<RelatedVideosSidebarProps> = ({
               className="w-full text-left group focus:outline-none focus:ring-2 focus:ring-vividly-blue rounded-lg"
             >
               {/* Thumbnail */}
-              <div className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden mb-3">
-                {upNext.thumbnail_url ? (
-                  <img
-                    src={upNext.thumbnail_url}
-                    alt={upNext.query}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-vividly-blue-100 to-vividly-purple-100">
-                    <PlayCircle className="w-12 h-12 text-vividly-blue-400" />
-                  </div>
-                )}
-                {/* Play button overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
-                  <PlayCircle className="w-12 h-12 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
-                {/* Duration badge */}
-                {upNext.duration && (
-                  <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
-                    {Math.floor(upNext.duration / 60)}:{String(upNext.duration % 60).padStart(2, '0')}
-                  </div>
-                )}
+              <div className="mb-3">
+                <VideoThumbnail
+                  src={upNext.thumbnail_url}
+                  videoTitle={upNext.query}
+                  duration={upNext.duration ? `${Math.floor(upNext.duration / 60)}:${String(upNext.duration % 60).padStart(2, '0')}` : undefined}
+                  showPlayButton={true}
+                  enableHover={true}
+                  priority={true}
+                  size="medium"
+                  className="rounded-lg"
+                />
               </div>
 
               {/* Video info */}
@@ -213,24 +203,16 @@ export const RelatedVideosSidebar: React.FC<RelatedVideosSidebarProps> = ({
                 className="w-full flex gap-3 group text-left focus:outline-none focus:ring-2 focus:ring-vividly-blue rounded-lg p-2 -m-2"
               >
                 {/* Thumbnail */}
-                <div className="relative w-32 aspect-video bg-gray-200 rounded overflow-hidden flex-shrink-0">
-                  {video.thumbnail_url ? (
-                    <img
-                      src={video.thumbnail_url}
-                      alt={video.query}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-vividly-blue-100 to-vividly-purple-100">
-                      <PlayCircle className="w-6 h-6 text-vividly-blue-400" />
-                    </div>
-                  )}
-                  {video.duration && (
-                    <div className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
-                      {Math.floor(video.duration / 60)}:{String(video.duration % 60).padStart(2, '0')}
-                    </div>
-                  )}
-                </div>
+                <VideoThumbnail
+                  src={video.thumbnail_url}
+                  videoTitle={video.query}
+                  duration={video.duration ? `${Math.floor(video.duration / 60)}:${String(video.duration % 60).padStart(2, '0')}` : undefined}
+                  showPlayButton={false}
+                  enableHover={true}
+                  priority={false}
+                  size="small"
+                  className="w-32 flex-shrink-0 rounded"
+                />
 
                 {/* Video info */}
                 <div className="flex-1 min-w-0">
