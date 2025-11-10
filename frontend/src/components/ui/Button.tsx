@@ -32,10 +32,11 @@ const buttonVariants = cva(
           'bg-vividly-red text-white hover:bg-vividly-red-600 active:bg-vividly-red-700 focus:ring-vividly-red-500'
       },
       size: {
-        sm: 'h-8 px-3 text-sm',
-        md: 'h-10 px-4 text-base',
-        lg: 'h-12 px-6 text-lg',
-        xl: 'h-14 px-8 text-xl'
+        // All sizes meet 44x44px minimum touch target for mobile accessibility
+        sm: 'h-11 px-3 text-sm',        // 44px minimum (11 * 4 = 44px)
+        md: 'h-12 px-4 text-base',       // 48px
+        lg: 'h-14 px-6 text-lg',         // 56px
+        xl: 'h-16 px-8 text-xl'          // 64px
       },
       fullWidth: {
         true: 'w-full',

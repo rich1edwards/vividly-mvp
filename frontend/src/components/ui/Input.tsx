@@ -23,9 +23,10 @@ const inputVariants = cva(
           'border-vividly-green focus:border-vividly-green focus:ring-vividly-green'
       },
       inputSize: {
-        sm: 'h-8 text-sm',
-        md: 'h-10 text-base',
-        lg: 'h-12 text-lg'
+        // All sizes meet 44x44px minimum touch target for mobile accessibility
+        sm: 'h-11 text-sm',        // 44px minimum
+        md: 'h-12 text-base',      // 48px
+        lg: 'h-14 text-lg'         // 56px
       }
     },
     defaultVariants: {

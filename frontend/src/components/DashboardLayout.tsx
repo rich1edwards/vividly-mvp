@@ -10,6 +10,7 @@ import { useAuthStore } from '../store/authStore'
 import { Button } from './ui/Button'
 import { UserRole } from '../types'
 import { NotificationCenter } from './NotificationCenter'
+import { MobileNav } from './MobileNav'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -305,6 +306,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
             {/* User Menu */}
             <div className="flex items-center gap-4">
+              {/* Mobile Navigation Menu Button */}
+              <MobileNav navItems={navItems} />
+
               {/* Notification Center (Phase 1.4) */}
               <NotificationCenter />
 
@@ -325,27 +329,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
               </Button>
             </div>
           </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        <div className="sm:hidden px-4 pb-3 space-y-1">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                }`}
-              >
-                {item.icon}
-                {item.label}
-              </Link>
-            )
-          })}
         </div>
       </nav>
 
