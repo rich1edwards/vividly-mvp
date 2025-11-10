@@ -67,6 +67,7 @@ export const StudentDashboard: React.FC = () => {
             padding="lg"
             interactive
             onClick={() => navigate('/student/content/request')}
+            aria-label="Request new content - Ask a question and get a personalized video explanation"
           >
             <CardHeader className="p-0 mb-4">
               <div className="h-12 w-12 rounded-full bg-vividly-blue-100 flex items-center justify-center mb-3">
@@ -75,6 +76,7 @@ export const StudentDashboard: React.FC = () => {
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -91,7 +93,13 @@ export const StudentDashboard: React.FC = () => {
             </CardDescription>
           </Card>
 
-          <Card variant="elevated" padding="lg" interactive onClick={() => navigate('/student/videos')}>
+          <Card
+            variant="elevated"
+            padding="lg"
+            interactive
+            onClick={() => navigate('/student/videos')}
+            aria-label="My Videos - View all your personalized learning videos"
+          >
             <CardHeader className="p-0 mb-4">
               <div className="h-12 w-12 rounded-full bg-vividly-purple-100 flex items-center justify-center mb-3">
                 <svg
@@ -99,6 +107,7 @@ export const StudentDashboard: React.FC = () => {
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"

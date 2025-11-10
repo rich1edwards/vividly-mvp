@@ -42,14 +42,34 @@ const cardVariants = cva(
 
 export interface CardProps
   extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof cardVariants> {}
+    VariantProps<typeof cardVariants> {
+  onClick?: (e: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => void
+}
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant, padding, interactive, ...props }, ref) => {
+  ({ className, variant, padding, interactive, onClick, ...props }, ref) => {
+    // Handle keyboard interaction for interactive cards
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (interactive && onClick && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        onClick(e)
+      }
+    }
+
     return (
       <div
         ref={ref}
         className={cn(cardVariants({ variant, padding, interactive }), className)}
+        onClick={onClick}
+        onKeyDown={handleKeyDown}
+        // Make interactive cards keyboard accessible
+        {...(interactive && onClick
+          ? {
+              role: 'button',
+              tabIndex: 0,
+              'aria-label': props['aria-label'] || 'Clickable card',
+            }
+          : {})}
         {...props}
       />
     )
