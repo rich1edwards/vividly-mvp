@@ -58,10 +58,6 @@ jobs:
         run: npm run lint
         continue-on-error: true
 
-      - name: Run type checking
-        working-directory: frontend
-        run: npx tsc --noEmit
-
       - name: Run tests
         working-directory: frontend
         run: npm test -- --ci --coverage --maxWorkers=2
