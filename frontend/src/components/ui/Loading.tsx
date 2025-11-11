@@ -7,7 +7,7 @@
 
 import React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { cn } from '../../lib/utils'
+import { cn } from '@/lib/utils'
 
 // Spinner Component
 const spinnerVariants = cva('animate-spin rounded-full border-2 border-current', {

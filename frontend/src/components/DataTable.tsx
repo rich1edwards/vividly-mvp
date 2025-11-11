@@ -87,7 +87,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select'
-import { cn } from '../lib/utils'
+import { cn } from '@/lib/utils'
 
 // ============================================================================
 // Types

@@ -41,7 +41,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { Button } from './ui/Button'
 import { Badge } from './ui/badge'
-import { cn } from '../lib/utils'
+import { cn } from '@/lib/utils'
 
 /**
  * Get icon component for notification event type

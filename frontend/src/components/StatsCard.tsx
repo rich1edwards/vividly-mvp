@@ -43,7 +43,7 @@
 import React from 'react'
 import { LucideIcon, TrendingUp, TrendingDown, Minus, Loader2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/Card'
-import { cn } from '../lib/utils'
+import { cn } from '@/lib/utils'
 
 // ============================================================================
 // Types
