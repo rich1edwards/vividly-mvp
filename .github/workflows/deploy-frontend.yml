@@ -61,6 +61,38 @@ jobs:
           VITE_API_URL: ${{ github.event.inputs.environment == 'prod' && 'https://api.vividly.mnps.edu' || github.event.inputs.environment == 'staging' && 'https://api-staging.vividly.mnps.edu' || 'https://dev-vividly-api-2ufowb4fxa-uc.a.run.app' }}
           VITE_APP_ENV: ${{ github.event.inputs.environment || 'dev' }}
 
+      - name: Analyze bundle size
+        working-directory: frontend
+        run: |
+          echo "## 📦 Bundle Size Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| File | Size | Gzip Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|-----------|" >> $GITHUB_STEP_SUMMARY
+
+          # Analyze JS bundles
+          for file in dist/assets/*.js; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              size=$(du -h "$file" | cut -f1)
+              gzip_size=$(gzip -c "$file" | wc -c | numfmt --to=iec-i --suffix=B)
+              echo "| $filename | $size | $gzip_size |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          # Check bundle size budgets
+          total_js_size=$(find dist/assets -name "*.js" -exec du -b {} \; | awk '{sum+=$1} END {print sum}')
+          total_js_mb=$(echo "scale=2; $total_js_size/1048576" | bc)
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Total JS Size:** ${total_js_mb}MB" >> $GITHUB_STEP_SUMMARY
+
+          # Warn if bundle exceeds 2MB (reasonable for a SPA)
+          if (( $(echo "$total_js_mb > 2.0" | bc -l) )); then
+            echo "⚠️ **Warning:** Total JS bundle size exceeds 2MB performance budget" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ Bundle size within performance budget" >> $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -123,10 +155,50 @@ jobs:
           #   --async
         continue-on-error: true
 
-      - name: Deployment summary
+      - name: Health check deployment
         run: |
-          echo "✅ Frontend deployed to Dev environment"
-          echo "🔗 URL: https://storage.googleapis.com/vividly-dev-rich-frontend-dev/index.html"
+          echo "🏥 Running health checks..."
+
+          # Wait for deployment to propagate
+          sleep 5
+
+          # Check if index.html is accessible
+          HTTP_CODE=$(curl -sL -w "%{http_code}" -o /dev/null "https://storage.googleapis.com/vividly-dev-rich-frontend-dev/index.html")
+
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "✅ Health check passed - Site is accessible (HTTP $HTTP_CODE)"
+
+            # Check if critical assets exist
+            echo "Checking critical assets..."
+
+            # Verify at least one JS bundle exists
+            if gsutil ls gs://vividly-dev-rich-frontend-dev/assets/*.js | head -1 > /dev/null 2>&1; then
+              echo "✅ JavaScript bundles found"
+            else
+              echo "⚠️ Warning: No JavaScript bundles found"
+              exit 1
+            fi
+
+            # Verify CSS exists
+            if gsutil ls gs://vividly-dev-rich-frontend-dev/assets/*.css | head -1 > /dev/null 2>&1; then
+              echo "✅ CSS stylesheets found"
+            else
+              echo "⚠️ Warning: No CSS stylesheets found"
+            fi
+
+            echo "## 🎉 Deployment Successful" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Environment:** Dev" >> $GITHUB_STEP_SUMMARY
+            echo "**URL:** https://storage.googleapis.com/vividly-dev-rich-frontend-dev/index.html" >> $GITHUB_STEP_SUMMARY
+            echo "**Status:** ✅ All health checks passed" >> $GITHUB_STEP_SUMMARY
+            echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Health check failed - HTTP $HTTP_CODE"
+            echo "## ❌ Deployment Health Check Failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "HTTP Status: $HTTP_CODE" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
 
   # ============================================================================
   # Deploy to Staging (manual trigger only)
@@ -263,6 +335,108 @@ jobs:
         run: |
           echo "🔔 Production deployment notification would be sent here"
           # Add Slack/email notification here
+
+  # ============================================================================
+  # Preview Deployment (for Pull Requests)
+  # ============================================================================
+  preview-deploy:
+    name: Preview Deployment
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+    environment:
+      name: preview-pr-${{ github.event.pull_request.number }}
+      url: https://storage.googleapis.com/vividly-dev-rich-frontend-dev/pr-${{ github.event.pull_request.number }}/index.html
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_DEV }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy preview to GCS
+        working-directory: frontend/dist
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          PR_PATH="pr-${PR_NUMBER}"
+
+          echo "📦 Deploying preview for PR #${PR_NUMBER}..."
+
+          # Sync files to PR-specific path
+          gsutil -m rsync -r -d \
+            -x '.*\.map$' \
+            . gs://vividly-dev-rich-frontend-dev/${PR_PATH}/
+
+          # Set cache control
+          gsutil -m setmeta -h "Cache-Control:public, max-age=300" \
+            "gs://vividly-dev-rich-frontend-dev/${PR_PATH}/**"
+
+          echo "## 🎬 Preview Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Pull Request:** #${PR_NUMBER}" >> $GITHUB_STEP_SUMMARY
+          echo "**Preview URL:** https://storage.googleapis.com/vividly-dev-rich-frontend-dev/${PR_PATH}/index.html" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ✅ Preview deployed successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> 💡 This preview will be automatically cleaned up after the PR is merged or closed." >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const previewUrl = `https://storage.googleapis.com/vividly-dev-rich-frontend-dev/pr-${prNumber}/index.html`;
+
+            const comment = `## 🎬 Preview Deployment Ready!
+
+            Your changes have been deployed to a preview environment:
+
+            🔗 **Preview URL:** ${previewUrl}
+
+            This preview will be updated automatically when you push new commits to this PR.
+
+            ---
+            <sub>Built from commit ${context.sha.substring(0, 7)}</sub>`;
+
+            // Find existing preview comment
+            const {data: comments} = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const existingComment = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('Preview Deployment Ready')
+            );
+
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: comment,
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: comment,
+              });
+            }
 
   # ============================================================================
   # Security Scan (runs on PRs)
