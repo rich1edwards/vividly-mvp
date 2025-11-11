@@ -95,14 +95,16 @@ export const StudentProfile: React.FC = () => {
   }
 
   // Group interests by category
-  const groupedInterests = (allInterests || []).reduce((acc, interest) => {
-    const category = interest.category || 'other'
-    if (!acc[category]) {
-      acc[category] = []
-    }
-    acc[category].push(interest)
-    return acc
-  }, {} as Record<string, Interest[]>)
+  const groupedInterests = Array.isArray(allInterests)
+    ? allInterests.reduce((acc, interest) => {
+        const category = interest.category || 'other'
+        if (!acc[category]) {
+          acc[category] = []
+        }
+        acc[category].push(interest)
+        return acc
+      }, {} as Record<string, Interest[]>)
+    : {}
 
   const categoryLabels: Record<string, string> = {
     sports: 'Sports & Athletics',

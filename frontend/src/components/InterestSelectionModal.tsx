@@ -81,14 +81,16 @@ export const InterestSelectionModal: React.FC<InterestSelectionModalProps> = ({
   }
 
   // Group interests by category
-  const groupedInterests = (interests || []).reduce((acc, interest) => {
-    const category = interest.category || 'other'
-    if (!acc[category]) {
-      acc[category] = []
-    }
-    acc[category].push(interest)
-    return acc
-  }, {} as Record<string, Interest[]>)
+  const groupedInterests = Array.isArray(interests)
+    ? interests.reduce((acc, interest) => {
+        const category = interest.category || 'other'
+        if (!acc[category]) {
+          acc[category] = []
+        }
+        acc[category].push(interest)
+        return acc
+      }, {} as Record<string, Interest[]>)
+    : {}
 
   const categoryLabels: Record<string, string> = {
     sports: 'Sports & Athletics',
