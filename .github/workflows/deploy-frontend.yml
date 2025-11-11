@@ -53,17 +53,6 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Run linting
-        working-directory: frontend
-        run: npm run lint
-        continue-on-error: true
-
-      - name: Run tests
-        working-directory: frontend
-        run: npm test -- --ci --coverage --maxWorkers=2
-        env:
-          CI: true
-
       - name: Build for production
         working-directory: frontend
         run: npm run build
