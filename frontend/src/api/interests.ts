@@ -6,6 +6,7 @@ export interface Interest {
   name: string
   category: string | null
   description: string | null
+  icon?: string | null
   display_order?: number | null
 }
 

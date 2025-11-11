@@ -214,17 +214,24 @@ export const InterestSelectionModal: React.FC<InterestSelectionModalProps> = ({
                         `}
                       >
                         <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <p
-                              className={`font-medium ${isSelected ? colors.text : 'text-foreground'}`}
-                            >
-                              {interest.name}
-                            </p>
-                            {interest.description && (
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {interest.description}
-                              </p>
+                          <div className="flex items-start gap-3 flex-1">
+                            {interest.icon && (
+                              <span className="text-2xl leading-none flex-shrink-0">
+                                {interest.icon}
+                              </span>
                             )}
+                            <div className="flex-1">
+                              <p
+                                className={`font-medium ${isSelected ? colors.text : 'text-foreground'}`}
+                              >
+                                {interest.name}
+                              </p>
+                              {interest.description && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {interest.description}
+                                </p>
+                              )}
+                            </div>
                           </div>
                           {isSelected && (
                             <svg

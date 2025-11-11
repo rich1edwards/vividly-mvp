@@ -27,6 +27,7 @@ class Interest(Base):
         String(100), nullable=True, index=True
     )  # sports, music, art, etc.
     description = Column(String(500), nullable=True)
+    icon = Column(String(50), nullable=True)  # emoji or icon identifier
     display_order = Column(Integer, nullable=True)
 
     # Relationships

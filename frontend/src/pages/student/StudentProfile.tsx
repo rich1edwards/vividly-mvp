@@ -269,9 +269,12 @@ export const StudentProfile: React.FC = () => {
                   return (
                     <div
                       key={interest.interest_id}
-                      className={`px-4 py-2 rounded-lg ${colors.bg} ${colors.text} ${colors.border} border`}
+                      className={`px-4 py-2 rounded-lg ${colors.bg} ${colors.text} ${colors.border} border flex items-center gap-2`}
                     >
-                      {interest.name}
+                      {interest.icon && (
+                        <span className="text-xl leading-none">{interest.icon}</span>
+                      )}
+                      <span>{interest.name}</span>
                     </div>
                   )
                 })}
@@ -314,12 +317,19 @@ export const StudentProfile: React.FC = () => {
                             `}
                           >
                             <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <p
-                                  className={`font-medium text-sm ${isSelected ? colors.text : 'text-foreground'}`}
-                                >
-                                  {interest.name}
-                                </p>
+                              <div className="flex items-start gap-2 flex-1">
+                                {interest.icon && (
+                                  <span className="text-xl leading-none flex-shrink-0">
+                                    {interest.icon}
+                                  </span>
+                                )}
+                                <div className="flex-1">
+                                  <p
+                                    className={`font-medium text-sm ${isSelected ? colors.text : 'text-foreground'}`}
+                                  >
+                                    {interest.name}
+                                  </p>
+                                </div>
                               </div>
                               {isSelected && (
                                 <svg

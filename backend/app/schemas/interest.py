@@ -13,6 +13,7 @@ class InterestBase(BaseModel):
     name: str
     category: Optional[str] = None
     description: Optional[str] = None
+    icon: Optional[str] = None
 
 
 class InterestResponse(InterestBase):
